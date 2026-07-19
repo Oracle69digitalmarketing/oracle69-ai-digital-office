@@ -1,0 +1,6 @@
+{
+  "name": "@oracle69/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js"
+}
