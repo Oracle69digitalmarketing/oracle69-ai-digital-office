@@ -1,1 +1,1 @@
-export const HELLO = "world";
+export * from './types';
