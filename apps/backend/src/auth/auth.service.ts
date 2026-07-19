@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from "@nestjs/common";
+import { Injectable, ConflictException, UnauthorizedException } from "@nestjs/common";
 
 import { JwtService } from "@nestjs/jwt";
 import { UsersService } from "../users/users.service";
@@ -25,6 +25,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: "7d" }),
       user: {
         id: user.id,
         email: user.email,
@@ -32,6 +33,19 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  async refreshToken(token: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      const user = await this.usersService.findOne(payload.email);
+      if (!user) {
+        throw new UnauthorizedException("User not found");
+      }
+      return this.login(user);
+    } catch {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
   }
 
   async register(data: any) {

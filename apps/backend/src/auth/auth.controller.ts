@@ -9,6 +9,7 @@ import {
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
+import { RolesGuard } from "./roles.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -28,7 +29,12 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Post("refresh")
+  async refresh(@Body("refresh_token") token: string) {
+    return this.authService.refreshToken(token);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get("profile")
   getProfile(@Request() req: any) {
     return req.user;

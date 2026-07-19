@@ -12,6 +12,7 @@
   "dependencies": {
     "@oracle69/shared": "workspace:*",
     "@supabase/supabase-js": "^2.110.7",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.284.0",
     "next": "15.0.0",
     "react": "^18.2.0",
