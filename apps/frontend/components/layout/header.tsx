@@ -1,9 +1,10 @@
 "use client";
 
-import { Search, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import { NotificationCenter } from "./notification-center";
+import { GlobalSearch } from "./global-search";
 
 export function Header() {
   const user = useAuthStore((state) => state.user);
@@ -17,14 +18,7 @@ export function Header() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-8">
-      <div className="flex w-96 items-center rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-500">
-        <Search className="mr-2 h-4 w-4" />
-        <input
-          type="text"
-          placeholder="Search projects, tasks, memory..."
-          className="w-full bg-transparent outline-none"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="flex items-center space-x-4">
         <NotificationCenter />

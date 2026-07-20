@@ -11,6 +11,11 @@ import { AgentEngineModule } from "@oracle69/agent-engine";
 import { MemoryModule } from "@oracle69/memory";
 import { ExecutionEngineModule } from "@oracle69/execution-engine";
 import { SharedModule } from "@oracle69/shared";
+import { TasksModule } from "./tasks/tasks.module.js";
+import { ActivityModule } from "./activity/activity.module.js";
+import { AgentsModule } from "./agents/agents.module.js";
+import { WorkflowsModule } from "./workflows/workflows.module.js";
+import { CoreAgentsRegistrationService } from "./common/services/core-agents-registration.service.js";
 
 @Module({
   imports: [
@@ -24,9 +29,13 @@ import { SharedModule } from "@oracle69/shared";
     MemoryModule,
     ExecutionEngineModule,
     SharedModule,
+    TasksModule,
+    ActivityModule,
+    AgentsModule,
+    WorkflowsModule,
   ],
   controllers: [AppController, HealthController],
-  providers: [AppService],
+  providers: [AppService, CoreAgentsRegistrationService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

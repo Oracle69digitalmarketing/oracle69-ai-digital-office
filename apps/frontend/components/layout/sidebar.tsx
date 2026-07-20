@@ -12,15 +12,19 @@ import {
   FileText, 
   Calendar, 
   BarChart3, 
-  Settings 
+  Settings,
+  Users,
+  Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "AI Office", href: "/dashboard/ai-office", icon: Bot },
+  { name: "CRM", href: "/dashboard/crm", icon: Users },
   { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
   { name: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
+  { name: "Finance", href: "/dashboard/finance", icon: Wallet },
   { name: "Departments", href: "/dashboard/departments", icon: Building2 },
   { name: "Knowledge", href: "/dashboard/knowledge", icon: BookOpen },
   { name: "Documents", href: "/dashboard/documents", icon: FileText },
