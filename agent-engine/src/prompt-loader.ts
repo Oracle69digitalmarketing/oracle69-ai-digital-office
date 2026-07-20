@@ -5,8 +5,34 @@ import * as path from 'path';
 @Injectable()
 export class PromptLoader implements OnModuleInit {
   private readonly logger = new Logger(PromptLoader.name);
-  private readonly promptsDir = path.join(process.cwd(), 'prompts', 'agents');
+  private promptsDir: string;
   private promptCache: Map<string, { content: string; version: string }> = new Map();
+
+  constructor() {
+    this.promptsDir = this.resolvePromptsDir();
+  }
+
+  private resolvePromptsDir(): string {
+    const cwd = process.cwd();
+    const commonPaths = [
+      path.join(cwd, 'prompts', 'agents'),
+      path.join(cwd, '..', '..', 'prompts', 'agents'),
+      path.join(cwd, '..', 'prompts', 'agents'),
+      '/home/davidsaint1969/oracle69-ai-digital-office/prompts/agents'
+    ];
+
+    this.logger.debug(`Resolving prompts dir. CWD: ${cwd}`);
+    for (const p of commonPaths) {
+      if (fs.existsSync(p)) {
+        this.logger.log(`Found prompts directory at: ${p}`);
+        return p;
+      }
+      this.logger.debug(`Tried path: ${p} - NOT FOUND`);
+    }
+
+    this.logger.warn('Prompts directory not found in common locations. Defaulting to process.cwd()/prompts/agents');
+    return path.join(cwd, 'prompts', 'agents');
+  }
 
   async onModuleInit() {
     await this.loadAllPrompts();
