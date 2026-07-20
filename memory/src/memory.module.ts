@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { MemoryManager } from './memory-manager';
-import { ConversationManager } from './conversation-manager';
+import { MemoryManager } from './memory-manager.js';
+import { ConversationManager } from './conversation-manager.js';
 
 @Module({
   providers: [MemoryManager, ConversationManager],

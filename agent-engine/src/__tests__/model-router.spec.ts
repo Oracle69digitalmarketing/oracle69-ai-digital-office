@@ -1,3 +1,4 @@
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { ModelRouter, ModelProvider } from '../model-router';
 import { ModelRoutingRequest } from '@oracle69/shared';
 

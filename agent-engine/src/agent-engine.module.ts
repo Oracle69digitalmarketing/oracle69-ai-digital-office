@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AgentRegistry } from './agent-registry';
-import { ModelRouter } from './model-router';
-import { PromptLoader } from './prompt-loader';
+import { AgentRegistry } from './agent-registry.js';
+import { ModelRouter } from './model-router.js';
+import { PromptLoader } from './prompt-loader.js';
 
 @Module({
   providers: [AgentRegistry, ModelRouter, PromptLoader],

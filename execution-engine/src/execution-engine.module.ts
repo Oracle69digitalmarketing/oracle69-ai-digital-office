@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ExecutionEngine } from './execution-engine';
+import { ExecutionEngine } from './execution-engine.js';
 
 @Module({
   providers: [ExecutionEngine],

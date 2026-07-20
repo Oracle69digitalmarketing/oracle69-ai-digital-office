@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common';
-import { EventBus } from './event-bus';
+import { EventBus } from './event-bus.js';
 
 @Global()
 @Module({

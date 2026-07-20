@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Subject, Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { DomainEvent } from './types';
+import { DomainEvent } from './types.js';
 
 @Injectable()
 export class EventBus {

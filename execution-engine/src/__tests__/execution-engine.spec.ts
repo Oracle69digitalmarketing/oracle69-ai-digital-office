@@ -1,3 +1,4 @@
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { ExecutionEngine } from '../execution-engine';
 import { BaseAgent } from '@oracle69/agent-engine';
 import { TaskContext } from '@oracle69/shared';

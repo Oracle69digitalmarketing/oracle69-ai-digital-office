@@ -1,3 +1,4 @@
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { AgentRegistry } from '../agent-registry';
 import { BaseAgent } from '../base-agent';
 import { AgentMetadata, TaskContext } from '@oracle69/shared';

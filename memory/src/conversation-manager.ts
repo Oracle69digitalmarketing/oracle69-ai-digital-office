@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MemoryManager } from './memory-manager';
+import { MemoryManager } from './memory-manager.js';
 import { MemoryRecord } from '@oracle69/shared';
 
 @Injectable()

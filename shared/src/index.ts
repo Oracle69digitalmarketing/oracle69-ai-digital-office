@@ -1,3 +1,3 @@
-export * from './types';
-export * from './event-bus';
-export * from './shared.module';
+export * from './types.js';
+export * from './event-bus.js';
+export * from './shared.module.js';

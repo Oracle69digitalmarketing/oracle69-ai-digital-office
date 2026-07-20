@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { BaseAgent } from './base-agent';
+import { BaseAgent } from './base-agent.js';
 import { AgentMetadata, AgentStatus } from '@oracle69/shared';
 
 @Injectable()

@@ -1,3 +1,3 @@
-export * from './memory-manager';
-export * from './conversation-manager';
-export * from './memory.module';
+export * from './memory-manager.js';
+export * from './conversation-manager.js';
+export * from './memory.module.js';
