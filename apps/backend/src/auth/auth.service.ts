@@ -15,7 +15,7 @@ export class AuthService {
     const user = await this.usersService.findOne(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
+      const { password: _password, ...result } = user;
       return result;
     }
     return null;
@@ -50,10 +50,13 @@ export class AuthService {
 
   async register(data: any) {
     console.log("AuthService.register: Starting registration for email:", data.email);
-    
+
     const existingUser = await this.usersService.findOne(data.email);
-    console.log("AuthService.register: existingUser check result:", existingUser ? "User exists" : "User not found");
-    
+    console.log(
+      "AuthService.register: existingUser check result:",
+      existingUser ? "User exists" : "User not found",
+    );
+
     if (existingUser) {
       throw new ConflictException("User already exists");
     }
@@ -77,8 +80,9 @@ export class AuthService {
         },
       });
       console.log("AuthService.register: User created successfully:", user.id);
-      
-      const { password, ...result } = user;
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _password, ...result } = user;
       return result;
     } catch (error) {
       console.error("AuthService.register: Error during user creation:", error);
