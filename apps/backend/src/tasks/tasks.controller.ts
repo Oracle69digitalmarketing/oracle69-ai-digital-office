@@ -19,7 +19,7 @@ export class TasksController {
 
   @Patch(":id/status")
   updateStatus(@Param("id") id: string, @Body("status") status: string, @Request() req: any) {
-    return this.tasksService.updateStatus(id, status, req.user.id);
+    return this.tasksService.updateStatus(id, status, req.user.userId);
   }
 
   @Post()

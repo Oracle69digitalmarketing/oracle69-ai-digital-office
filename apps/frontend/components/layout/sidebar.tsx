@@ -39,7 +39,9 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col bg-gray-900 text-white">
       <div className="flex h-16 items-center px-6">
-        <span className="text-xl font-bold">Oracle69</span>
+        <Link href="/dashboard" className="text-xl font-bold hover:text-indigo-400 transition-colors">
+          Oracle69
+        </Link>
       </div>
       <nav className="flex-1 space-y-1 px-2 py-4">
         {navigation.map((item) => (

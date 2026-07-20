@@ -1,8 +1,5 @@
-export default function Page() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">Departments</h1>
-      <p className="mt-4 text-gray-500">Coming soon.</p>
-    </div>
-  );
+import { ComingSoon } from "@/components/layout/coming-soon";
+
+export default function DepartmentsPage() {
+  return <ComingSoon title="Departments" />;
 }

@@ -26,6 +26,7 @@ export function ReceptionistWidget() {
     return (
       <button
         onClick={() => setIsOpen(true)}
+        aria-label="Open AI Receptionist"
         className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-all"
       >
         <MessageSquare className="h-6 w-6" />
@@ -44,10 +45,18 @@ export function ReceptionistWidget() {
           <span className="font-medium text-sm text-white">AI Receptionist</span>
         </div>
         <div className="flex items-center space-x-2">
-          <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 hover:bg-indigo-500 rounded">
+          <button 
+            onClick={() => setIsMinimized(!isMinimized)} 
+            aria-label={isMinimized ? "Maximize AI Receptionist" : "Minimize AI Receptionist"}
+            className="p-1 hover:bg-indigo-500 rounded"
+          >
             {isMinimized ? <Maximize2 className="h-4 w-4 text-white" /> : <Minimize2 className="h-4 w-4 text-white" />}
           </button>
-          <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-indigo-500 rounded">
+          <button 
+            onClick={() => setIsOpen(false)} 
+            aria-label="Close AI Receptionist"
+            className="p-1 hover:bg-indigo-500 rounded"
+          >
             <X className="h-4 w-4 text-white" />
           </button>
         </div>
@@ -79,6 +88,7 @@ export function ReceptionistWidget() {
               />
               <button
                 onClick={handleSend}
+                aria-label="Send message"
                 className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
               >
                 <Send className="h-4 w-4" />

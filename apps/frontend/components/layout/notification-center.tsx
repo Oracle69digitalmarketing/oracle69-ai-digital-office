@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Bell, X, Info, AlertTriangle, CheckCircle } from "lucide-react";
 
 const notifications = [
@@ -16,6 +17,7 @@ export function NotificationCenter() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle notifications"
         className="relative rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
       >
         <Bell className="h-6 w-6" />
@@ -26,7 +28,10 @@ export function NotificationCenter() {
         <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
-            <button onClick={() => setIsOpen(false)}>
+            <button 
+              onClick={() => setIsOpen(false)}
+              aria-label="Close notifications"
+            >
               <X className="h-4 w-4 text-gray-400" />
             </button>
           </div>
@@ -46,9 +51,13 @@ export function NotificationCenter() {
             ))}
           </div>
           <div className="border-t px-4 py-2 text-center">
-            <button className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
+            <Link 
+              href="/dashboard/notifications"
+              onClick={() => setIsOpen(false)}
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
+            >
               View all notifications
-            </button>
+            </Link>
           </div>
         </div>
       )}

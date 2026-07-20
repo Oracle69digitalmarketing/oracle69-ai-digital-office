@@ -39,7 +39,7 @@ export default function DashboardPage() {
     <div className="space-y-8 p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 text-black">Executive Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Executive Dashboard</h1>
           <p className="mt-2 text-gray-600">Overview of your Oracle69 AI Business Operating System.</p>
         </div>
         <div className="flex space-x-3">
@@ -62,7 +62,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">{card.name}</p>
-                <p className="text-2xl font-bold text-gray-900 text-black">{card.value}</p>
+                <p className="text-2xl font-bold text-gray-900">{card.value}</p>
               </div>
             </div>
           </div>
@@ -74,7 +74,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-8">
           <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-sm">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 text-black flex items-center">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center">
                 <TrendingUp className="mr-2 h-5 w-5 text-indigo-600" />
                 Business Performance
               </h2>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-              <h3 className="font-bold text-gray-900 text-black mb-4 flex items-center">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center">
                 <ShieldCheck className="mr-2 h-4 w-4 text-green-600" />
                 Pending Approvals
               </h3>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
                     <div>
-                      <p className="text-sm font-medium text-gray-900 text-black">{item.title}</p>
+                      <p className="text-sm font-medium text-gray-900">{item.title}</p>
                       <p className="text-xs text-gray-500">{item.type} • {item.date}</p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-gray-400" />
@@ -109,7 +109,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-              <h3 className="font-bold text-gray-900 text-black mb-4 flex items-center">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center">
                 <Bot className="mr-2 h-4 w-4 text-indigo-600" />
                 AI Agent Activity
               </h3>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
         {/* Sidebar activity/alerts */}
         <div className="space-y-8">
           <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 text-black mb-6 flex items-center">
+            <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
               <AlertCircle className="mr-2 h-5 w-5 text-amber-500" />
               Critical Alerts
             </h2>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 text-black mb-6 flex items-center">
+            <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
               <Activity className="mr-2 h-5 w-5 text-indigo-600" />
               Live Activity
             </h2>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                     <item.icon className="h-4 w-4 text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-900 text-black font-medium leading-tight">{item.text}</p>
+                    <p className="text-sm text-gray-900 font-medium leading-tight">{item.text}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{item.time}</p>
                   </div>
                 </div>

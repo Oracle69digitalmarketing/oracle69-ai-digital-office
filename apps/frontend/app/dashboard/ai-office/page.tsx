@@ -30,9 +30,23 @@ export default function AIOfficePage() {
         if (response.ok) {
           const data = await response.json();
           setAgents(data);
+        } else {
+          // Fallback to mock agents
+          setAgents([
+            { id: "1", name: "Elena", role: "Operations Lead", healthStatus: "active", capabilities: ["Logistics", "Scheduling", "Process Optimization"] },
+            { id: "2", name: "Owen", role: "Marketing strategist", healthStatus: "busy", capabilities: ["Content Creation", "SEO", "Market Analysis"] },
+            { id: "3", name: "Paul", role: "Technical Architect", healthStatus: "active", capabilities: ["Code Review", "System Design", "Security Audit"] },
+            { id: "4", name: "Mia", role: "Financial Analyst", healthStatus: "active", capabilities: ["Budgeting", "Forecasting", "Risk Assessment"] },
+          ]);
         }
       } catch (error) {
-        console.error("Failed to fetch agents:", error);
+        console.error("Failed to fetch agents, using mock data:", error);
+        setAgents([
+          { id: "1", name: "Elena", role: "Operations Lead", healthStatus: "active", capabilities: ["Logistics", "Scheduling", "Process Optimization"] },
+          { id: "2", name: "Owen", role: "Marketing strategist", healthStatus: "busy", capabilities: ["Content Creation", "SEO", "Market Analysis"] },
+          { id: "3", name: "Paul", role: "Technical Architect", healthStatus: "active", capabilities: ["Code Review", "System Design", "Security Audit"] },
+          { id: "4", name: "Mia", role: "Financial Analyst", healthStatus: "active", capabilities: ["Budgeting", "Forecasting", "Risk Assessment"] },
+        ]);
       } finally {
         setLoading(false);
       }
