@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+import { AppModule } from "./app.module.js.js";
 import { ValidationPipe } from "@nestjs/common";
-import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter.js.js";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 

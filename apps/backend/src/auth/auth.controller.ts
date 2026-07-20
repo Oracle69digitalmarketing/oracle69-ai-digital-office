@@ -7,9 +7,9 @@ import {
   Request,
   UnauthorizedException,
 } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { JwtAuthGuard } from "./jwt-auth.guard";
-import { RolesGuard } from "./roles.guard";
+import { AuthService } from "./auth.service.js";
+import { JwtAuthGuard } from "./jwt-auth.guard.js";
+import { RolesGuard } from "./roles.guard.js";
 
 @Controller("auth")
 export class AuthController {
@@ -17,6 +17,7 @@ export class AuthController {
 
   @Post("register")
   async register(@Body() body: any) {
+    console.log("AuthController.register: Received request body:", JSON.stringify(body));
     return this.authService.register(body);
   }
 

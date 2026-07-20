@@ -13,8 +13,16 @@ export class UsersService {
   }
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
-      data,
-    });
+    console.log("UsersService.create: Attempting to create user with data:", JSON.stringify(data));
+    try {
+      const user = await this.prisma.user.create({
+        data,
+      });
+      console.log("UsersService.create: Prisma create success.");
+      return user;
+    } catch (error) {
+      console.error("UsersService.create: Prisma create failed:", error);
+      throw error;
+    }
   }
 }
