@@ -12,6 +12,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "zod": "^3.22.0"
+    "zod": "^3.22.0",
+    "@nestjs/common": "^10.0.0",
+    "rxjs": "^7.8.0"
   }
 }

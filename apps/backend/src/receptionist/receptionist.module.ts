@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { ReceptionistService } from './receptionist.service';
-import { ReceptionistController } from './receptionist.controller';
-import { AgentEngineModule } from '@oracle69/agent-engine';
-import { MemoryModule } from '@oracle69/memory';
-import { ExecutionEngineModule } from '@oracle69/execution-engine';
+import { Module } from "@nestjs/common";
+import { ReceptionistService } from "./receptionist.service";
+import { ReceptionistController } from "./receptionist.controller";
+import { AgentEngineModule } from "@oracle69/agent-engine";
+import { MemoryModule } from "@oracle69/memory";
+import { ExecutionEngineModule } from "@oracle69/execution-engine";
 
 @Module({
   imports: [AgentEngineModule, MemoryModule, ExecutionEngineModule],
