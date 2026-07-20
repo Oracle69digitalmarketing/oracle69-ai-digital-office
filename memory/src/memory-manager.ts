@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MemoryRecord } from '@oracle69/shared';
 
-export interface IVectorMemory {
-  add(record: MemoryRecord): Promise<void>;
+export interface IMemoryPersistence {
+  save(record: MemoryRecord): Promise<void>;
   search(query: string, limit: number): Promise<MemoryRecord[]>;
 }
 
@@ -15,6 +15,12 @@ export class MemoryManager {
   
   // Active task context (working memory)
   private workingMemory: Map<string, MemoryRecord[]> = new Map();
+  
+  private persistence?: IMemoryPersistence;
+
+  setPersistence(persistence: IMemoryPersistence) {
+    this.persistence = persistence;
+  }
 
   async saveSession(sessionId: string, content: any, metadata: Record<string, any> = {}) {
     const record: MemoryRecord = {
@@ -59,8 +65,15 @@ export class MemoryManager {
   }
 
   async persistToLongTerm(sessionId: string) {
+    if (!this.persistence) {
+      this.logger.warn('No persistence layer defined for long-term memory');
+      return;
+    }
     this.logger.log(`Persisting session ${sessionId} to long-term memory...`);
-    // Placeholder for Prisma persistence
+    const records = await this.getSessionContext(sessionId);
+    for (const record of records) {
+        await this.persistence.save(record);
+    }
   }
 
   async clearWorkingContext(taskId: string) {

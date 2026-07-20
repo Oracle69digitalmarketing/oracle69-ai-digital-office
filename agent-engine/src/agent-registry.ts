@@ -43,6 +43,14 @@ export class AgentRegistry implements OnModuleDestroy {
     return this.agents.get(id)?.metadata.healthStatus;
   }
 
+  updateAgentStatus(id: string, status: AgentStatus) {
+    const agent = this.agents.get(id);
+    if (agent) {
+      agent.updateStatus(status);
+      this.logger.log(`Agent ${id} status updated to ${status}`);
+    }
+  }
+
   getAllAgents(): BaseAgent[] {
     return Array.from(this.agents.values());
   }

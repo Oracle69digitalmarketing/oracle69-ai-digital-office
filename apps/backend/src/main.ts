@@ -11,6 +11,7 @@ async function bootstrap() {
   app.setGlobalPrefix("api");
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.enableCors();
   app.use(helmet());
   app.use(
     rateLimit({

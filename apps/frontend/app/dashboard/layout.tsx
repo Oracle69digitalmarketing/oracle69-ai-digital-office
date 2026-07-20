@@ -1,4 +1,10 @@
-import ProtectedLayout from "@/components/layout/protected-layout";
+"use client";
+
+import dynamic from 'next/dynamic';
+
+const ProtectedLayout = dynamic(() => import("@/components/layout/protected-layout"), {
+  ssr: false,
+});
 
 export default function DashboardLayout({
   children,
