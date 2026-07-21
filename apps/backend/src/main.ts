@@ -11,7 +11,13 @@ async function bootstrap() {
   app.setGlobalPrefix("api");
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      "https://oracle69-ai-digital-office-frontend.onrender.com",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  });
   app.use(helmet());
   app.use(
     rateLimit({
