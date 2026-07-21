@@ -49,24 +49,24 @@ export class AuthService {
   }
 
   async register(data: any) {
-    console.log("AuthService.register: Starting registration for email:", data.email);
+    console.log("STEP 1: validating input");
+    console.log("AuthService.register: Starting registration for data:", JSON.stringify(data));
 
-    const existingUser = await this.usersService.findOne(data.email);
-    console.log(
-      "AuthService.register: existingUser check result:",
-      existingUser ? "User exists" : "User not found",
-    );
-
-    if (existingUser) {
-      throw new ConflictException("User already exists");
-    }
-
-    console.log("AuthService.register: Hashing password...");
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    console.log("AuthService.register: Password hashed.");
-
-    console.log("AuthService.register: Creating user in DB...");
     try {
+      console.log("STEP 2: checking existing user");
+      const existingUser = await this.usersService.findOne(data.email);
+      console.log("STEP 3: existing user check result:", existingUser ? "User exists" : "User not found");
+
+      if (existingUser) {
+        throw new ConflictException("User already exists");
+      }
+
+      console.log("STEP 4: hashing password");
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      console.log("STEP 5: password hashed");
+
+      console.log("STEP 6: creating organization (via connectOrCreate)");
+      console.log("STEP 7: creating user");
       const user = await this.usersService.create({
         email: data.email,
         password: hashedPassword,
@@ -79,13 +79,17 @@ export class AuthService {
           },
         },
       });
-      console.log("AuthService.register: User created successfully:", user.id);
+      console.log("STEP 8: user created successfully:", user.id);
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _password, ...result } = user;
+      
+      console.log("STEP 10: registration complete");
       return result;
-    } catch (error) {
-      console.error("AuthService.register: Error during user creation:", error);
+    } catch (error: any) {
+      console.error("REGISTER ERROR");
+      console.error(error);
+      console.error(error.stack);
       throw error;
     }
   }
