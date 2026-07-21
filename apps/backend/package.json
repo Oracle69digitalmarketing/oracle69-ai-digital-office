@@ -10,7 +10,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "npx prisma generate --schema=../../database/schema.prisma && npx prisma migrate deploy --schema=../../database/schema.prisma && node dist/main",
+    "start:prod": "npx prisma generate --schema=../../database/schema.prisma && npx prisma db push --schema=../../database/schema.prisma && node dist/main",
     "prisma:generate": "npx prisma generate --schema=../../database/schema.prisma",
     "prisma:deploy": "npx prisma migrate deploy --schema=../../database/schema.prisma",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
