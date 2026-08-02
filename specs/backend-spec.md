@@ -1,10 +1,10 @@
 # Backend Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,13 +14,26 @@ Category: Core Engineering Specification
 
 The Backend is the operational core of Oracle69 AI Digital Office.
 
-It provides APIs, authentication, workflow orchestration, AI agent management, memory services, database access, integrations, notifications, and background processing.
-
-The backend coordinates all business logic while remaining modular, scalable, secure, and observable.
+As the **Operate** engine of the Oracle69 Enterprise AI Platform, it provides APIs, workflow orchestration, AI agent management, and high-performance execution of business processes via `packages/platform-contracts`.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+### [Digital Office Only] - Core Ownership
+- **Execution Runtime:** Node.js/TypeScript environment for running the Agent Engine and Execution Engine.
+- **Service Layer (Operate):** Business logic for departmental operations (Finance, HR, etc.).
+- **Local Persistence:** Management of operational records and transient execution state.
+- **Workflow Orchestration:** Managing the state machine of active business processes.
+
+### [Platform Reserved: Sibling Products]
+- **Tenant Provisioning Engine:** Global infrastructure and project instantiation (Launch/Build).
+- **Global Event Bus:** Cross-product message routing and enterprise-wide eventing.
+- **Big Data / Data Lakehouse:** Long-term storage for enterprise-wide strategic analysis (Decide).
+
+---
+
+# 3. Objectives
 
 The backend shall:
 

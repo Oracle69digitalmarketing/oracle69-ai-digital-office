@@ -1,0 +1,17 @@
+{
+  "name": "@oracle69/platform-contracts",
+  "version": "1.0.0",
+  "description": "Versioned platform contracts for Oracle69 Enterprise AI Platform. NOTE: This package requires a major version bump on any breaking type change.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

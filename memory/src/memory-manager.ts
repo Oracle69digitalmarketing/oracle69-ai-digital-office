@@ -6,6 +6,16 @@ export interface IMemoryPersistence {
   search(query: string, limit: number): Promise<MemoryRecord[]>;
 }
 
+export interface MemoryConfig {
+  longTermPersistenceEnabled: boolean;
+}
+
+export interface VectorMemoryAdapter {
+  embed(text: string): Promise<number[]>;
+  upsert(id: string, vector: number[], metadata: any): Promise<void>;
+  similaritySearch(vector: number[], limit: number): Promise<any[]>;
+}
+
 @Injectable()
 export class MemoryManager {
   private readonly logger = new Logger(MemoryManager.name);
@@ -17,6 +27,8 @@ export class MemoryManager {
   private workingMemory: Map<string, MemoryRecord[]> = new Map();
   
   private persistence?: IMemoryPersistence;
+
+  constructor(@Optional() private readonly config?: MemoryConfig) {}
 
   setPersistence(persistence: IMemoryPersistence) {
     this.persistence = persistence;
@@ -65,6 +77,11 @@ export class MemoryManager {
   }
 
   async persistToLongTerm(sessionId: string) {
+    if (!this.config?.longTermPersistenceEnabled) {
+      this.logger.warn('Long-term memory persistence is disabled by configuration');
+      return;
+    }
+
     if (!this.persistence) {
       this.logger.warn('No persistence layer defined for long-term memory');
       return;

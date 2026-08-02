@@ -1,10 +1,10 @@
 # Deployment Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,11 +14,25 @@ Category: Core Engineering Specification
 
 The Deployment Architecture defines how Oracle69 AI Digital Office is built, tested, deployed, monitored, scaled, and maintained across development, staging, and production environments.
 
-The deployment process prioritizes automation, reliability, security, and minimal downtime.
+As the **Operate** component of the Oracle69 Enterprise AI Platform, Digital Office focuses on the deployment of execution environments, agent runtimes, and local service clusters, while relying on the platform's global infrastructure services for initial provisioning.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+### [Digital Office Only] - Core Ownership
+- **Operational Clusters:** Deploying and scaling the backend and frontend services for active workspaces.
+- **Agent Runtime Environments:** Containerized execution environments for AI employees.
+- **Local Environment Config:** Managing secrets and settings for operational execution.
+
+### [Platform Reserved: Sibling Products]
+- **Infrastructure Bootstrap:** Initial provisioning of cloud resources (Launch/Build).
+- **Global Network Mesh:** Enterprise-wide networking and inter-product security.
+- **Strategic Deployment Orchestration:** High-level release management across the full platform suite.
+
+---
+
+# 3. Objectives
 
 The deployment platform shall:
 

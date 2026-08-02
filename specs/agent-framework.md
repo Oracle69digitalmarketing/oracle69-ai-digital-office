@@ -1,10 +1,10 @@
 # Agent Framework Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,13 +14,30 @@ Category: Core Engineering Specification
 
 The Agent Framework defines the architecture, lifecycle, behavior, communication protocol, permissions, and execution model for every AI employee inside Oracle69 AI Digital Office.
 
-Every AI employee must follow this specification.
-
-No custom behavior may violate this framework.
+As the **Operate** product in the Oracle69 Enterprise AI Platform, Digital Office provides the runtime environment and execution logic for business workflows.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+Oracle69 AI Digital Office operates within a five-product ecosystem. The following boundaries define its scope:
+
+### [Digital Office Only] - Core Ownership
+- **Agent Framework (Operate):** Runtime lifecycle management of AI employees.
+- **Execution Engine:** Operational workflow and task execution logic.
+- **Operational Memory:** Short-term and mid-term context management for active tasks.
+- **Multi-tenancy (Operate):** Isolation of workspace resources and agent permissions.
+- **Departmental Execution:** Day-to-day operations for Finance, Marketing, Sales, etc.
+
+### [Platform Reserved: Sibling Products]
+- **Discover (Architect):** Strategic discovery, business case generation, and organizational mapping.
+- **Build (Launch):** Initial workspace/tenant provisioning and infrastructure bootstrap.
+- **Optimize (Growth):** Advanced market growth analysis and cross-product marketing optimization.
+- **Decide (Executive):** High-level board reporting and cross-organizational strategic decision support.
+
+---
+
+# 3. Objectives
 
 The framework shall:
 

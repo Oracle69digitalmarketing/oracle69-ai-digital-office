@@ -16,7 +16,9 @@ Last Updated: July 2026
 
 # 1. Executive Summary
 
-Oracle69 AI Digital Office is an AI-native enterprise operating system that enables organizations to operate with intelligent digital employees instead of disconnected software tools.
+Oracle69 AI Digital Office is the **"Operate"** product within the **Oracle69 Enterprise AI Platform**. It is an AI-native enterprise operating system that enables organizations to operate with intelligent digital employees instead of disconnected software tools.
+
+Digital Office serves as the operational core, sitting between the upstream "Discover" (Business Architect) and "Build" (Business Launch) products, and downstream "Optimize" (Growth Intelligence) and "Decide" (Executive Intelligence) products. For the integrated five-product vision, refer to `docs/ORACLE69_AI_DIGITAL_OFFICE_SPEC.md`.
 
 The business model combines Software-as-a-Service (SaaS), AI usage, professional services, enterprise licensing, and industry-specific solutions to create multiple recurring revenue streams.
 

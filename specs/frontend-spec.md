@@ -12,13 +12,28 @@ Category: Core Engineering Specification
 
 # 1. Executive Overview
 
-The Frontend is the primary user interface of Oracle69 AI Digital Office.
+The Frontend is the primary user interface of Oracle69 AI Digital Office, the **Operate** layer of the Oracle69 Enterprise AI Platform.
 
 It enables users to communicate with AI employees, manage projects, monitor workflows, access organizational knowledge, and oversee operations through a modern, responsive, AI-first web application.
 
 ---
 
-# 2. Objectives
+# 2. Ownership Boundaries
+
+### [Digital Office Only: Operate]
+- **Operational UI:** Dashboards, AI Office (Agent interactions), Project/Task Management, Workflow monitoring.
+- **Organizational Interface:** HR, Finance, Operations, Sales, Marketing department views for Digital Office agents.
+- **Operational Memory:** Interface for searching and viewing session/long-term memory records.
+
+### [Platform Reserved: Sibling Products]
+- **Discover (Architect):** Strategic planning tools, high-level business case generation UIs.
+- **Build (Launch):** Initial tenant provisioning, infrastructure deployment status UIs.
+- **Optimize (Growth):** Advanced market growth dashboards, marketing optimization UIs (beyond execution oversight).
+- **Decide (Executive):** Board-level strategic reporting, cross-organization comparison dashboards.
+
+---
+
+# 3. Objectives
 
 The frontend shall:
 

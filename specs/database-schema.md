@@ -1,10 +1,10 @@
 # Database Schema Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,13 +14,53 @@ Category: Core Engineering Specification
 
 The Database Schema defines the persistent data architecture of Oracle69 AI Digital Office.
 
-The system uses PostgreSQL (Supabase) as the primary relational database while integrating vector storage for semantic search and Retrieval-Augmented Generation (RAG).
-
-The schema is designed to support enterprise-scale multi-agent workflows, organizational memory, client management, project delivery, and operational analytics.
+As the **Operate** component of the Oracle69 Enterprise AI Platform, the schema focuses on high-performance operational records, agent registration, and workflow persistence. Strategic and global provisioning data is mastered by sibling platform products.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+### [Digital Office Only] - Core Ownership
+- **Operational Tables:** Users (Operate context), Agents, Projects, Tasks, Workflows.
+- **Agent Registry:** Managing local agent capabilities and status.
+- **Workflow Execution History:** Detailed step-by-step records of AI execution.
+- **Operational Memory:** Task-specific and department-specific memory records.
+
+### [Platform Reserved: Sibling Products]
+- **Tenant Master Records:** Global organization and subscription data (Launch/Build).
+- **Strategic Blueprint Data:** Discovered business processes and architecture (Discover/Architect).
+- **Enterprise-Wide Analytics:** Cross-product performance and ROI data (Executive/Decide).
+
+---
+
+# 3. Platform Integration Models
+
+The following models support the platform-wide `v1/platform/*` integration layer.
+
+### AgentRegistryEntry
+- **ID:** UUID
+- **AgentRef:** Reference to `Agents` table.
+- **PlatformRole:** Standard role identifier from `platform-contracts`.
+- **CapabilitySet:** JSONB of standardized platform capabilities.
+
+### WorkflowStepRecord
+- **ID:** UUID
+- **WorkflowID:** Reference to `Workflow` table.
+- **StepIndex:** Integer.
+- **ActionTaken:** String.
+- **Payload:** JSONB (Input/Output).
+- **ExecutionTime:** Float.
+
+### LongTermMemoryRecord
+- **ID:** UUID
+- **EnterpriseID:** Global platform ID.
+- **Content:** Text.
+- **VectorRef:** Reference to Vector Store.
+- **Provenance:** Reference to the agent or product that generated the memory.
+
+---
+
+# 4. Objectives
 
 The database shall:
 
@@ -530,23 +570,16 @@ Messages
 
 Create indexes for:
 
-Email
-
-Project Status
-
-Task Status
-
-Client Name
-
-Agent ID
-
-Workflow Status
-
-Conversation ID
-
-Created Date
-
-Memory Category
+- **Email:** `unique_user_email`
+- **Project Status:** `idx_project_status`
+- **Task Status:** `idx_task_status_agent` (Composite: Status, Assigned Agent)
+- **Client Name:** `idx_client_org`
+- **Agent ID:** `idx_agent_registry` (Foreign key to AgentRegistryEntry)
+- **Workflow Status:** `idx_workflow_active`
+- **Workflow Steps:** `idx_workflow_steps_order` (Composite: WorkflowID, StepIndex)
+- **Conversation ID:** `idx_conversation_ref`
+- **Memory:** `idx_memory_enterprise_id`, `idx_memory_category`
+- **Vector Search:** HNSW/IVFFlat on `embeddings`
 
 ---
 

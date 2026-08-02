@@ -1,10 +1,10 @@
 # API Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,17 +14,47 @@ Category: Core Engineering Specification
 
 The API is the communication layer between the frontend, backend, Execution Engine, AI agents, memory system, and external integrations.
 
-All application functionality is exposed through secure, versioned APIs.
-
-Base URL
-
-/api/v1
-
-All endpoints return JSON.
+As the **Operate** layer of the Oracle69 Enterprise AI Platform, Digital Office provides standardized interfaces for operational execution and platform integration.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+### [Digital Office Only] - Core Ownership
+- **Operational APIs:** All endpoints for task management, agent status, and workflow execution.
+- **Operational Memory APIs:** Searching and managing mid-term organizational memory.
+- **Integration Layer:** Maintaining the `packages/platform-contracts` implementation.
+
+### [Platform Reserved: Sibling Products]
+- **Architect (Discover) APIs:** Strategic mapping and blueprinting endpoints.
+- **Launch (Build) APIs:** Global tenant provisioning and infrastructure setup.
+- **Growth (Optimize) APIs:** Cross-product intelligence and market optimization.
+- **Executive (Decide) APIs:** Enterprise-wide decision boards and cross-silo analytics.
+
+---
+
+# 3. Platform API (v1/platform/*)
+
+Digital Office exposes a formal integration surface for sibling products and the platform core.
+
+### Provisioning
+`POST /api/v1/platform/provision`
+- **Purpose:** Initializes a new operational workspace for a tenant.
+- **Source:** Build (Launch) product.
+
+### Event Streaming
+`POST /api/v1/platform/events/subscribe`
+- **Purpose:** Allows platform services to subscribe to operational events.
+- **Events:** `task.completed`, `agent.error`, `workflow.started`.
+
+### Enterprise Memory
+`POST /api/v1/platform/memory/query`
+- **Purpose:** Provides cross-product access to enterprise memory records.
+- **Contract:** Uses standard memory query contracts from `platform-contracts`.
+
+---
+
+# 4. Objectives
 
 The API shall:
 

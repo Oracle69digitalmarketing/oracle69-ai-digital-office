@@ -1,3 +1,5 @@
+import { EventCatalog } from '@oracle69/platform-contracts';
+
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 
 export interface TaskContext {
@@ -69,7 +71,7 @@ export interface WorkflowStep {
 export interface DomainEvent<T = any> {
   eventId: string;
   timestamp: Date;
-  type: string;
+  type: EventCatalog;
   payload: T;
   source: string;
 }

@@ -1,10 +1,10 @@
 # Execution Engine Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,13 +14,26 @@ Category: Core Engineering Specification
 
 The Execution Engine is the orchestration core of Oracle69 AI Digital Office.
 
-It transforms user requests into structured execution plans by coordinating AI employees, routing tasks, retrieving organizational memory, monitoring progress, validating outputs, and delivering completed work.
-
-The Execution Engine functions as the organization's digital operating system, ensuring every task follows standardized workflows and quality controls.
+As the **Operate** engine for the Oracle69 Enterprise AI Platform, the Execution Engine is the primary runtime for business logic, responsible for transforming strategic plans into operational results through multi-agent collaboration.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+### [Digital Office Only] - Core Ownership
+- **Task Lifecycle Management:** Handling the transition of tasks from `Pending` to `Completed`.
+- **Multi-Agent Orchestration:** Managing the dependencies and handoffs between AI employees.
+- **Operational Logic:** Real-time execution of Finance, Marketing, Sales, and HR workflows.
+- **Runtime Error Recovery:** Handling execution failures and agent retries within a workflow.
+
+### [Platform Reserved: Sibling Products]
+- **Business Logic Discovery:** Identifying which workflows need to be built (Discover/Architect).
+- **Workflow Template Library:** Platform-wide repository of reusable process definitions (Launch/Build).
+- **Executive Oversight:** High-level monitoring of cross-product business health (Decide).
+
+---
+
+# 3. Objectives
 
 The Execution Engine shall:
 

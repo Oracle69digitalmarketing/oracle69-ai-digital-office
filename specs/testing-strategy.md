@@ -12,15 +12,37 @@ Category: Core Engineering Specification
 
 # 1. Executive Overview
 
-The Testing Strategy defines how Oracle69 AI Digital Office is validated throughout development, deployment, and production.
+The Testing Strategy defines how Oracle69 AI Digital Office is validated as the **Operate** layer of the Oracle69 Enterprise AI Platform.
 
-Testing ensures every feature, workflow, AI agent, API, and integration performs reliably, securely, and consistently before release.
-
-Testing is integrated into every phase of development rather than being treated as a final step.
+Testing ensures every feature, workflow, AI agent, API, and integration performs reliably, securely, and consistently before release, while also validating the integration contracts with sibling platform products.
 
 ---
 
-# 2. Objectives
+# 2. Ownership Boundaries
+
+### [Digital Office Only: Operate]
+- **Operational Testing:** Validation of all Digital Office agents, workflows, and memory systems.
+- **Internal Contract Testing:** Verification of inter-package communication within the Digital Office monorepo.
+- **UI/UX Testing:** Testing of the primary Operate dashboard and agent interaction interfaces.
+
+### [Platform Reserved: Sibling Products]
+- **Discover (Architect):** Testing of market discovery algorithms and strategic generator logic.
+- **Build (Launch):** Validation of infrastructure provisioning scripts and environment bootstrap logic.
+- **Optimize (Growth):** Testing of growth prediction engines and high-level marketing optimization logic.
+- **Decide (Executive):** Validation of cross-organization reporting logic and executive strategic dashboards.
+
+---
+
+# 3. Platform Integration Testing
+
+Oracle69 AI Digital Office must validate the formal integration layer:
+- **Contract Verification:** Ensuring the `@oracle69/platform-contracts` package remains compatible with sibling product requirements.
+- **Integration API Testing:** Validating `/api/v1/platform/*` endpoints (Provisioning, Events, Memory Query).
+- **Event Streaming Validation:** Ensuring durable outbound event publishing to Redis Streams matches the expected schema.
+
+---
+
+# 4. Objectives
 
 The testing strategy shall:
 

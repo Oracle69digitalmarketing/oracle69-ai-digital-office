@@ -1,16 +1,37 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { BaseAgent } from './base-agent.js';
 import { AgentMetadata, AgentStatus } from '@oracle69/shared';
+
+export interface AgentRegistryStore {
+  register(agentId: string, role: string, healthStatus: AgentStatus, organizationId?: string): Promise<void>;
+  updateStatus(agentId: string, healthStatus: AgentStatus): Promise<void>;
+}
 
 @Injectable()
 export class AgentRegistry implements OnModuleDestroy {
   private readonly logger = new Logger(AgentRegistry.name);
   private agents: Map<string, BaseAgent> = new Map();
 
-  async register(agent: BaseAgent) {
+  constructor(@Optional() private readonly store?: AgentRegistryStore) {}
+
+  async register(agent: BaseAgent, organizationId?: string) {
     await agent.onInitialize();
     await agent.onActivate();
     this.agents.set(agent.metadata.id, agent);
+
+    if (this.store) {
+      try {
+        await this.store.register(
+          agent.metadata.id,
+          agent.metadata.role,
+          agent.metadata.healthStatus,
+          organizationId
+        );
+      } catch (error) {
+        this.logger.error(`Failed to persist agent ${agent.metadata.id} to registry store`, error);
+      }
+    }
+
     this.logger.log(`Registered agent: ${agent.metadata.name} (${agent.metadata.role}) v${agent.metadata.version}`);
   }
 
@@ -43,10 +64,19 @@ export class AgentRegistry implements OnModuleDestroy {
     return this.agents.get(id)?.metadata.healthStatus;
   }
 
-  updateAgentStatus(id: string, status: AgentStatus) {
+  async updateAgentStatus(id: string, status: AgentStatus) {
     const agent = this.agents.get(id);
     if (agent) {
       agent.updateStatus(status);
+
+      if (this.store) {
+        try {
+          await this.store.updateStatus(id, status);
+        } catch (error) {
+          this.logger.error(`Failed to update agent ${id} status in registry store`, error);
+        }
+      }
+
       this.logger.log(`Agent ${id} status updated to ${status}`);
     }
   }

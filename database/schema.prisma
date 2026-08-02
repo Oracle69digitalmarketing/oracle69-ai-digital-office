@@ -22,6 +22,11 @@ model Organization {
   projects     Project[]
   clients      Client[]
   settings     Setting[]
+  agentRegistryEntries AgentRegistryEntry[]
+  workflowStepRecords  WorkflowStepRecord[]
+  longTermMemoryRecords LongTermMemoryRecord[]
+  auditLogs            AuditLog[]
+  conversations        Conversation[]
 }
 
 model User {
@@ -142,16 +147,21 @@ model Client {
 }
 
 model Conversation {
-  id        String    @id @default(uuid())
-  status    String    @default("open")
-  summary   String?
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  projectId String?
-  project   Project?  @relation(fields: [projectId], references: [id])
-  createdAt DateTime  @default(now())
-  closedAt  DateTime?
-  messages  Message[]
+  id             String       @id @default(uuid())
+  status         String       @default("open")
+  summary        String?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  closedAt       DateTime?
+  messages       Message[]
+
+  @@index([organizationId, updatedAt])
 }
 
 model Message {
@@ -164,6 +174,8 @@ model Message {
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
 }
 
 model Memory {
@@ -207,16 +219,20 @@ model Notification {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
-  action    String
-  resource  String
-  status    String
-  ipAddress String?
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  agentId   String?
-  agent     Agent?   @relation(fields: [agentId], references: [id])
-  createdAt DateTime @default(now())
+  id             String       @id @default(uuid())
+  action         String
+  resource       String
+  status         String
+  ipAddress      String?
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id])
+  agentId        String?
+  agent          Agent?       @relation(fields: [agentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
 }
 
 model Setting {
@@ -230,5 +246,46 @@ model Setting {
   updatedAt      DateTime      @updatedAt
 
   @@unique([key, userId, organizationId])
+}
+
+model AgentRegistryEntry {
+  id               String       @id @default(uuid())
+  agentId          String
+  role             String
+  healthStatus     String
+  lastHeartbeatAt  DateTime
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model WorkflowStepRecord {
+  id               String       @id @default(uuid())
+  stepId           String
+  workflowId       String
+  taskId           String
+  agentId          String
+  status           String
+  startTime        DateTime
+  endTime          DateTime?
+  result           Json?
+  error            String?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model LongTermMemoryRecord {
+  id               String       @id @default(uuid())
+  type             String
+  sessionId        String
+  content          String
+  metadata         Json?
+  timestamp        DateTime     @default(now())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
 }
 

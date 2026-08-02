@@ -12,15 +12,35 @@ Category: Core Engineering Specification
 
 # 1. Executive Overview
 
-The Memory System provides persistent organizational intelligence for Oracle69 AI Digital Office.
+The Memory System provides persistent organizational intelligence for Oracle69 AI Digital Office, the **Operate** layer of the Oracle69 Enterprise AI Platform.
 
 Its purpose is to ensure every AI employee can retrieve relevant information, learn from previous work, maintain continuity, and make informed decisions without repeatedly asking the user for the same information.
 
-The Memory System serves as the institutional knowledge base of the Digital Office.
+---
+
+# 2. Ownership Boundaries
+
+### [Digital Office Only: Operate]
+- **Operational Memory:** Session memory, working memory, and long-term storage of project/task execution records.
+- **Durable Persistence:** Implementation of `IMemoryPersistence` via `PrismaMemoryPersistence` for `LongTermMemoryRecord`.
+- **Retrieval:** Search and context building for Digital Office agents.
+
+### [Platform Reserved: Sibling Products]
+- **Discover (Architect):** Market research data, strategic discovery session logs.
+- **Build (Launch):** Infrastructure configuration history, initial provisioning logs.
+- **Optimize (Growth):** High-level marketing performance trends, competitive intelligence archives.
+- **Decide (Executive):** Strategic board decisions, multi-organization performance summaries.
 
 ---
 
-# 2. Objectives
+# 3. Platform Integration Seams
+
+Digital Office provides a read-only memory query API for platform sibling products:
+- **`POST /api/v1/platform/memory/query`**: Allows Growth Intelligence or Executive Intelligence to perform tenant-scoped lookups of operational memory.
+
+---
+
+# 4. Objectives
 
 The Memory System shall:
 
@@ -100,11 +120,15 @@ AI Employee
 
 # 5. Memory Types
 
-Short-Term Memory
+Short-Term Memory (In-process Map)
 
 Session Memory
 
-Conversation Memory
+Working Memory
+
+Long-Term Persistence (Durable Storage)
+
+LongTermMemoryRecord (Prisma/PostgreSQL)
 
 Project Memory
 

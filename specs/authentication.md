@@ -1,10 +1,10 @@
 # Authentication & Authorization Specification
 
-Version: 2.0
+Version: 2.1
 
 Status: Approved
 
-Owner: Oracle69 AI Digital Office
+Owner: Oracle69 AI Digital Office (Operate)
 
 Category: Core Engineering Specification
 
@@ -14,11 +14,25 @@ Category: Core Engineering Specification
 
 The Authentication and Authorization System secures access to Oracle69 AI Digital Office by verifying user identity and controlling access to resources based on roles and permissions.
 
-The system must provide enterprise-grade security while maintaining a simple user experience.
+As the **Operate** environment, Digital Office handles local session management and role-based access for operational tasks, while deferring global identity and tenant master authentication to the platform's core identity services.
 
 ---
 
-# 2. Objectives
+# 2. Capability Ownership Boundaries
+
+### [Digital Office Only] - Core Ownership
+- **Operational RBAC:** Defining and enforcing roles within the Digital Office workspace (e.g., Department Head, Agent Supervisor).
+- **Session Management:** Local JWT issuance and validation for API access within the `v1/*` surface.
+- **Agent Identity:** Managing the cryptographic identity and authorization of AI Employees.
+
+### [Platform Reserved: Sibling Products]
+- **Global Identity (IAM):** Master user records and cross-product SSO (Launch/Build).
+- **Tenant Isolation Policy:** Platform-wide security boundaries between different organizations.
+- **Strategic Access Governance:** High-level permissioning for executive dashboards (Decide).
+
+---
+
+# 3. Objectives
 
 The Authentication System shall:
 

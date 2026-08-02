@@ -6,3 +6,5 @@ export * from './agent-engine.module.js';
 export * from './agents/chief-of-staff-agent.js';
 export * from './agents/project-manager-agent.js';
 export * from './agents/department-agent.js';
+export * from './department.js';
+export * from './department-registration.service.js';

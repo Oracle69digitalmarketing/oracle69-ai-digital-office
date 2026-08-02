@@ -12,17 +12,28 @@ Category: Core Engineering Specification
 
 # 1. Executive Overview
 
-The Model Routing System determines which AI model executes each task within Oracle69 AI Digital Office.
+The Model Routing System determines which AI model executes each task within Oracle69 AI Digital Office, the **Operate** layer of the Oracle69 Enterprise AI Platform.
 
-Its objective is to maximize quality while minimizing operational cost.
-
-The routing engine evaluates every incoming task and assigns the most appropriate model based on complexity, reasoning requirements, latency, and estimated cost.
-
-Model selection is automatic and transparent to the user.
+Its objective is to maximize quality while minimizing operational cost across all digital office operations.
 
 ---
 
-# 2. Objectives
+# 2. Ownership Boundaries
+
+### [Digital Office Only: Operate]
+- **Operational Routing:** Selection of models for Digital Office agents (Receptionist, CoS, PM, Departments) based on task complexity.
+- **Dynamic Tiering:** Routing between Nano, Mini, and GPT-5.6 tiers for internal organizational tasks.
+- **Local Optimization:** Cost and quality monitoring for Digital Office execution.
+
+### [Platform Reserved: Sibling Products]
+- **Discover (Architect):** Specialized models for strategic business discovery and high-level architectural research.
+- **Build (Launch):** Models optimized for infrastructure code generation and initial workspace provisioning.
+- **Optimize (Growth):** Marketing growth predictive models and advanced sales trend analysis.
+- **Decide (Executive):** Executive-level reasoning models for board-level strategic decisions and cross-org analytics.
+
+---
+
+# 3. Objectives
 
 The routing engine shall:
 

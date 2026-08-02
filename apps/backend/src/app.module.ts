@@ -15,7 +15,7 @@ import { TasksModule } from "./tasks/tasks.module.js";
 import { ActivityModule } from "./activity/activity.module.js";
 import { AgentsModule } from "./agents/agents.module.js";
 import { WorkflowsModule } from "./workflows/workflows.module.js";
-import { CoreAgentsRegistrationService } from "./common/services/core-agents-registration.service.js";
+import { PlatformModule } from "./platform/platform.module.js";
 
 @Module({
   imports: [
@@ -33,9 +33,10 @@ import { CoreAgentsRegistrationService } from "./common/services/core-agents-reg
     ActivityModule,
     AgentsModule,
     WorkflowsModule,
+    PlatformModule,
   ],
   controllers: [AppController, HealthController],
-  providers: [AppService, CoreAgentsRegistrationService],
+  providers: [AppService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
