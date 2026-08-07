@@ -16,6 +16,8 @@ import { OutlookConnector } from './outlook.connector.js';
 import { TeamsConnector } from './teams.connector.js';
 import { ZoomConnector } from './zoom.connector.js';
 import { NotionConnector } from './notion.connector.js';
+import { JiraConnector } from './jira.connector.js';
+import { WhatsAppBusinessConnector } from './whatsapp.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -35,6 +37,8 @@ import { NotionConnector } from './notion.connector.js';
     TeamsConnector,
     ZoomConnector,
     NotionConnector,
+    JiraConnector,
+    WhatsAppBusinessConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -56,7 +60,9 @@ export class ConnectorModule implements OnModuleInit {
     private outlook: OutlookConnector,
     private teams: TeamsConnector,
     private zoom: ZoomConnector,
-    private notion: NotionConnector
+    private notion: NotionConnector,
+    private jira: JiraConnector,
+    private whatsapp: WhatsAppBusinessConnector
   ) {}
 
   onModuleInit() {
@@ -71,5 +77,7 @@ export class ConnectorModule implements OnModuleInit {
     this.registry.register(this.teams);
     this.registry.register(this.zoom);
     this.registry.register(this.notion);
+    this.registry.register(this.jira);
+    this.registry.register(this.whatsapp);
   }
 }
