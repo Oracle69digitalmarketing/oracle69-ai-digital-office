@@ -19,9 +19,10 @@ import { CommunicationModule } from './communication/communication.module.js';
 import { DepartmentModule } from './departments/department.module.js';
 import { ExecutiveModule } from './executive/executive.module.js';
 import { MissionModule } from './missions/mission.module.js';
+import { GovernanceModule } from './governance/governance.module.js';
 
 @Module({
-  imports: [EventEmitterModule.forRoot(), CommunicationModule, DepartmentModule, ExecutiveModule, MissionModule],
+  imports: [EventEmitterModule.forRoot(), CommunicationModule, DepartmentModule, ExecutiveModule, MissionModule, GovernanceModule],
   providers: [
     RuntimeManager, 
     AgentRegistry, 
@@ -54,7 +55,8 @@ import { MissionModule } from './missions/mission.module.js';
     CommunicationModule,
     DepartmentModule,
     ExecutiveModule,
-    MissionModule
+    MissionModule,
+    GovernanceModule
   ],
 })
 export class RuntimeModule {}
