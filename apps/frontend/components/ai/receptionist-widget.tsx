@@ -1,25 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, X, Send, Minimize2, Maximize2 } from "lucide-react";
+import { MessageSquare, X, Send, Minimize2, Maximize2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/api-client";
 
 export function ReceptionistWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Welcome to Oracle69! I am your AI Receptionist. How can I help you today?" }
   ]);
   const [input, setInput] = useState("");
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { role: "user", content: input }]);
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    
+    const userMessage = input;
+    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setInput("");
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: "assistant", content: "I've received your request. I am routing this to the Chief of Staff for planning." }]);
-    }, 1000);
+    setIsLoading(true);
+
+    try {
+      const data = await apiClient<{ response: string }>("/receptionist/chat", {
+        method: "POST",
+        body: JSON.stringify({ message: userMessage }),
+      });
+      
+      setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+    } catch (error) {
+      console.error("AI Receptionist Error:", error);
+      setMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: "I'm sorry, I'm having trouble connecting to the backend. Please check your connection or try again later." 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) {
@@ -88,10 +106,11 @@ export function ReceptionistWidget() {
               />
               <button
                 onClick={handleSend}
+                disabled={isLoading}
                 aria-label="Send message"
-                className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
           </div>

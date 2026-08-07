@@ -28,7 +28,7 @@ export class ReceptionistService {
     const contextStr = await this.conversationManager.buildContext(sessionId);
 
     // 2. Discover Chief of Staff
-    const cosAgents = this.registry.findAgentsByRole("Chief of Staff");
+    const cosAgents = this.registry.findAgentsByRole("chief-of-staff");
     if (cosAgents.length === 0) {
       this.logger.error("Chief of Staff agent not found in registry");
       throw new Error("System misconfiguration: Chief of Staff not found");
