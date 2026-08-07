@@ -46,6 +46,21 @@ export enum RuntimeEventType {
   TOOL_CONNECTOR_SELECTED = 'tool.connector.selected',
   TOOL_CREDENTIALS_LOADED = 'tool.credentials.loaded',
 
+  // Mission Events
+  MISSION_CREATED = 'mission.created',
+  MISSION_APPROVED = 'mission.approved',
+  MISSION_STARTED = 'mission.started',
+  MISSION_PAUSED = 'mission.paused',
+  MISSION_RESUMED = 'mission.resumed',
+  MISSION_COMPLETED = 'mission.completed',
+  MISSION_CANCELLED = 'mission.cancelled',
+  MISSION_FAILED = 'mission.failed',
+  MISSION_RETRY_STARTED = 'mission.retry.started',
+  MISSION_RETRY_COMPLETED = 'mission.retry.completed',
+  MISSION_RECOVERED = 'mission.recovered',
+  CHECKPOINT_CREATED = 'checkpoint.created',
+  CHECKPOINT_RESTORED = 'checkpoint.restored',
+  
   // Memory & Observability Events
   MEMORY_CREATED = 'memory.created',
   MEMORY_UPDATED = 'memory.updated',

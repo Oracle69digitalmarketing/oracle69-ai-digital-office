@@ -18,9 +18,10 @@ import { AuditLogger, MetricsCollector, HealthMonitor } from './observability/ob
 import { CommunicationModule } from './communication/communication.module.js';
 import { DepartmentModule } from './departments/department.module.js';
 import { ExecutiveModule } from './executive/executive.module.js';
+import { MissionModule } from './missions/mission.module.js';
 
 @Module({
-  imports: [EventEmitterModule.forRoot(), CommunicationModule, DepartmentModule, ExecutiveModule],
+  imports: [EventEmitterModule.forRoot(), CommunicationModule, DepartmentModule, ExecutiveModule, MissionModule],
   providers: [
     RuntimeManager, 
     AgentRegistry, 
@@ -52,7 +53,8 @@ import { ExecutiveModule } from './executive/executive.module.js';
     HealthMonitor,
     CommunicationModule,
     DepartmentModule,
-    ExecutiveModule
+    ExecutiveModule,
+    MissionModule
   ],
 })
 export class RuntimeModule {}
