@@ -15,6 +15,7 @@ import { SalesforceConnector } from './salesforce.connector.js';
 import { OutlookConnector } from './outlook.connector.js';
 import { TeamsConnector } from './teams.connector.js';
 import { ZoomConnector } from './zoom.connector.js';
+import { NotionConnector } from './notion.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -33,6 +34,7 @@ import { ZoomConnector } from './zoom.connector.js';
     OutlookConnector,
     TeamsConnector,
     ZoomConnector,
+    NotionConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -53,7 +55,8 @@ export class ConnectorModule implements OnModuleInit {
     private salesforce: SalesforceConnector,
     private outlook: OutlookConnector,
     private teams: TeamsConnector,
-    private zoom: ZoomConnector
+    private zoom: ZoomConnector,
+    private notion: NotionConnector
   ) {}
 
   onModuleInit() {
@@ -67,5 +70,6 @@ export class ConnectorModule implements OnModuleInit {
     this.registry.register(this.outlook);
     this.registry.register(this.teams);
     this.registry.register(this.zoom);
+    this.registry.register(this.notion);
   }
 }
