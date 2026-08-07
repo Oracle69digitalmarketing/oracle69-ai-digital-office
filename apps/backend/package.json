@@ -32,6 +32,7 @@
     "@oracle69/agent-engine": "workspace:*",
     "@oracle69/execution-engine": "workspace:*",
     "@oracle69/memory": "workspace:*",
+    "@oracle69/platform-contracts": "workspace:^",
     "@oracle69/shared": "workspace:*",
     "@prisma/client": "^5.0.0",
     "@types/bcrypt": "^6.0.0",

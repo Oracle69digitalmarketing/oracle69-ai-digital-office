@@ -47,9 +47,9 @@ export class ReceptionistService {
 
     // 4. Publish event
     this.eventBus.publish({
-      type: "TaskStarted",
+      type: "task.started",
       source: "ReceptionistService",
-      payload: { taskId: task.taskId, sessionId },
+      payload: { taskId: task.taskId, sessionId, organizationId: 'system' },
     });
 
     // 5. Execute via Execution Engine
@@ -59,9 +59,9 @@ export class ReceptionistService {
       await this.memory.saveSession(sessionId, { role: "assistant", content: result });
 
       this.eventBus.publish({
-        type: "TaskCompleted",
+        type: "task.completed",
         source: "ReceptionistService",
-        payload: { taskId: task.taskId, result },
+        payload: { taskId: task.taskId, result, organizationId: 'system' },
       });
 
       return {
@@ -72,9 +72,9 @@ export class ReceptionistService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.eventBus.publish({
-        type: "TaskFailed",
+        type: "task.failed",
         source: "ReceptionistService",
-        payload: { taskId: task.taskId, error: errorMessage },
+        payload: { taskId: task.taskId, error: errorMessage, organizationId: 'system' },
       });
       throw error;
     }

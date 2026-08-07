@@ -42,7 +42,7 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
 
     return {
       workflowId,
-      steps: records.map((r) => ({
+      steps: records.map((r: any) => ({
         stepId: r.stepId,
         taskId: r.taskId,
         agentId: r.agentId,

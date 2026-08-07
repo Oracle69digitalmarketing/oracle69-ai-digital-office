@@ -203,8 +203,8 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
     expect(result.response).toContain("Marketing copy for hospital proposal");
 
     // Verify Events
-    expect(events.some((e) => e.type === "TaskStarted")).toBeTruthy();
-    expect(events.some((e) => e.type === "TaskCompleted")).toBeTruthy();
+    expect(events.some((e) => e.type === "task.started")).toBeTruthy();
+    expect(events.some((e) => e.type === "task.completed")).toBeTruthy();
 
     // Verify Memory
     const sessionContext = await memory.getSessionContext("session-1");

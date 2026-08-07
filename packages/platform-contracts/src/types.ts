@@ -2,6 +2,10 @@ export type EventCatalog =
   | 'task.delegated'
   | 'task.escalated'
   | 'task.completed'
+  | 'task.created'
+  | 'task.started'
+  | 'task.failed'
+  | 'task.status_changed'
   | 'department.handoff'
   | 'agent.registered'
   | 'agent.status_changed';

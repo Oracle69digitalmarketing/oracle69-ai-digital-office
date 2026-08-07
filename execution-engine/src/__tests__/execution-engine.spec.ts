@@ -16,7 +16,10 @@ describe('ExecutionEngine', () => {
   };
 
   beforeEach(() => {
-    engine = new ExecutionEngine();
+    const mockEventBus = {
+      publish: jest.fn(),
+    };
+    engine = new ExecutionEngine(mockEventBus as any);
     mockAgent = {
       metadata: { id: 'agent-1', name: 'Agent 1' },
       onTaskReceived: jest.fn(),

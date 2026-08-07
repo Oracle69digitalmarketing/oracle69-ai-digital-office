@@ -1,4 +1,5 @@
 export * from './model-router.js';
+export * from './gemini-model-provider.js';
 export * from './prompt-loader.js';
 export * from './base-agent.js';
 export * from './agent-registry.js';

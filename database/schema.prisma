@@ -22,6 +22,7 @@ model Organization {
   projects     Project[]
   clients      Client[]
   settings     Setting[]
+  agents       Agent[]
   agentRegistryEntries AgentRegistryEntry[]
   workflowStepRecords  WorkflowStepRecord[]
   longTermMemoryRecords LongTermMemoryRecord[]
@@ -71,6 +72,8 @@ model Agent {
   health        String      @default("healthy")
   departmentId  String
   department    Department  @relation(fields: [departmentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   tasks         Task[]
@@ -284,8 +287,10 @@ model LongTermMemoryRecord {
   content          String
   metadata         Json?
   timestamp        DateTime     @default(now())
-  organizationId   String
-  organization     Organization @relation(fields: [organizationId], references: [id])
-  createdAt        DateTime     @default(now())
-}
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  embedding      Unsupported("vector(768)")?
+  createdAt      DateTime    @default(now())
+  }
+
 

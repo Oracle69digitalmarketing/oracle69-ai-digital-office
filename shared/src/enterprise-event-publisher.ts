@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { EventBus } from './event-bus.js';
 import { DomainEvent } from './types.js';
 import { EnterpriseEvent, EventCatalog } from '@oracle69/platform-contracts';

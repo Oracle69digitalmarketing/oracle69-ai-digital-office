@@ -30,6 +30,9 @@ importers:
 
   agent-engine:
     dependencies:
+      '@google/generative-ai':
+        specifier: ^0.24.1
+        version: 0.24.1
       '@nestjs/common':
         specifier: ^10.0.0
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.1.14)(rxjs@7.8.2)
@@ -85,6 +88,9 @@ importers:
       '@oracle69/memory':
         specifier: workspace:*
         version: link:../../memory
+      '@oracle69/platform-contracts':
+        specifier: workspace:^
+        version: link:../../packages/platform-contracts
       '@oracle69/shared':
         specifier: workspace:*
         version: link:../../shared
@@ -276,9 +282,15 @@ importers:
       '@oracle69/agent-engine':
         specifier: workspace:*
         version: link:../agent-engine
+      '@oracle69/platform-contracts':
+        specifier: workspace:^
+        version: link:../packages/platform-contracts
       '@oracle69/shared':
         specifier: workspace:*
         version: link:../shared
+      '@prisma/client':
+        specifier: ^5.0.0
+        version: 5.22.0(prisma@5.22.0)
     devDependencies:
       '@types/jest':
         specifier: ^29.5.2
@@ -304,7 +316,16 @@ importers:
       '@oracle69/shared':
         specifier: workspace:*
         version: link:../shared
+      '@prisma/client':
+        specifier: ^5.0.0
+        version: 5.22.0(prisma@5.22.0)
     devDependencies:
+      '@jest/globals':
+        specifier: ^30.4.1
+        version: 30.4.1
+      '@types/jest':
+        specifier: ^29.5.2
+        version: 29.5.14
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.43
@@ -313,6 +334,12 @@ importers:
         version: 5.9.3
 
   packages/config: {}
+
+  packages/platform-contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
 
   packages/types:
     devDependencies:
@@ -341,6 +368,12 @@ importers:
       '@nestjs/common':
         specifier: ^10.0.0
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@oracle69/platform-contracts':
+        specifier: workspace:*
+        version: link:../packages/platform-contracts
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.11.1
       rxjs:
         specifier: ^7.8.0
         version: 7.8.2
@@ -581,6 +614,10 @@ packages:
   '@eslint/js@8.57.1':
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@google/generative-ai@0.24.1':
+    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
+    engines: {node: '>=18.0.0'}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -4947,6 +4984,8 @@ snapshots:
       - supports-color
 
   '@eslint/js@8.57.1': {}
+
+  '@google/generative-ai@0.24.1': {}
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:

@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
-import { 
+import type { 
   ProvisioningRequest, 
   ProvisioningResult, 
   MemoryQueryRequest, 

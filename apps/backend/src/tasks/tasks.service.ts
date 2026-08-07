@@ -41,15 +41,16 @@ export class TasksService {
     const task = await this.prisma.task.update({
       where: { id },
       data: { status },
+      include: { assignedAgent: true },
     });
 
     this.logger.log(`Task ${id} status updated to ${status}`);
 
     // Publish event for activity feed
     this.eventBus.publish({
-      type: "TaskStatusChanged",
+      type: "task.status_changed",
       source: "TasksService",
-      payload: { taskId: id, status, userId },
+      payload: { taskId: id, status, userId, organizationId: task.assignedAgent?.organizationId || 'system' },
     });
 
     // Create Audit Log
@@ -59,6 +60,7 @@ export class TasksService {
         resource: "Task",
         status: "SUCCESS",
         userId: userId,
+        organizationId: task.assignedAgent?.organizationId || 'system',
         createdAt: new Date(),
       },
     });
@@ -72,9 +74,9 @@ export class TasksService {
     });
 
     this.eventBus.publish({
-      type: "TaskCreated",
+      type: "task.created",
       source: "TasksService",
-      payload: { taskId: task.id, title: task.title },
+      payload: { taskId: task.id, title: task.title, organizationId: (data as any).organizationId || 'system' },
     });
 
     return task;

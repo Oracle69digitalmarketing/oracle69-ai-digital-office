@@ -1,7 +1,8 @@
 {
   "name": "@oracle69/memory",
   "version": "0.0.0",
-  "private": true, "type": "module",
+  "private": true,
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -9,8 +10,10 @@
     "dev": "tsc -w"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@jest/globals": "^30.4.1",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { MemoryRecord } from '@oracle69/shared';
 
 export interface IMemoryPersistence {

@@ -33,7 +33,7 @@ export class PrismaMemoryPersistence implements IMemoryPersistence {
       },
     });
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       type: r.type as any,
       sessionId: r.sessionId,
