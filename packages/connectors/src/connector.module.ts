@@ -14,6 +14,7 @@ import { HubSpotConnector } from './hubspot.connector.js';
 import { SalesforceConnector } from './salesforce.connector.js';
 import { OutlookConnector } from './outlook.connector.js';
 import { TeamsConnector } from './teams.connector.js';
+import { ZoomConnector } from './zoom.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -31,6 +32,7 @@ import { TeamsConnector } from './teams.connector.js';
     SalesforceConnector,
     OutlookConnector,
     TeamsConnector,
+    ZoomConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -50,7 +52,8 @@ export class ConnectorModule implements OnModuleInit {
     private hubspot: HubSpotConnector,
     private salesforce: SalesforceConnector,
     private outlook: OutlookConnector,
-    private teams: TeamsConnector
+    private teams: TeamsConnector,
+    private zoom: ZoomConnector
   ) {}
 
   onModuleInit() {
@@ -63,5 +66,6 @@ export class ConnectorModule implements OnModuleInit {
     this.registry.register(this.salesforce);
     this.registry.register(this.outlook);
     this.registry.register(this.teams);
+    this.registry.register(this.zoom);
   }
 }
