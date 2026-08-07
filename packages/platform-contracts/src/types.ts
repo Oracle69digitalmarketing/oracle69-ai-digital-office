@@ -8,7 +8,10 @@ export type EventCatalog =
   | 'task.status_changed'
   | 'department.handoff'
   | 'agent.registered'
-  | 'agent.status_changed';
+  | 'agent.status_changed'
+  | 'connector.action.started'
+  | 'connector.action.completed'
+  | 'connector.action.failed';
 
 export interface ProvisioningRequest {
   organizationId: string;

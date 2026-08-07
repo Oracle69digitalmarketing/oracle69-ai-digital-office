@@ -5,3 +5,4 @@ packages:
   - 'memory'
   - 'execution-engine'
   - 'shared'
+  - 'packages/connectors'
