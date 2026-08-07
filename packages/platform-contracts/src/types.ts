@@ -11,7 +11,11 @@ export type EventCatalog =
   | 'agent.status_changed'
   | 'connector.action.started'
   | 'connector.action.completed'
-  | 'connector.action.failed';
+  | 'connector.action.failed'
+  | 'workflow.step.started'
+  | 'workflow.step.completed'
+  | 'workflow.step.failed'
+  | 'audit.action.executed';
 
 export interface ProvisioningRequest {
   organizationId: string;
