@@ -8,8 +8,6 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     "paths": {
-      "@oracle69/shared": ["../../shared/src/index.ts"],
-      "@oracle69/platform-contracts": ["../../packages/platform-contracts/src/index.ts"]
     }
   },
   "include": ["src/**/*"],
