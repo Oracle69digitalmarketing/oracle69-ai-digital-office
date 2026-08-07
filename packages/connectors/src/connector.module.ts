@@ -9,6 +9,7 @@ import { GoogleDriveConnector } from './google-drive.connector.js';
 import { GoogleDocsConnector } from './google-docs.connector.js';
 import { GmailConnector } from './gmail.connector.js';
 import { GoogleCalendarConnector } from './google-calendar.connector.js';
+import { SlackConnector } from './slack.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -21,6 +22,7 @@ import { GoogleCalendarConnector } from './google-calendar.connector.js';
     GoogleDocsConnector,
     GmailConnector,
     GoogleCalendarConnector,
+    SlackConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -35,7 +37,8 @@ export class ConnectorModule implements OnModuleInit {
     private drive: GoogleDriveConnector,
     private docs: GoogleDocsConnector,
     private gmail: GmailConnector,
-    private calendar: GoogleCalendarConnector
+    private calendar: GoogleCalendarConnector,
+    private slack: SlackConnector
   ) {}
 
   onModuleInit() {
@@ -43,5 +46,6 @@ export class ConnectorModule implements OnModuleInit {
     this.registry.register(this.docs);
     this.registry.register(this.gmail);
     this.registry.register(this.calendar);
+    this.registry.register(this.slack);
   }
 }
