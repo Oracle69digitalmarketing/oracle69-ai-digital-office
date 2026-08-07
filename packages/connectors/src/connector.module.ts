@@ -8,6 +8,7 @@ import { MemoryModule } from '@oracle69/memory';
 import { GoogleDriveConnector } from './google-drive.connector.js';
 import { GoogleDocsConnector } from './google-docs.connector.js';
 import { GmailConnector } from './gmail.connector.js';
+import { GoogleCalendarConnector } from './google-calendar.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -19,6 +20,7 @@ import { GmailConnector } from './gmail.connector.js';
     GoogleDriveConnector,
     GoogleDocsConnector,
     GmailConnector,
+    GoogleCalendarConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -32,12 +34,14 @@ export class ConnectorModule implements OnModuleInit {
     private registry: ConnectorRegistry,
     private drive: GoogleDriveConnector,
     private docs: GoogleDocsConnector,
-    private gmail: GmailConnector
+    private gmail: GmailConnector,
+    private calendar: GoogleCalendarConnector
   ) {}
 
   onModuleInit() {
     this.registry.register(this.drive);
     this.registry.register(this.docs);
     this.registry.register(this.gmail);
+    this.registry.register(this.calendar);
   }
 }
