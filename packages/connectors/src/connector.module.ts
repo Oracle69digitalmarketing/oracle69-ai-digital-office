@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConnectorRegistry } from './connector-registry.js';
 import { ConnectorManager } from './connector-manager.js';
 import { CredentialManager } from './credential-manager.js';
 import { OAuthManager } from './oauth-manager.js';
 import { SharedModule } from '@oracle69/shared';
+import { GoogleDriveConnector } from './google-drive.connector.js';
 
 @Module({
   imports: [SharedModule],
@@ -12,6 +13,7 @@ import { SharedModule } from '@oracle69/shared';
     ConnectorManager,
     CredentialManager,
     OAuthManager,
+    GoogleDriveConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -20,4 +22,13 @@ import { SharedModule } from '@oracle69/shared';
     OAuthManager,
   ],
 })
-export class ConnectorModule {}
+export class ConnectorModule implements OnModuleInit {
+  constructor(
+    private registry: ConnectorRegistry,
+    private drive: GoogleDriveConnector
+  ) {}
+
+  onModuleInit() {
+    this.registry.register(this.drive);
+  }
+}
