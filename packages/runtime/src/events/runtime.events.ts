@@ -45,6 +45,19 @@ export enum RuntimeEventType {
   TOOL_PERMISSION_DENIED = 'tool.permission.denied',
   TOOL_CONNECTOR_SELECTED = 'tool.connector.selected',
   TOOL_CREDENTIALS_LOADED = 'tool.credentials.loaded',
+
+  // Memory & Observability Events
+  MEMORY_CREATED = 'memory.created',
+  MEMORY_UPDATED = 'memory.updated',
+  MEMORY_RETRIEVED = 'memory.retrieved',
+  MEMORY_INDEXED = 'memory.indexed',
+  CONTEXT_LOADED = 'context.loaded',
+  CONTEXT_COMPRESSED = 'context.compressed',
+  RUNTIME_HEALTH_CHANGED = 'runtime.health.changed',
+  RUNTIME_METRIC_RECORDED = 'runtime.metric.recorded',
+  RUNTIME_TRACE_STARTED = 'runtime.trace.started',
+  RUNTIME_TRACE_COMPLETED = 'runtime.trace.completed',
+  AUDIT_ENTRY_CREATED = 'audit.entry.created',
 }
 
 /**

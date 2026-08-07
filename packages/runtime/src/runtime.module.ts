@@ -12,6 +12,9 @@ import {
 } from './workflow/workflow-managers.js';
 import { ToolRouter } from './tools/tool-router.js';
 import { ToolRegistry } from './tools/tool-registry.js';
+import { MemoryManager } from './memory/memory-manager.js';
+import { ContextManager } from './memory/context-manager.js';
+import { AuditLogger, MetricsCollector, HealthMonitor } from './observability/observability.js';
 
 @Module({
   imports: [EventEmitterModule.forRoot()],
@@ -25,7 +28,12 @@ import { ToolRegistry } from './tools/tool-registry.js';
     CompensationManager,
     ApprovalManager,
     ToolRouter,
-    ToolRegistry
+    ToolRegistry,
+    MemoryManager,
+    ContextManager,
+    AuditLogger,
+    MetricsCollector,
+    HealthMonitor
   ],
   exports: [
     RuntimeManager, 
@@ -33,7 +41,12 @@ import { ToolRegistry } from './tools/tool-registry.js';
     PlanningEngine,
     WorkflowEngine,
     ToolRouter,
-    ToolRegistry
+    ToolRegistry,
+    MemoryManager,
+    ContextManager,
+    AuditLogger,
+    MetricsCollector,
+    HealthMonitor
   ],
 })
 export class RuntimeModule {}
