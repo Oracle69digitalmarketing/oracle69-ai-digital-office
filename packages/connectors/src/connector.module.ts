@@ -6,6 +6,7 @@ import { OAuthManager } from './oauth-manager.js';
 import { SharedModule } from '@oracle69/shared';
 import { MemoryModule } from '@oracle69/memory';
 import { GoogleDriveConnector } from './google-drive.connector.js';
+import { GoogleDocsConnector } from './google-docs.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -15,6 +16,7 @@ import { GoogleDriveConnector } from './google-drive.connector.js';
     CredentialManager,
     OAuthManager,
     GoogleDriveConnector,
+    GoogleDocsConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -26,10 +28,12 @@ import { GoogleDriveConnector } from './google-drive.connector.js';
 export class ConnectorModule implements OnModuleInit {
   constructor(
     private registry: ConnectorRegistry,
-    private drive: GoogleDriveConnector
+    private drive: GoogleDriveConnector,
+    private docs: GoogleDocsConnector
   ) {}
 
   onModuleInit() {
     this.registry.register(this.drive);
+    this.registry.register(this.docs);
   }
 }
