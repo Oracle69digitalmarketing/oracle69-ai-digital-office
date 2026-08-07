@@ -15,9 +15,10 @@ import { ToolRegistry } from './tools/tool-registry.js';
 import { MemoryManager } from './memory/memory-manager.js';
 import { ContextManager } from './memory/context-manager.js';
 import { AuditLogger, MetricsCollector, HealthMonitor } from './observability/observability.js';
+import { CommunicationModule } from './communication/communication.module.js';
 
 @Module({
-  imports: [EventEmitterModule.forRoot()],
+  imports: [EventEmitterModule.forRoot(), CommunicationModule],
   providers: [
     RuntimeManager, 
     AgentRegistry, 
@@ -46,7 +47,8 @@ import { AuditLogger, MetricsCollector, HealthMonitor } from './observability/ob
     ContextManager,
     AuditLogger,
     MetricsCollector,
-    HealthMonitor
+    HealthMonitor,
+    CommunicationModule
   ],
 })
 export class RuntimeModule {}
