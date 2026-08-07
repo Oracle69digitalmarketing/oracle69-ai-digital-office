@@ -10,6 +10,8 @@ import {
   CompensationManager, 
   ApprovalManager 
 } from './workflow/workflow-managers.js';
+import { ToolRouter } from './tools/tool-router.js';
+import { ToolRegistry } from './tools/tool-registry.js';
 
 @Module({
   imports: [EventEmitterModule.forRoot()],
@@ -21,13 +23,17 @@ import {
     CheckpointManager,
     RetryManager,
     CompensationManager,
-    ApprovalManager
+    ApprovalManager,
+    ToolRouter,
+    ToolRegistry
   ],
   exports: [
     RuntimeManager, 
     AgentRegistry, 
     PlanningEngine,
-    WorkflowEngine
+    WorkflowEngine,
+    ToolRouter,
+    ToolRegistry
   ],
 })
 export class RuntimeModule {}

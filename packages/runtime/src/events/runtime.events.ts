@@ -36,6 +36,15 @@ export enum RuntimeEventType {
   WORKFLOW_RETRY_COMPLETED = 'workflow.retry.completed',
   WORKFLOW_COMPENSATION_STARTED = 'workflow.compensation.started',
   WORKFLOW_COMPENSATION_COMPLETED = 'workflow.compensation.completed',
+  
+  // Tool Events
+  TOOL_EXECUTION_STARTED = 'tool.execution.started',
+  TOOL_EXECUTION_COMPLETED = 'tool.execution.completed',
+  TOOL_EXECUTION_FAILED = 'tool.execution.failed',
+  TOOL_VALIDATION_FAILED = 'tool.validation.failed',
+  TOOL_PERMISSION_DENIED = 'tool.permission.denied',
+  TOOL_CONNECTOR_SELECTED = 'tool.connector.selected',
+  TOOL_CREDENTIALS_LOADED = 'tool.credentials.loaded',
 }
 
 /**
