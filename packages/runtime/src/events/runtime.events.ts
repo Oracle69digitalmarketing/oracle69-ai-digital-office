@@ -13,6 +13,15 @@ export enum RuntimeEventType {
   AGENT_VALIDATION_FAILED = 'agent.validation.failed',
   RUNTIME_ERROR = 'runtime.error',
   RUNTIME_WARNING = 'runtime.warning',
+  
+  // Planning Events
+  PLANNING_STARTED = 'planning.started',
+  PLANNING_COMPLETED = 'planning.completed',
+  PLANNING_FAILED = 'planning.failed',
+  TASK_GENERATED = 'task.generated',
+  AGENT_SELECTED = 'agent.selected',
+  DEPENDENCY_CREATED = 'dependency.created',
+  VALIDATION_FAILED = 'validation.failed',
 }
 
 /**

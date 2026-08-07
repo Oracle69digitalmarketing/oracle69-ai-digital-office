@@ -5,3 +5,5 @@ export * from './agent-registry.js';
 export * from './runtime-context.js';
 export * from './events/runtime.events.js';
 export * from './errors/runtime.errors.js';
+export * from './planner/planner.types.js';
+export * from './planner/planning-engine.js';

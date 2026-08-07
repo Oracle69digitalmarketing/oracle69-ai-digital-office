@@ -41,7 +41,11 @@ export class AgentRegistry implements IAgentRegistry {
   }
 
   public listAgentsByRole(role: string): AgentMetadata[] {
-    return Array.from(this.agents.values()).filter((agent) => agent.role === role);
+    const agents = Array.from(this.agents.values());
+    this.logger.debug(`Listing agents for role: ${role}. Total agents: ${agents.length}`);
+    const filtered = agents.filter((agent) => agent.role === role);
+    this.logger.debug(`Found ${filtered.length} agents for role: ${role}`);
+    return filtered;
   }
 
   public validate(metadata: AgentMetadata): boolean {
