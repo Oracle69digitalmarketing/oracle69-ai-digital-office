@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store/auth-store";
 import { Activity, User, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/api-client";
 
 interface ActivityItem {
   id: string;
@@ -35,45 +35,25 @@ function timeAgo(date: Date) {
 export function ActivityFeed() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/activity/feed`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setActivities(data);
-        } else {
-          // Fallback to mock activity
-          setActivities([
-            { id: "1", action: "ContractGenerated", resource: "Acme Corp Proposal", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
-            { id: "2", action: "TaskCompleted", resource: "Market Analysis Q3", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), user: { name: "Owen", email: "owen@ai.com" } },
-            { id: "3", action: "AgentAssigned", resource: "Nexus Project", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
-            { id: "4", action: "RevenueUpdated", resource: "Finance Dashboard", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
-          ]);
-        }
+        const data = await apiClient<ActivityItem[]>("/activity/feed");
+        setActivities(data);
       } catch (error) {
-        console.error("Failed to fetch activity, using mock data:", error);
-        setActivities([
-          { id: "1", action: "ContractGenerated", resource: "Acme Corp Proposal", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
-          { id: "2", action: "TaskCompleted", resource: "Market Analysis Q3", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), user: { name: "Owen", email: "owen@ai.com" } },
-          { id: "3", action: "AgentAssigned", resource: "Nexus Project", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
-          { id: "4", action: "RevenueUpdated", resource: "Finance Dashboard", status: "EVENT", createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
-        ]);
+        console.error("Failed to fetch activity:", error);
+        // Fallback to empty if API fails
+        setActivities([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchActivity();
-    const interval = setInterval(fetchActivity, 10000); // Poll every 10s
+    const interval = setInterval(fetchActivity, 30000); // Poll every 30s
     return () => clearInterval(interval);
-  }, [token]);
+  }, []);
 
   if (loading && activities.length === 0) {
     return (

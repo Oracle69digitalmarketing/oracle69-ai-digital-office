@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store/auth-store";
 import { ActivityFeed } from "@/components/ai/activity-feed";
 import { Bot, Activity, Layers, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/api-client";
 
 interface Agent {
   id: string;
@@ -17,43 +17,23 @@ interface Agent {
 export default function AIOfficePage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/agents`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setAgents(data);
-        } else {
-          // Fallback to mock agents
-          setAgents([
-            { id: "1", name: "Elena", role: "Operations Lead", healthStatus: "active", capabilities: ["Logistics", "Scheduling", "Process Optimization"] },
-            { id: "2", name: "Owen", role: "Marketing strategist", healthStatus: "busy", capabilities: ["Content Creation", "SEO", "Market Analysis"] },
-            { id: "3", name: "Paul", role: "Technical Architect", healthStatus: "active", capabilities: ["Code Review", "System Design", "Security Audit"] },
-            { id: "4", name: "Mia", role: "Financial Analyst", healthStatus: "active", capabilities: ["Budgeting", "Forecasting", "Risk Assessment"] },
-          ]);
-        }
+        const data = await apiClient<Agent[]>("/agents");
+        setAgents(data);
       } catch (error) {
-        console.error("Failed to fetch agents, using mock data:", error);
-        setAgents([
-          { id: "1", name: "Elena", role: "Operations Lead", healthStatus: "active", capabilities: ["Logistics", "Scheduling", "Process Optimization"] },
-          { id: "2", name: "Owen", role: "Marketing strategist", healthStatus: "busy", capabilities: ["Content Creation", "SEO", "Market Analysis"] },
-          { id: "3", name: "Paul", role: "Technical Architect", healthStatus: "active", capabilities: ["Code Review", "System Design", "Security Audit"] },
-          { id: "4", name: "Mia", role: "Financial Analyst", healthStatus: "active", capabilities: ["Budgeting", "Forecasting", "Risk Assessment"] },
-        ]);
+        console.error("Failed to fetch agents:", error);
+        // Fallback to minimal set if API fails, but ideally we should show an error state
+        setAgents([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAgents();
-  }, [token]);
+  }, []);
 
   return (
     <div className="space-y-8 p-6">
