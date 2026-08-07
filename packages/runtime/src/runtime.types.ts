@@ -84,9 +84,26 @@ export interface IAgentRegistry {
 }
 
 /**
+ * Interface for runtime lifecycle monitoring.
+ */
+export interface IRuntimeLifecycle {
+  /**
+   * Returns the current lifecycle state.
+   */
+  getState(): RuntimeState;
+  
+  /**
+   * Registers a callback for a specific lifecycle state transition.
+   * @param state The state to listen for.
+   * @param callback The function to execute.
+   */
+  on(state: RuntimeState, callback: (payload?: any) => void): void;
+}
+
+/**
  * Interface for the Runtime Manager, the supervisor of the runtime.
  */
-export interface IRuntimeManager {
+export interface IRuntimeManager extends IRuntimeLifecycle {
   /**
    * Initializes the runtime and its internal services.
    */
@@ -108,11 +125,6 @@ export interface IRuntimeManager {
    * Returns the agent registry.
    */
   getRegistry(): IAgentRegistry;
-  
-  /**
-   * Returns the current lifecycle state.
-   */
-  getState(): RuntimeState;
 }
 
 /**

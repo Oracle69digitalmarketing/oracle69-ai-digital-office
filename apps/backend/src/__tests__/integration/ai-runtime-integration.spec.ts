@@ -167,12 +167,12 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
     .overrideProvider(PrismaClient)
     .useValue({
       longTermMemoryRecord: {
-        create: jest.fn().mockResolvedValue({ id: "mock-id" }),
-        findMany: jest.fn().mockResolvedValue([]),
+        create: (jest.fn() as any).mockResolvedValue({ id: "mock-id" }),
+        findMany: (jest.fn() as any).mockResolvedValue([]),
       },
-      $executeRaw: jest.fn().mockResolvedValue(1),
-      $queryRaw: jest.fn().mockResolvedValue([]),
-      $connect: jest.fn().mockResolvedValue(undefined),
+      $executeRaw: (jest.fn() as any).mockResolvedValue(1),
+      $queryRaw: (jest.fn() as any).mockResolvedValue([]),
+      $connect: (jest.fn() as any).mockResolvedValue(undefined),
     })
     .compile();
 

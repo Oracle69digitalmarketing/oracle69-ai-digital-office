@@ -16,14 +16,23 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
     this.registry = new AgentRegistry(this.eventEmitter);
   }
 
+  /**
+   * NestJS lifecycle hook for module initialization.
+   */
   public async onModuleInit(): Promise<void> {
     await this.initialize();
   }
 
+  /**
+   * NestJS lifecycle hook for module destruction.
+   */
   public async onModuleDestroy(): Promise<void> {
     await this.shutdown();
   }
 
+  /**
+   * Initializes the Enterprise Runtime Foundation and internal services.
+   */
   public async initialize(): Promise<void> {
     if (this.state === RuntimeState.READY) return;
 
@@ -45,6 +54,9 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
     }
   }
 
+  /**
+   * Gracefully shuts down the Enterprise Runtime.
+   */
   public async shutdown(): Promise<void> {
     if (this.state === RuntimeState.STOPPED || this.state === RuntimeState.UNINITIALIZED) return;
 
@@ -58,6 +70,21 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
     this.emit(RuntimeEventType.RUNTIME_SHUTDOWN);
   }
 
+  /**
+   * Registers a callback for a specific lifecycle state transition.
+   */
+  public on(state: RuntimeState, callback: (payload?: any) => void): void {
+    if (this.eventEmitter) {
+      const eventType = this.mapStateToEvent(state);
+      if (eventType) {
+        this.eventEmitter.on(eventType, (event: RuntimeEvent) => callback(event.payload));
+      }
+    }
+  }
+
+  /**
+   * Creates a new execution context.
+   */
   public createContext(taskId: string, orgId: string): IRuntimeContext {
     if (this.state !== RuntimeState.READY) {
       this.logger.warn(`Context creation requested while runtime is in state: ${this.state}`);
@@ -65,12 +92,27 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
     return new RuntimeContext(taskId, orgId);
   }
 
+  /**
+   * Returns the agent registry.
+   */
   public getRegistry(): IAgentRegistry {
     return this.registry;
   }
 
+  /**
+   * Returns the current lifecycle state.
+   */
   public getState(): RuntimeState {
     return this.state;
+  }
+
+  private mapStateToEvent(state: RuntimeState): RuntimeEventType | null {
+    switch (state) {
+      case RuntimeState.STARTING: return RuntimeEventType.RUNTIME_STARTED;
+      case RuntimeState.READY: return RuntimeEventType.RUNTIME_READY;
+      case RuntimeState.STOPPED: return RuntimeEventType.RUNTIME_SHUTDOWN;
+      default: return null;
+    }
   }
 
   private emit(type: RuntimeEventType, payload: any = {}): void {

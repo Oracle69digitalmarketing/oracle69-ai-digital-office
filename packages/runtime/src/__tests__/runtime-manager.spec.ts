@@ -49,4 +49,12 @@ describe('RuntimeManager', () => {
     const registry = manager.getRegistry();
     expect(registry).toBeDefined();
   });
+
+  it('should support lifecycle state transition listeners', async () => {
+    const callback = jest.fn();
+    manager.on(RuntimeState.READY, callback);
+
+    await manager.initialize();
+    expect(callback).toHaveBeenCalled();
+  });
 });
