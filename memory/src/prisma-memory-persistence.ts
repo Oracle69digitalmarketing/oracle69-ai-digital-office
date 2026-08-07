@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { MemoryRecord } from '@oracle69/shared';
 import { IMemoryPersistence } from './memory-manager.js';
 
 @Injectable()
 export class PrismaMemoryPersistence implements IMemoryPersistence {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(@Inject('PrismaService') private readonly prisma: PrismaClient) {}
 
   async save(record: MemoryRecord): Promise<string> {
     const created = await this.prisma.longTermMemoryRecord.create({
