@@ -7,6 +7,7 @@ import { ProjectManagerAgent } from './agents/project-manager-agent.js';
 import { ModelRouter } from './model-router.js';
 import { PromptLoader } from './prompt-loader.js';
 import { AgentMetadata } from '@oracle69/shared';
+import { KnowledgeService } from '@oracle69/memory';
 
 @Injectable()
 export class DepartmentRegistrationService implements OnModuleInit {
@@ -109,6 +110,7 @@ export class DepartmentRegistrationService implements OnModuleInit {
     private readonly agentRegistry: AgentRegistry,
     private readonly modelRouter: ModelRouter,
     private readonly promptLoader: PromptLoader,
+    private readonly knowledgeService: KnowledgeService,
     @Optional() private readonly executionEngine?: any,
   ) {}
 
@@ -140,13 +142,24 @@ export class DepartmentRegistrationService implements OnModuleInit {
           this.executionEngine,
           this.agentRegistry,
           this.modelRouter,
-          this.promptLoader
+          this.promptLoader,
+          this.knowledgeService
         );
       } else {
-        agent = new manifest.agentClass(metadata, this.modelRouter, this.promptLoader);
+        agent = new manifest.agentClass(
+          metadata, 
+          this.modelRouter, 
+          this.promptLoader,
+          this.knowledgeService
+        );
       }
     } else {
-      agent = new DepartmentAgent(metadata, this.modelRouter, this.promptLoader);
+      agent = new DepartmentAgent(
+        metadata, 
+        this.modelRouter, 
+        this.promptLoader,
+        this.knowledgeService
+      );
     }
 
     await this.agentRegistry.register(agent);

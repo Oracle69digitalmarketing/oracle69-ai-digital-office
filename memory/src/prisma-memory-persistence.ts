@@ -7,8 +7,8 @@ import { IMemoryPersistence } from './memory-manager.js';
 export class PrismaMemoryPersistence implements IMemoryPersistence {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async save(record: MemoryRecord): Promise<void> {
-    await this.prisma.longTermMemoryRecord.create({
+  async save(record: MemoryRecord): Promise<string> {
+    const created = await this.prisma.longTermMemoryRecord.create({
       data: {
         type: record.type,
         sessionId: record.sessionId,
@@ -18,6 +18,7 @@ export class PrismaMemoryPersistence implements IMemoryPersistence {
         organizationId: (record.metadata?.organizationId as string) || 'system',
       },
     });
+    return created.id;
   }
 
   async search(query: string, limit: number): Promise<MemoryRecord[]> {

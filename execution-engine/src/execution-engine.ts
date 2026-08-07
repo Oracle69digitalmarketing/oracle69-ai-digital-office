@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { TaskContext, WorkflowTrace, WorkflowStep, EventBus } from '@oracle69/shared';
 import { BaseAgent } from '@oracle69/agent-engine';
 import { TenantContext } from '@oracle69/platform-contracts';
+import { MemoryManager } from '@oracle69/memory';
 
 export interface WorkflowTraceRepository {
   saveStep(step: WorkflowStep, organizationId?: string): Promise<void>;
@@ -15,6 +16,7 @@ export class ExecutionEngine {
 
   constructor(
     private readonly eventBus: EventBus,
+    private readonly memory: MemoryManager,
     @Optional() private readonly repository?: WorkflowTraceRepository
   ) {}
 
@@ -53,6 +55,23 @@ export class ExecutionEngine {
       step.status = 'completed';
       step.endTime = new Date();
       step.result = result;
+
+      // Persistence of Business Memory
+      await this.memory.saveBusinessMemory({
+        sessionId: task.sessionId,
+        taskId: task.taskId,
+        agentId: agent.metadata.id,
+        role: agent.metadata.role,
+        content: result,
+        reasoning: result?.reasoning || 'Automated execution',
+        decisions: result?.decisions || [],
+        organizationId: tenantContext?.organizationId,
+        metadata: {
+          objective: task.objective,
+          workflowId: task.sessionId,
+          status: 'completed'
+        }
+      });
 
       await agent.onTaskCompleted(task, result);
       await this.persistStep(step, tenantContext?.organizationId);

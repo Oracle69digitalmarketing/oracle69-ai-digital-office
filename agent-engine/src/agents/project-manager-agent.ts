@@ -3,6 +3,7 @@ import { TaskContext, AgentMetadata } from '@oracle69/shared';
 import { AgentRegistry } from '../agent-registry.js';
 import { ModelRouter } from '../model-router.js';
 import { PromptLoader } from '../prompt-loader.js';
+import { KnowledgeService } from '@oracle69/memory';
 
 export class ProjectManagerAgent extends BaseAgent {
   constructor(
@@ -11,6 +12,7 @@ export class ProjectManagerAgent extends BaseAgent {
     private registry: AgentRegistry,
     private modelRouter: ModelRouter,
     private promptLoader: PromptLoader,
+    private knowledgeService: KnowledgeService,
   ) {
     super(metadata);
   }
@@ -18,10 +20,17 @@ export class ProjectManagerAgent extends BaseAgent {
   async execute(task: TaskContext): Promise<any> {
     this.logger.log(`Breaking down task for execution: ${task.taskId}`);
     
+    // Operational Knowledge Retrieval (past projects, timelines, etc.)
+    const knowledge = await this.knowledgeService.getRelevantContext(task.objective, {
+      organizationId: 'system',
+      sessionId: task.sessionId,
+      limit: 5
+    });
+
     const prompt = await this.promptLoader.getPrompt(this.metadata.role);
     const breakdown = await this.modelRouter.execute(
       this.metadata.id,
-      `${prompt}\nTask Strategy: ${task.context.strategy}\nIdentify the departments (Marketing, Finance, Operations) needed and what they should do.`,
+      `${prompt}\n\n${knowledge}\n\nTask Strategy: ${task.context.strategy}\nIdentify the departments (Marketing, Finance, Operations) needed and what they should do.`,
       {
         taskId: task.taskId,
         taskDescription: task.objective,

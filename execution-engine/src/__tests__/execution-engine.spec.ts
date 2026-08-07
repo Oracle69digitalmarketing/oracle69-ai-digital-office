@@ -19,9 +19,12 @@ describe('ExecutionEngine', () => {
     const mockEventBus = {
       publish: jest.fn(),
     };
-    engine = new ExecutionEngine(mockEventBus as any);
+    const mockMemory = {
+      saveBusinessMemory: jest.fn().mockResolvedValue(undefined),
+    };
+    engine = new ExecutionEngine(mockEventBus as any, mockMemory as any);
     mockAgent = {
-      metadata: { id: 'agent-1', name: 'Agent 1' },
+      metadata: { id: 'agent-1', name: 'Agent 1', role: 'test-agent' },
       onTaskReceived: jest.fn(),
       onTaskCompleted: jest.fn(),
       onTaskFailed: jest.fn(),

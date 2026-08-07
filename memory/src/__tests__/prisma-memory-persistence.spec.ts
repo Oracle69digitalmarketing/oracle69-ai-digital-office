@@ -26,8 +26,11 @@ describe('PrismaMemoryPersistence', () => {
       timestamp: new Date(),
     };
 
-    await persistence.save(record);
+    prismaMock.longTermMemoryRecord.create.mockResolvedValue({ id: 'saved-id-123' });
 
+    const result = await persistence.save(record);
+
+    expect(result).toBe('saved-id-123');
     expect(prismaMock.longTermMemoryRecord.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         type: 'session',

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "@jest/globals";
+import { describe, it, expect, beforeAll, jest } from "@jest/globals";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ReceptionistService } from "../../receptionist/receptionist.service.js";
 import {
@@ -9,9 +9,35 @@ import {
   ModelProvider,
   PromptLoader,
 } from "@oracle69/agent-engine";
-import { MemoryModule, MemoryManager } from "@oracle69/memory";
+import { MemoryModule, MemoryManager, KnowledgeService } from "@oracle69/memory";
 import { ExecutionEngineModule, ExecutionEngine } from "@oracle69/execution-engine";
 import { SharedModule, EventBus, TaskContext } from "@oracle69/shared";
+import { PrismaClient } from "@prisma/client";
+import { Module, Global } from "@nestjs/common";
+
+@Global()
+@Module({
+  providers: [
+    {
+      provide: PrismaClient,
+      useValue: {
+        longTermMemoryRecord: {
+          create: jest.fn().mockResolvedValue({ id: "mock-id" }),
+          findMany: jest.fn().mockResolvedValue([]),
+        },
+        $executeRaw: jest.fn().mockResolvedValue(1),
+        $queryRaw: jest.fn().mockResolvedValue([]),
+        $connect: jest.fn().mockResolvedValue(undefined),
+      },
+    },
+    {
+      provide: "PrismaService",
+      useExisting: PrismaClient,
+    },
+  ],
+  exports: [PrismaClient, "PrismaService"],
+})
+class MockPrismaModule {}
 
 // --- Mocks ---
 
@@ -51,6 +77,7 @@ class ChiefOfStaffAgent extends BaseAgent {
     private registry: AgentRegistry,
     private modelRouter: ModelRouter,
     private promptLoader: PromptLoader,
+    private knowledgeService: KnowledgeService,
   ) {
     super(metadata);
   }
@@ -95,6 +122,7 @@ class DepartmentAgent extends BaseAgent {
     metadata: any,
     private modelRouter: ModelRouter,
     private promptLoader: PromptLoader,
+    private knowledgeService: KnowledgeService,
   ) {
     super(metadata);
   }
@@ -120,11 +148,14 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
   let memory: MemoryManager;
   let executionEngine: ExecutionEngine;
   let promptLoader: PromptLoader;
+  let knowledgeService: KnowledgeService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [SharedModule, AgentEngineModule, MemoryModule, ExecutionEngineModule],
-      providers: [ReceptionistService],
+      imports: [MockPrismaModule, SharedModule, AgentEngineModule, MemoryModule, ExecutionEngineModule],
+      providers: [
+        ReceptionistService,
+      ],
     }).compile();
 
     receptionist = module.get<ReceptionistService>(ReceptionistService);
@@ -134,6 +165,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
     memory = module.get<MemoryManager>(MemoryManager);
     executionEngine = module.get<ExecutionEngine>(ExecutionEngine);
     promptLoader = module.get<PromptLoader>(PromptLoader);
+    knowledgeService = module.get<KnowledgeService>(KnowledgeService);
 
     // Register Mock Provider
     modelRouter.registerProvider(new MockModelProvider());
@@ -156,6 +188,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
       registry,
       modelRouter,
       promptLoader,
+      knowledgeService,
     );
     await registry.register(cosAgent);
 
@@ -170,7 +203,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
       supportedModels: ["mini"] as any,
       healthStatus: "offline" as any,
     };
-    const kmAgent = new DepartmentAgent(kmMetadata, modelRouter, promptLoader);
+    const kmAgent = new DepartmentAgent(kmMetadata, modelRouter, promptLoader, knowledgeService);
     await registry.register(kmAgent);
 
     const marketingMetadata = {
@@ -184,7 +217,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
       supportedModels: ["mini"] as any,
       healthStatus: "offline" as any,
     };
-    const marketingAgent = new DepartmentAgent(marketingMetadata, modelRouter, promptLoader);
+    const marketingAgent = new DepartmentAgent(marketingMetadata, modelRouter, promptLoader, knowledgeService);
     await registry.register(marketingAgent);
   });
 

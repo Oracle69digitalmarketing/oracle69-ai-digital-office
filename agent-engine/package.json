@@ -20,6 +20,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@nestjs/common": "^10.0.0",
+    "@oracle69/memory": "workspace:*",
     "@oracle69/shared": "workspace:*"
   }
 }

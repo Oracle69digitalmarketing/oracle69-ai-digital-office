@@ -3,6 +3,7 @@ import { TaskContext, AgentMetadata } from '@oracle69/shared';
 import { AgentRegistry } from '../agent-registry.js';
 import { ModelRouter } from '../model-router.js';
 import { PromptLoader } from '../prompt-loader.js';
+import { KnowledgeService } from '@oracle69/memory';
 
 export class ChiefOfStaffAgent extends BaseAgent {
   constructor(
@@ -11,6 +12,7 @@ export class ChiefOfStaffAgent extends BaseAgent {
     private registry: AgentRegistry,
     private modelRouter: ModelRouter,
     private promptLoader: PromptLoader,
+    private knowledgeService: KnowledgeService,
   ) {
     super(metadata);
   }
@@ -18,10 +20,17 @@ export class ChiefOfStaffAgent extends BaseAgent {
   async execute(task: TaskContext): Promise<any> {
     this.logger.log(`Planning strategic response for task: ${task.taskId}`);
     
+    // Strategic Knowledge Retrieval
+    const knowledge = await this.knowledgeService.getRelevantContext(task.objective, {
+      organizationId: 'system',
+      sessionId: task.sessionId,
+      limit: 10 // Higher limit for CoS planning
+    });
+
     const prompt = await this.promptLoader.getPrompt(this.metadata.role);
     const strategy = await this.modelRouter.execute(
       this.metadata.id,
-      `${prompt}\nTask: ${task.objective}\nFormulate a high-level strategy and identify which departments should be involved.`,
+      `${prompt}\n\n${knowledge}\n\nTask: ${task.objective}\nFormulate a high-level strategy and identify which departments should be involved.`,
       {
         taskId: task.taskId,
         taskDescription: task.objective,

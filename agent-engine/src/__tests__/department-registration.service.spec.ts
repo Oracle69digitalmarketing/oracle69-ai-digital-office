@@ -9,12 +9,16 @@ describe('DepartmentRegistrationService', () => {
   let registry: AgentRegistry;
   let modelRouter: ModelRouter;
   let promptLoader: PromptLoader;
+  let knowledgeService: any;
 
   beforeEach(() => {
     registry = new AgentRegistry();
     modelRouter = {} as any;
     promptLoader = {} as any;
-    service = new DepartmentRegistrationService(registry, modelRouter, promptLoader);
+    knowledgeService = {
+      getRelevantContext: jest.fn().mockResolvedValue('test knowledge'),
+    };
+    service = new DepartmentRegistrationService(registry, modelRouter, promptLoader, knowledgeService);
   });
 
   it('should register all 11 departments on initialization', async () => {
