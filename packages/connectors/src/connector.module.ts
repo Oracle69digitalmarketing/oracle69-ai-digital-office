@@ -13,6 +13,7 @@ import { SlackConnector } from './slack.connector.js';
 import { HubSpotConnector } from './hubspot.connector.js';
 import { SalesforceConnector } from './salesforce.connector.js';
 import { OutlookConnector } from './outlook.connector.js';
+import { TeamsConnector } from './teams.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -29,6 +30,7 @@ import { OutlookConnector } from './outlook.connector.js';
     HubSpotConnector,
     SalesforceConnector,
     OutlookConnector,
+    TeamsConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -47,7 +49,8 @@ export class ConnectorModule implements OnModuleInit {
     private slack: SlackConnector,
     private hubspot: HubSpotConnector,
     private salesforce: SalesforceConnector,
-    private outlook: OutlookConnector
+    private outlook: OutlookConnector,
+    private teams: TeamsConnector
   ) {}
 
   onModuleInit() {
@@ -59,5 +62,6 @@ export class ConnectorModule implements OnModuleInit {
     this.registry.register(this.hubspot);
     this.registry.register(this.salesforce);
     this.registry.register(this.outlook);
+    this.registry.register(this.teams);
   }
 }
