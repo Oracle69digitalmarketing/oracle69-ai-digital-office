@@ -22,13 +22,18 @@ import { Module, Global } from "@nestjs/common";
       provide: PrismaClient,
       useValue: {
         longTermMemoryRecord: {
+          // @ts-ignore
           create: jest.fn().mockResolvedValue({ id: "mock-id" }),
+          // @ts-ignore
           findMany: jest.fn().mockResolvedValue([]),
         },
+        // @ts-ignore
         $executeRaw: jest.fn().mockResolvedValue(1),
+        // @ts-ignore
         $queryRaw: jest.fn().mockResolvedValue([]),
+        // @ts-ignore
         $connect: jest.fn().mockResolvedValue(undefined),
-      },
+      } as any,
     },
     {
       provide: "PrismaService",
@@ -45,22 +50,23 @@ class MockModelProvider implements ModelProvider {
   name = "mock-provider";
   async generate(prompt: string, tier: string): Promise<{ content: string; usage: any }> {
     console.log(`Mocking model call for tier: ${tier}`);
-    if (prompt.includes("# Chief of Staff")) {
+    const lowerPrompt = prompt.toLowerCase();
+    if (lowerPrompt.includes("# chief of staff")) {
       return {
         content: JSON.stringify({
-          plan: ["Knowledge Manager", "Marketing"],
+          plan: ["knowledge-manager", "marketing"],
           goal: "Hospital Proposal",
         }),
         usage: { total_tokens: 50 },
       };
     }
-    if (prompt.includes("# Knowledge Manager")) {
+    if (lowerPrompt.includes("# knowledge manager")) {
       return {
         content: "Hospital research data: Healthcare standards, regional regulations.",
         usage: { total_tokens: 30 },
       };
     }
-    if (prompt.includes("# Marketing Manager")) {
+    if (lowerPrompt.includes("# marketing manager")) {
       return {
         content: "Marketing copy for hospital proposal: Trusted, Innovative, Patient-centric.",
         usage: { total_tokens: 40 },
@@ -174,7 +180,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
     const cosMetadata = {
       id: "cos-1",
       name: "Elena",
-      role: "Chief of Staff",
+      role: "chief-of-staff",
       description: "The orchestrator",
       version: "1.0.0",
       capabilities: ["planning", "coordination"],
@@ -195,7 +201,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
     const kmMetadata = {
       id: "km-1",
       name: "Kevin",
-      role: "Knowledge Manager",
+      role: "knowledge-manager",
       description: "The researcher",
       version: "1.0.0",
       capabilities: ["research", "data"],
@@ -209,7 +215,7 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
     const marketingMetadata = {
       id: "mkt-1",
       name: "Mia",
-      role: "Marketing",
+      role: "marketing",
       description: "The creative",
       version: "1.0.0",
       capabilities: ["copywriting", "creative"],

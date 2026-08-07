@@ -47,7 +47,7 @@ export class PromptLoader implements OnModuleInit {
       const files = await fs.promises.readdir(this.promptsDir);
       for (const file of files) {
         if (file.endsWith('.md')) {
-          const role = file.replace('.md', '').replace(/-/g, ' ');
+          const role = file.replace('.md', '');
           await this.loadPromptIntoCache(role, path.join(this.promptsDir, file));
         }
       }
@@ -82,7 +82,7 @@ export class PromptLoader implements OnModuleInit {
     this.logger.log('Setting up hot reload for prompts...');
     fs.watch(this.promptsDir, (eventType, filename) => {
       if (filename && filename.endsWith('.md')) {
-        const role = filename.replace('.md', '').replace(/-/g, ' ');
+        const role = filename.replace('.md', '');
         this.logger.log(`Prompt changed: ${filename}. Reloading...`);
         this.loadPromptIntoCache(role, path.join(this.promptsDir, filename));
       }
