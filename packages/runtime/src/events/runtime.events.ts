@@ -22,6 +22,20 @@ export enum RuntimeEventType {
   AGENT_SELECTED = 'agent.selected',
   DEPENDENCY_CREATED = 'dependency.created',
   VALIDATION_FAILED = 'validation.failed',
+
+  // Workflow Events
+  WORKFLOW_CREATED = 'workflow.created',
+  WORKFLOW_STARTED = 'workflow.started',
+  WORKFLOW_PAUSED = 'workflow.paused',
+  WORKFLOW_RESUMED = 'workflow.resumed',
+  WORKFLOW_COMPLETED = 'workflow.completed',
+  WORKFLOW_FAILED = 'workflow.failed',
+  WORKFLOW_CANCELLED = 'workflow.cancelled',
+  WORKFLOW_CHECKPOINT_SAVED = 'workflow.checkpoint.saved',
+  WORKFLOW_RETRY_STARTED = 'workflow.retry.started',
+  WORKFLOW_RETRY_COMPLETED = 'workflow.retry.completed',
+  WORKFLOW_COMPENSATION_STARTED = 'workflow.compensation.started',
+  WORKFLOW_COMPENSATION_COMPLETED = 'workflow.compensation.completed',
 }
 
 /**

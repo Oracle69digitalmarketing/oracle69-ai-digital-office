@@ -7,3 +7,6 @@ export * from './events/runtime.events.js';
 export * from './errors/runtime.errors.js';
 export * from './planner/planner.types.js';
 export * from './planner/planning-engine.js';
+export * from './workflow/workflow.types.js';
+export * from './workflow/workflow-engine.js';
+export * from './workflow/workflow-managers.js';
