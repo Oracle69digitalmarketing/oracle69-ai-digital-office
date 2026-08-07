@@ -10,6 +10,7 @@ import { GoogleDocsConnector } from './google-docs.connector.js';
 import { GmailConnector } from './gmail.connector.js';
 import { GoogleCalendarConnector } from './google-calendar.connector.js';
 import { SlackConnector } from './slack.connector.js';
+import { HubSpotConnector } from './hubspot.connector.js';
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -23,6 +24,7 @@ import { SlackConnector } from './slack.connector.js';
     GmailConnector,
     GoogleCalendarConnector,
     SlackConnector,
+    HubSpotConnector,
   ],
   exports: [
     ConnectorRegistry,
@@ -38,7 +40,8 @@ export class ConnectorModule implements OnModuleInit {
     private docs: GoogleDocsConnector,
     private gmail: GmailConnector,
     private calendar: GoogleCalendarConnector,
-    private slack: SlackConnector
+    private slack: SlackConnector,
+    private hubspot: HubSpotConnector
   ) {}
 
   onModuleInit() {
@@ -47,5 +50,6 @@ export class ConnectorModule implements OnModuleInit {
     this.registry.register(this.gmail);
     this.registry.register(this.calendar);
     this.registry.register(this.slack);
+    this.registry.register(this.hubspot);
   }
 }
