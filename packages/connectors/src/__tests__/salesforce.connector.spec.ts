@@ -1,15 +1,15 @@
 import { jest } from '@jest/globals';
-import { HubSpotConnector } from '../hubspot.connector.js';
+import { SalesforceConnector } from '../salesforce.connector.js';
 
-describe('HubSpotConnector', () => {
-  let connector: HubSpotConnector;
+describe('SalesforceConnector', () => {
+  let connector: SalesforceConnector;
 
   beforeEach(() => {
-    connector = new HubSpotConnector();
+    connector = new SalesforceConnector();
   });
 
   it('should have correct metadata', () => {
-    expect(connector.metadata.type).toBe('hubspot');
+    expect(connector.metadata.type).toBe('salesforce');
     expect(connector.metadata.capabilities).toContain('create_lead');
     expect(connector.metadata.capabilities).toContain('create_deal');
     expect(connector.metadata.capabilities).toContain('health_check');
@@ -23,10 +23,10 @@ describe('HubSpotConnector', () => {
   it('should fail execute if not connected', async () => {
     const result = await connector.execute({
       action: 'create_lead',
-      params: { email: 'test@example.com' },
+      params: { LastName: 'Doe', Company: 'Acme' },
       organizationId: 'test-org'
     });
     expect(result.success).toBe(false);
-    expect(result.error?.message).toContain('HubSpot client not initialized'); 
+    expect(result.error?.message).toContain('Salesforce client not initialized');
   });
 });

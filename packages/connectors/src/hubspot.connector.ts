@@ -31,53 +31,59 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async createLead(params: any): Promise<ConnectorResult> {
-    // HubSpot uses Contacts for Leads in most basic setups
-    const response = await this.hubspotClient!.crm.contacts.basicApi.create({
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    const response: any = await this.hubspotClient.crm.contacts.basicApi.create({
       properties: { ...params, lifecyclestage: 'lead' },
     });
-    return { success: true, data: response };
+    return { success: response.success, data: response };
   }
 
   async updateLead(params: any): Promise<ConnectorResult> {
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
     const { id, ...properties } = params;
-    const response = await this.hubspotClient!.crm.contacts.basicApi.update(id, {
+    const response: any = await this.hubspotClient.crm.contacts.basicApi.update(id, {
       properties,
     });
-    return { success: true, data: response };
+    return { success: response.success, data: response };
   }
 
   async createCompany(params: any): Promise<ConnectorResult> {
-    const response = await this.hubspotClient!.crm.companies.basicApi.create({
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    const response: any = await this.hubspotClient.crm.companies.basicApi.create({
       properties: params,
     });
-    return { success: true, data: response };
+    return { success: response.success, data: response };
   }
 
   async createContact(params: any): Promise<ConnectorResult> {
-    const response = await this.hubspotClient!.crm.contacts.basicApi.create({
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    const response: any = await this.hubspotClient.crm.contacts.basicApi.create({
       properties: params,
     });
-    return { success: true, data: response };
+    return { success: response.success, data: response };
   }
 
   async createDeal(params: any): Promise<ConnectorResult> {
-    const response = await this.hubspotClient!.crm.deals.basicApi.create({
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    const response: any = await this.hubspotClient.crm.deals.basicApi.create({
       properties: params,
     });
-    return { success: true, data: response };
+    return { success: response.success, data: response };
   }
 
   async updateDeal(params: any): Promise<ConnectorResult> {
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
     const { id, ...properties } = params;
-    const response = await this.hubspotClient!.crm.deals.basicApi.update(id, {
+    const response: any = await this.hubspotClient.crm.deals.basicApi.update(id, {
       properties,
     });
-    return { success: true, data: response };
+    return { success: response.success, data: response };
   }
 
   async search(params: any): Promise<ConnectorResult> {
+    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
     const { filterGroups, sort, properties, limit, after, objectType = 'contacts' } = params;
-    const response = await (this.hubspotClient!.crm as any)[objectType].searchApi.doSearch({
+    const response = await (this.hubspotClient.crm as any)[objectType].searchApi.doSearch({
       filterGroups,
       sorts: sort,
       properties,
