@@ -35,6 +35,13 @@ model Organization {
   crmOpportunities     CrmOpportunity[]
   crmPipelines         CrmPipeline[]
   crmActivities        CrmActivity[]
+  eiKpiSnapshots       EiKpiSnapshot[]
+  eiBusinessHealthSnapshots EiBusinessHealthSnapshot[]
+  eiForecasts          EiForecast[]
+  eiScenarios          EiScenario[]
+  eiInsights           EiInsight[]
+  eiRecommendations    EiRecommendation[]
+  eiEnterpriseReports  EiEnterpriseReport[]
 }
 
 model User {
@@ -256,6 +263,99 @@ model CrmNote {
   crmActivity      CrmActivity? @relation(fields: [crmActivityId], references: [id])
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+}
+
+model EiKpiSnapshot {
+  id             String       @id @default(uuid())
+  period         String
+  metrics        Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model EiBusinessHealthSnapshot {
+  id             String       @id @default(uuid())
+  score          Float
+  status         String
+  reasoning      String
+  factors        String[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiForecast {
+  id                String       @id @default(uuid())
+  period            String
+  expectedRevenue   Float
+  weightedPipeline  Float
+  committedRevenue  Float
+  conservative      Float
+  bestCase          Float
+  retentionRevenue  Float
+  assumptions       Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model EiScenario {
+  id             String       @id @default(uuid())
+  name           String
+  scenarioType   String
+  parameters     Json
+  projections    Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiInsight {
+  id             String       @id @default(uuid())
+  type           String
+  content        String
+  confidence     Float?
+  source         String       @default("deterministic")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiRecommendation {
+  id               String       @id @default(uuid())
+  title            String
+  priority         String
+  action           String
+  expectedImpact   String?
+  source           String       @default("deterministic")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiEnterpriseReport {
+  id               String       @id @default(uuid())
+  period           String
+  summary          Json
+  healthScore      Float?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
 }
 
 model Department {
