@@ -42,6 +42,14 @@ model Organization {
   eiInsights           EiInsight[]
   eiRecommendations    EiRecommendation[]
   eiEnterpriseReports  EiEnterpriseReport[]
+  miCampaigns          MiCampaign[]
+  miCampaignMetrics    MiCampaignMetric[]
+  miSeoSnapshots       MiSeoSnapshot[]
+  miConversionSnapshots MiConversionSnapshot[]
+  miLeadScores         MiLeadScore[]
+  miGrowthInsights     MiGrowthInsight[]
+  miPricingSuggestions MiPricingSuggestion[]
+  miGrowthReports      MiGrowthReport[]
 }
 
 model User {
@@ -351,6 +359,133 @@ model EiEnterpriseReport {
   period           String
   summary          Json
   healthScore      Float?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiCampaign {
+  id             String       @id @default(uuid())
+  name           String
+  channel        String
+  objective      String?
+  budget         Float?
+  spent          Float?
+  status         String       @default("active")
+  startDate      DateTime?
+  endDate        DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, createdAt])
+}
+
+model MiCampaignMetric {
+  id                String       @id @default(uuid())
+  period            String
+  channel           String
+  leads             Int          @default(0)
+  qualifiedLeads    Int          @default(0)
+  conversions       Int          @default(0)
+  conversionRate    Float        @default(0)
+  revenueAttributed Float        @default(0)
+  spend             Float        @default(0)
+  roas              Float        @default(0)
+  cac               Float        @default(0)
+  costPerLead       Float        @default(0)
+  metrics           Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model MiSeoSnapshot {
+  id              String       @id @default(uuid())
+  period          String
+  organicLeads    Int          @default(0)
+  organicShare    Float        @default(0)
+  avgPosition     Float        @default(0)
+  keywordsTracked Int          @default(0)
+  metrics         Json
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model MiConversionSnapshot {
+  id              String       @id @default(uuid())
+  period          String
+  totalLeads      Int          @default(0)
+  qualifiedLeads  Int          @default(0)
+  conversions     Int          @default(0)
+  conversionRate  Float        @default(0)
+  bestSource      String?
+  weakestSource   String?
+  metrics         Json
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model MiLeadScore {
+  id             String       @id @default(uuid())
+  leadId         String
+  leadTitle      String?
+  score          Float
+  grade          String
+  status         String
+  channel        String?
+  reasoning      Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiGrowthInsight {
+  id             String       @id @default(uuid())
+  type           String
+  content        String
+  confidence     Float?
+  source         String       @default("deterministic")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiPricingSuggestion {
+  id               String       @id @default(uuid())
+  product          String
+  currentPrice     Float?
+  suggestedPrice   Float?
+  rationale        String
+  confidence       Float?
+  source           String       @default("deterministic")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiGrowthReport {
+  id               String       @id @default(uuid())
+  period           String
+  growthScore      Float
+  summary          Json
   organizationId   String
   organization     Organization @relation(fields: [organizationId], references: [id])
   createdAt        DateTime     @default(now())
