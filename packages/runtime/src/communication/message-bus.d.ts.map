@@ -1,0 +1,1 @@
+{"version":3,"file":"message-bus.d.ts","sourceRoot":"","sources":["message-bus.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,aAAa,EAAE,MAAM,uBAAuB,CAAC;AAEtD,qBACa,UAAU;IACT,OAAO,CAAC,QAAQ,CAAC,YAAY;gBAAZ,YAAY,EAAE,aAAa;IAExD,OAAO,CAAC,KAAK,EAAE,MAAM,EAAE,OAAO,EAAE,GAAG,GAAG,IAAI;CAG3C"}
