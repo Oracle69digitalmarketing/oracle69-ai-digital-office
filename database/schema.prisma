@@ -29,6 +29,12 @@ model Organization {
   auditLogs            AuditLog[]
   conversations        Conversation[]
   integrationCredentials IntegrationCredential[]
+  crmOrganizations     CrmOrganization[]
+  crmContacts          CrmContact[]
+  crmLeads             CrmLead[]
+  crmOpportunities     CrmOpportunity[]
+  crmPipelines         CrmPipeline[]
+  crmActivities        CrmActivity[]
 }
 
 model User {
@@ -48,6 +54,155 @@ model User {
   notifications  Notification[]
   auditLogs      AuditLog[]
   settings       Setting[]
+  ownedCrmContacts    CrmContact[]
+  ownedCrmLeads       CrmLead[]
+  ownedCrmOpportunities CrmOpportunity[]
+  assignedCrmActivities CrmActivity[]
+}
+
+model CrmOrganization {
+  id             String       @id @default(uuid())
+  name           String
+  industry       String?
+  employees      Int?
+  revenue        Float?
+  website        String?
+  address        String?
+  city           String?
+  country        String?
+  status         String       @default("active")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  contacts       CrmContact[]
+  opportunities  CrmOpportunity[]
+  leads          CrmLead[]
+  notes          CrmNote[]
+}
+
+model CrmContact {
+  id             String       @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  jobTitle       String?
+  source         String?
+  tags           String[]
+  status         String       @default("active")
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  ownerId        String?
+  owner          User?        @relation(fields: [ownerId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  activities     CrmActivity[]
+  notes          CrmNote[]
+  opportunities  CrmOpportunity[] @relation("OpportunityContacts")
+}
+
+model CrmLead {
+  id             String       @id @default(uuid())
+  title          String?
+  source         String?
+  status         String       @default("new")
+  score          Float?       @default(0)
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  ownerId        String?
+  owner          User?        @relation(fields: [ownerId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  notes          CrmNote[]
+  activities     CrmActivity[]
+}
+
+model CrmOpportunity {
+  id             String       @id @default(uuid())
+  name           String
+  value          Float
+  stage          String
+  probability    Float?
+  expectedCloseDate DateTime?
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  ownerId        String?
+  owner          User?        @relation(fields: [ownerId], references: [id])
+  pipelineId     String
+  pipeline       CrmPipeline  @relation(fields: [pipelineId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  contacts       CrmContact[] @relation("OpportunityContacts")
+  notes          CrmNote[]
+  activities     CrmActivity[]
+}
+
+model CrmPipeline {
+  id             String       @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  stages         CrmPipelineStage[]
+  opportunities  CrmOpportunity[]
+}
+
+model CrmPipelineStage {
+  id             String       @id @default(uuid())
+  name           String
+  order          Int
+  probability    Float?
+  pipelineId     String
+  pipeline       CrmPipeline  @relation(fields: [pipelineId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model CrmActivity {
+  id             String       @id @default(uuid())
+  type           String       // call, meeting, email, task
+  subject        String
+  description    String?
+  status         String       @default("planned")
+  dueDate        DateTime?
+  crmContactId   String?
+  crmContact     CrmContact?  @relation(fields: [crmContactId], references: [id])
+  crmLeadId      String?
+  crmLead        CrmLead?     @relation(fields: [crmLeadId], references: [id])
+  crmOpportunityId String?
+  crmOpportunity   CrmOpportunity? @relation(fields: [crmOpportunityId], references: [id])
+  assignedToId   String?
+  assignedTo     User?        @relation(fields: [assignedToId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  notes          CrmNote[]
+}
+
+model CrmNote {
+  id               String       @id @default(uuid())
+  content          String
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  crmContactId     String?
+  crmContact       CrmContact?  @relation(fields: [crmContactId], references: [id])
+  crmLeadId        String?
+  crmLead          CrmLead?     @relation(fields: [crmLeadId], references: [id])
+  crmOpportunityId String?
+  crmOpportunity   CrmOpportunity? @relation(fields: [crmOpportunityId], references: [id])
+  crmActivityId    String?
+  crmActivity      CrmActivity? @relation(fields: [crmActivityId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model Department {

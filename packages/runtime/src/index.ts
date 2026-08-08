@@ -23,3 +23,4 @@ export * from './missions/mission-registry.js';
 export * from './missions/mission-scheduler.js';
 export * from './missions/mission-checkpoints.js';
 export * from './missions/mission.module.js';
+export * from './communication/message-bus.js';
