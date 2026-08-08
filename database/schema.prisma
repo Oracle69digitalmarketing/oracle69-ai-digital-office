@@ -50,6 +50,12 @@ model Organization {
   miGrowthInsights     MiGrowthInsight[]
   miPricingSuggestions MiPricingSuggestion[]
   miGrowthReports      MiGrowthReport[]
+  oiOperationsSnapshots OiOperationsSnapshot[]
+  oiWorkflowSnapshots  OiWorkflowSnapshot[]
+  oiAgentUtilizations  OiAgentUtilization[]
+  oiOpsInsights        OiOpsInsight[]
+  oiOpsRecommendations OiOpsRecommendation[]
+  oiOperationsReports  OiOperationsReport[]
 }
 
 model User {
@@ -485,6 +491,98 @@ model MiGrowthReport {
   id               String       @id @default(uuid())
   period           String
   growthScore      Float
+  summary          Json
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model OiOperationsSnapshot {
+  id                String       @id @default(uuid())
+  period            String
+  tasksTotal        Int          @default(0)
+  tasksCompleted    Int          @default(0)
+  completionRate    Float        @default(0)
+  cycleTimeAvg      Float?
+  throughput        Int          @default(0)
+  backlog           Int          @default(0)
+  avgExecutionTime  Float?
+  metrics           Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model OiWorkflowSnapshot {
+  id                 String       @id @default(uuid())
+  period             String
+  workflowsTotal     Int          @default(0)
+  workflowsCompleted Int          @default(0)
+  successRate        Float        @default(0)
+  avgStages          Float        @default(0)
+  stalledWorkflows   Int          @default(0)
+  metrics            Json
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  createdAt          DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model OiAgentUtilization {
+  id                String       @id @default(uuid())
+  period            String
+  agentId           String
+  agentName         String?
+  tasksAssigned     Int          @default(0)
+  tasksCompleted    Int          @default(0)
+  completionRate    Float        @default(0)
+  utilizationRate   Float        @default(0)
+  avgExecutionTime  Float?
+  status            String       @default("idle")
+  metrics           Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period, agentId])
+}
+
+model OiOpsInsight {
+  id             String       @id @default(uuid())
+  type           String
+  content        String
+  confidence     Float?
+  source         String       @default("deterministic")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model OiOpsRecommendation {
+  id               String       @id @default(uuid())
+  title            String
+  priority         String       @default("normal")
+  action           String
+  expectedImpact   String
+  source           String       @default("deterministic")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model OiOperationsReport {
+  id               String       @id @default(uuid())
+  period           String
+  opsScore         Float
   summary          Json
   organizationId   String
   organization     Organization @relation(fields: [organizationId], references: [id])
