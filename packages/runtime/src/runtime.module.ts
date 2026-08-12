@@ -1,15 +1,8 @@
 import { Module } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventsModule } from './events/events.module.js';
+import { PersistenceModule } from './persistence/persistence.module.js';
+import { OrchestrationModule } from './orchestration/orchestration.module.js';
 import { RuntimeManager } from './runtime-manager.js';
-import { AgentRegistry } from './agent-registry.js';
-import { PlanningEngine } from './planner/planning-engine.js';
-import { WorkflowEngine } from './workflow/workflow-engine.js';
-import { 
-  CheckpointManager, 
-  RetryManager, 
-  CompensationManager, 
-  ApprovalManager 
-} from './workflow/workflow-managers.js';
 import { ToolRouter } from './tools/tool-router.js';
 import { ToolRegistry } from './tools/tool-registry.js';
 import { MemoryManager } from './memory/memory-manager.js';
@@ -22,29 +15,30 @@ import { MissionModule } from './missions/mission.module.js';
 import { GovernanceModule } from './governance/governance.module.js';
 
 @Module({
-  imports: [EventEmitterModule.forRoot(), CommunicationModule, DepartmentModule, ExecutiveModule, MissionModule, GovernanceModule],
+  imports: [
+    EventsModule,
+    PersistenceModule,
+    OrchestrationModule,
+    CommunicationModule,
+    DepartmentModule,
+    ExecutiveModule,
+    MissionModule,
+    GovernanceModule,
+  ],
   providers: [
-    RuntimeManager, 
-    AgentRegistry, 
-    PlanningEngine,
-    WorkflowEngine,
-    CheckpointManager,
-    RetryManager,
-    CompensationManager,
-    ApprovalManager,
+    RuntimeManager,
     ToolRouter,
     ToolRegistry,
     MemoryManager,
     ContextManager,
     AuditLogger,
     MetricsCollector,
-    HealthMonitor
+    HealthMonitor,
   ],
   exports: [
-    RuntimeManager, 
-    AgentRegistry, 
-    PlanningEngine,
-    WorkflowEngine,
+    EventsModule,
+    OrchestrationModule,
+    RuntimeManager,
     ToolRouter,
     ToolRegistry,
     MemoryManager,
@@ -56,7 +50,7 @@ import { GovernanceModule } from './governance/governance.module.js';
     DepartmentModule,
     ExecutiveModule,
     MissionModule,
-    GovernanceModule
+    GovernanceModule,
   ],
 })
 export class RuntimeModule {}

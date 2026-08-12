@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { IAgentRegistry, AgentMetadata } from './runtime.types.js';
 import { RegistryValidationError, RegistryConflictError } from './errors/runtime.errors.js';
-import { RuntimeEvent, RuntimeEventType } from './events/runtime.events.js';
+import { RuntimeEventType } from './events/runtime.events.js';
+import { EventBus } from './events/event-bus.js';
 
 @Injectable()
 export class AgentRegistry implements IAgentRegistry {
   private readonly logger = new Logger(AgentRegistry.name);
   private readonly agents = new Map<string, AgentMetadata>();
 
-  constructor(private readonly eventEmitter?: EventEmitter2) {}
+  constructor(private readonly eventBus?: EventBus) {}
 
   public register(metadata: AgentMetadata): void {
     this.logger.debug(`Attempting to register agent: ${metadata.id}`);
@@ -61,9 +61,7 @@ export class AgentRegistry implements IAgentRegistry {
     return true;
   }
 
-  private emit(type: RuntimeEventType, payload: any): void {
-    if (this.eventEmitter) {
-      this.eventEmitter.emit(type, new RuntimeEvent(type, payload));
-    }
+  private emit(type: RuntimeEventType, payload: Record<string, unknown>): void {
+    this.eventBus?.publish(type, payload, { source: 'AgentRegistry' });
   }
 }

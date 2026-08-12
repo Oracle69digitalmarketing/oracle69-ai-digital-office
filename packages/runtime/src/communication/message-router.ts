@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Message, MessageStatus } from './message.types.js';
 import { AgentDirectory } from './agent-directory.js';
 import { AgentMailbox } from './agent-mailbox.js';
 import { CommunicationEventType } from './communication-events.js';
+import { EventBus } from '../events/event-bus.js';
 
 @Injectable()
 export class MessageRouter {
@@ -11,7 +11,7 @@ export class MessageRouter {
 
   constructor(
     private readonly directory: AgentDirectory,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventBus: EventBus
   ) {}
 
   async route(message: Message): Promise<void> {
@@ -25,6 +25,6 @@ export class MessageRouter {
     }
 
     message.status = MessageStatus.DELIVERED;
-    this.eventEmitter.emit(CommunicationEventType.MESSAGE_SENT, message);
+    this.eventBus.publish(CommunicationEventType.MESSAGE_SENT, message, { source: 'MessageRouter' });
   }
 }

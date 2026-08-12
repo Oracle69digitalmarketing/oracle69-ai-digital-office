@@ -46,7 +46,7 @@ export class SalesIntelligenceController {
   }
 
   @Post('missions')
-  createMission(@Body() body: { goal: string, priority?: 'low' | 'normal' | 'high' | 'critical' }) {
-    return this.service.requestMission(body.goal, body.priority);
+  createMission(@Body() body: { goal: string, priority?: 'low' | 'normal' | 'high' | 'critical', organizationId?: string }) {
+    return this.service.requestMission(body.goal, body.priority, body.organizationId);
   }
 }

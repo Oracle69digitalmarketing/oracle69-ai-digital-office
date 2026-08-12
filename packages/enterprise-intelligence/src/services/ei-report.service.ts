@@ -78,6 +78,7 @@ export class EiReportService {
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
         owner: 'enterprise-intelligence',
         status: MissionStatus.DRAFT,
+        tenantId: organizationId,
       });
 
       this.messageBus.publish(

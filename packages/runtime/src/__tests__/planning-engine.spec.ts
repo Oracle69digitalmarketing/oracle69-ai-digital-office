@@ -2,17 +2,18 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { PlanningEngine } from '../planner/planning-engine.js';
 import { AgentRegistry } from '../agent-registry.js';
 import { RuntimeContext } from '../runtime-context.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventBus } from '../events/event-bus.js';
+import { RuntimeEventType } from '../events/runtime.events.js';
 
 describe('PlanningEngine', () => {
   let engine: PlanningEngine;
   let registry: AgentRegistry;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
-    registry = new AgentRegistry(eventEmitter);
-    engine = new PlanningEngine(registry, eventEmitter);
+    eventBus = new EventBus();
+    registry = new AgentRegistry(eventBus);
+    engine = new PlanningEngine(registry, eventBus);
   });
 
   it('should generate a plan based on goal', async () => {
@@ -67,5 +68,21 @@ describe('PlanningEngine', () => {
     // @ts-ignore
     engine.selectAgent(task);
     expect(task.agentId).toBe('agent-1');
+  });
+
+  it('should publish planning events with propagated tenant context', async () => {
+    registry.register({ id: 'rec-1', name: 'R1', role: 'receptionist', version: '1.0.0' });
+    const events: { type: string; tenantId?: string; correlationId?: string; executionId?: string }[] = [];
+    eventBus.allEvents().subscribe((event) =>
+      events.push({ type: event.type, tenantId: event.tenantId, correlationId: event.correlationId, executionId: event.executionId })
+    );
+
+    const context = new RuntimeContext('task-9', 'org-9');
+    await engine.generatePlan('Do something', context);
+
+    const started = events.find((e) => e.type === RuntimeEventType.PLANNING_STARTED);
+    expect(started?.tenantId).toBe('org-9');
+    expect(started?.correlationId).toBe(context.traceId);
+    expect(started?.executionId).toBe('task-9');
   });
 });

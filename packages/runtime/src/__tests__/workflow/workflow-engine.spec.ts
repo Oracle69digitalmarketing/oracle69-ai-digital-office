@@ -2,16 +2,17 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { WorkflowEngine } from '../../workflow/workflow-engine.js';
 import { WorkflowState } from '../../workflow/workflow.types.js';
 import { CheckpointManager, RetryManager, CompensationManager, ApprovalManager } from '../../workflow/workflow-managers.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventBus } from '../../events/event-bus.js';
+import { RuntimeEventType } from '../../events/runtime.events.js';
 
 describe('WorkflowEngine', () => {
   let engine: WorkflowEngine;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
+    eventBus = new EventBus();
     engine = new WorkflowEngine(
-      eventEmitter,
+      eventBus,
       new CheckpointManager(),
       new RetryManager(),
       new CompensationManager(),
@@ -34,5 +35,17 @@ describe('WorkflowEngine', () => {
   it('should throw on invalid transition', async () => {
     const workflow = await engine.createWorkflow('plan-1', {});
     await expect(engine.startWorkflow(workflow)).rejects.toThrow();
+  });
+
+  it('should publish workflow events through the canonical EventBus', async () => {
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
+
+    const workflow = await engine.createWorkflow('plan-1', {});
+    workflow.metadata.state = WorkflowState.READY;
+    await engine.startWorkflow(workflow);
+
+    expect(published).toContain(RuntimeEventType.WORKFLOW_CREATED);
+    expect(published).toContain(RuntimeEventType.WORKFLOW_STARTED);
   });
 });

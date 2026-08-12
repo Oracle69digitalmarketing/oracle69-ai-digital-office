@@ -1,19 +1,23 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { ExecutiveOffice } from '../../executive/executive-office.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventBus } from '../../events/event-bus.js';
+import { ExecutiveEventType } from '../../executive/executive-events.js';
 
 describe('ExecutiveOffice', () => {
   let office: ExecutiveOffice;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
-    office = new ExecutiveOffice(eventEmitter);
+    eventBus = new EventBus();
+    office = new ExecutiveOffice(eventBus);
   });
 
-  it('should assign enterprise goal', async () => {
-    const spy = jest.spyOn(eventEmitter, 'emit');
+  it('should assign enterprise goal and publish a canonical event', async () => {
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
+
     await office.assignEnterpriseGoal({ id: 'g1', goal: 'Test goal', priority: 'high', deadline: '2026-12-31', status: 'created' });
-    expect(spy).toHaveBeenCalled();
+
+    expect(published).toContain(ExecutiveEventType.EXECUTIVE_GOAL_CREATED);
   });
 });

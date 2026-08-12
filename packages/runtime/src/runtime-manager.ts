@@ -1,9 +1,9 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { IRuntimeManager, IAgentRegistry, IRuntimeContext, RuntimeState } from './runtime.types.js';
 import { RuntimeContext } from './runtime-context.js';
 import { AgentRegistry } from './agent-registry.js';
 import { RuntimeEvent, RuntimeEventType } from './events/runtime.events.js';
+import { EventBus } from './events/event-bus.js';
 import { InitializationError } from './errors/runtime.errors.js';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
   private state: RuntimeState = RuntimeState.UNINITIALIZED;
   private readonly registry: AgentRegistry;
 
-  constructor(private readonly eventEmitter?: EventEmitter2) {
-    this.registry = new AgentRegistry(this.eventEmitter);
+  constructor(private readonly eventBus?: EventBus) {
+    this.registry = new AgentRegistry(this.eventBus);
   }
 
   /**
@@ -73,11 +73,11 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
   /**
    * Registers a callback for a specific lifecycle state transition.
    */
-  public on(state: RuntimeState, callback: (payload?: any) => void): void {
-    if (this.eventEmitter) {
+  public on(state: RuntimeState, callback: (payload?: unknown) => void): void {
+    if (this.eventBus) {
       const eventType = this.mapStateToEvent(state);
       if (eventType) {
-        this.eventEmitter.on(eventType, (event: RuntimeEvent) => callback(event.payload));
+        this.eventBus.subscribe(eventType, (event: RuntimeEvent<unknown>) => callback(event.payload));
       }
     }
   }
@@ -115,9 +115,7 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
     }
   }
 
-  private emit(type: RuntimeEventType, payload: any = {}): void {
-    if (this.eventEmitter) {
-      this.eventEmitter.emit(type, new RuntimeEvent(type, payload));
-    }
+  private emit(type: RuntimeEventType, payload: Record<string, unknown> = {}): void {
+    this.eventBus?.publish(type, payload, { source: 'RuntimeManager' });
   }
 }

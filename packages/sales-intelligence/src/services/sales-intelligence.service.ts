@@ -31,7 +31,11 @@ export class SalesIntelligenceService {
     private readonly missionManager: MissionManager
   ) {}
 
-  async requestMission(goal: string, priority: 'low' | 'normal' | 'high' | 'critical' = 'normal') {
+  async requestMission(
+    goal: string,
+    priority: 'low' | 'normal' | 'high' | 'critical' = 'normal',
+    tenantId?: string
+  ) {
     const missionId = uuidv4();
     await this.missionManager.createMission({
       id: missionId,
@@ -39,7 +43,8 @@ export class SalesIntelligenceService {
       priority,
       deadline: new Date(Date.now() + 86400000 * 7).toISOString(), // 1 week
       owner: 'sales-intelligence',
-      status: MissionStatus.DRAFT
+      status: MissionStatus.DRAFT,
+      tenantId: tenantId ?? 'system'
     });
     return { missionId };
   }

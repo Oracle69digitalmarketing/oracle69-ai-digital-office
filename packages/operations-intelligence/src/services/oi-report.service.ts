@@ -74,6 +74,7 @@ export class OiReportService {
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
         owner: 'operations-intelligence',
         status: MissionStatus.DRAFT,
+        tenantId: organizationId,
       });
 
       this.messageBus.publish(

@@ -1,19 +1,23 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { ExecutiveCoordinator } from '../../executive/executive-coordinator.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventBus } from '../../events/event-bus.js';
+import { ExecutiveEventType } from '../../executive/executive-events.js';
 
 describe('ExecutiveCoordinator', () => {
   let coordinator: ExecutiveCoordinator;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
-    coordinator = new ExecutiveCoordinator(eventEmitter);
+    eventBus = new EventBus();
+    coordinator = new ExecutiveCoordinator(eventBus);
   });
 
-  it('should resolve conflict', async () => {
-    const spy = jest.spyOn(eventEmitter, 'emit');
+  it('should resolve conflict and publish a canonical event', async () => {
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
+
     await coordinator.resolveConflict('c1');
-    expect(spy).toHaveBeenCalled();
+
+    expect(published).toContain(ExecutiveEventType.ENTERPRISE_CONFLICT_RESOLVED);
   });
 });

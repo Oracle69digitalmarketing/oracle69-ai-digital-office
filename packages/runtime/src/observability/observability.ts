@@ -1,24 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RuntimeEventType } from '../events/runtime.events.js';
-import { RuntimeEvent } from '../events/runtime.events.js';
+import { EventBus } from '../events/event-bus.js';
 
 @Injectable()
 export class AuditLogger {
   private readonly logger = new Logger(AuditLogger.name);
 
-  constructor(private readonly eventEmitter: EventEmitter2) {}
+  constructor(private readonly eventBus: EventBus) {}
 
-  logEntry(entry: any): void {
+  logEntry(entry: unknown): void {
     this.logger.log(`Audit: ${JSON.stringify(entry)}`);
-    this.eventEmitter.emit(RuntimeEventType.AUDIT_ENTRY_CREATED, new RuntimeEvent(RuntimeEventType.AUDIT_ENTRY_CREATED, entry));
+    this.eventBus.publish(RuntimeEventType.AUDIT_ENTRY_CREATED, { entry }, { source: 'AuditLogger' });
   }
 }
 
 @Injectable()
 export class MetricsCollector {
+  private readonly logger = new Logger(MetricsCollector.name);
+
+  constructor(private readonly eventBus?: EventBus) {}
+
   recordMetric(name: string, value: number): void {
-    // Logic to aggregate metrics
+    this.logger.debug(`Metric recorded: ${name}=${value}`);
+    this.eventBus?.publish(RuntimeEventType.RUNTIME_METRIC_RECORDED, { name, value }, { source: 'MetricsCollector' });
   }
 }
 

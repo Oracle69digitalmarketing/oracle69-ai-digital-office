@@ -94,7 +94,8 @@ export class CsSuccessPlanService {
       priority,
       deadline: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days
       owner: 'customer-success',
-      status: MissionStatus.DRAFT
+      status: MissionStatus.DRAFT,
+      tenantId: crmOrganizationId
     });
 
     // Persist the intervention as an interaction so downstream intelligence can use it

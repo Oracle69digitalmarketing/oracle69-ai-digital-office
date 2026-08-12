@@ -1,15 +1,16 @@
 import { jest } from '@jest/globals';
 import { AgentRegistry } from '../agent-registry.js';
 import { RegistryValidationError, RegistryConflictError } from '../errors/runtime.errors.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventBus } from '../events/event-bus.js';
+import { RuntimeEventType } from '../events/runtime.events.js';
 
 describe('AgentRegistry', () => {
   let registry: AgentRegistry;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
-    registry = new AgentRegistry(eventEmitter);
+    eventBus = new EventBus();
+    registry = new AgentRegistry(eventBus);
   });
 
   const validAgent = {
@@ -58,14 +59,15 @@ describe('AgentRegistry', () => {
     expect(registry.validate({ ...validAgent, version: '1.0.0-alpha' })).toBe(true);
   });
 
-  it('should emit events on registration and lookup', () => {
-    const emitSpy = jest.spyOn(eventEmitter, 'emit');
-    
+  it('should publish events through the canonical EventBus on registration and lookup', () => {
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
+
     registry.register(validAgent);
-    expect(emitSpy).toHaveBeenCalledWith('agent.registered', expect.any(Object));
+    expect(published).toContain(RuntimeEventType.AGENT_REGISTERED);
 
     registry.getAgent('test-agent');
-    expect(emitSpy).toHaveBeenCalledWith('agent.lookup', expect.any(Object));
-    expect(emitSpy).toHaveBeenCalledWith('agent.loaded', expect.any(Object));
+    expect(published).toContain(RuntimeEventType.AGENT_LOOKUP);
+    expect(published).toContain(RuntimeEventType.AGENT_LOADED);
   });
 });

@@ -1,15 +1,16 @@
 import { jest } from '@jest/globals';
 import { RuntimeManager } from '../runtime-manager.js';
 import { RuntimeState } from '../runtime.types.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RuntimeEventType } from '../events/runtime.events.js';
+import { EventBus } from '../events/event-bus.js';
 
 describe('RuntimeManager', () => {
   let manager: RuntimeManager;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
-    manager = new RuntimeManager(eventEmitter);
+    eventBus = new EventBus();
+    manager = new RuntimeManager(eventBus);
   });
 
   it('should initialize to READY state', async () => {
@@ -19,16 +20,12 @@ describe('RuntimeManager', () => {
   });
 
   it('should transition through states during initialize', async () => {
-    const states: RuntimeState[] = [];
-    jest.spyOn(eventEmitter, 'emit').mockImplementation((type) => {
-      if (type === 'runtime.started') states.push(RuntimeState.STARTING);
-      if (type === 'runtime.ready') states.push(RuntimeState.READY);
-      return true;
-    });
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
 
     await manager.initialize();
-    expect(states).toContain(RuntimeState.STARTING);
-    expect(states).toContain(RuntimeState.READY);
+    expect(published).toContain(RuntimeEventType.RUNTIME_STARTED);
+    expect(published).toContain(RuntimeEventType.RUNTIME_READY);
   });
 
   it('should shut down correctly', async () => {
@@ -56,5 +53,18 @@ describe('RuntimeManager', () => {
 
     await manager.initialize();
     expect(callback).toHaveBeenCalled();
+  });
+
+  it('should publish lifecycle events through the canonical EventBus', async () => {
+    const events: { type: string; source: string }[] = [];
+    eventBus.allEvents().subscribe((event) => events.push({ type: event.type, source: event.source }));
+
+    await manager.initialize();
+    await manager.shutdown();
+
+    expect(events.map((e) => e.type)).toContain(RuntimeEventType.RUNTIME_STARTED);
+    expect(events.map((e) => e.type)).toContain(RuntimeEventType.RUNTIME_READY);
+    expect(events.map((e) => e.type)).toContain(RuntimeEventType.RUNTIME_SHUTDOWN);
+    expect(events.every((e) => e.source === 'RuntimeManager')).toBe(true);
   });
 });

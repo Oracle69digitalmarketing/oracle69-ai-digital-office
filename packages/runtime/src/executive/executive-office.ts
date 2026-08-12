@@ -1,25 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { IExecutiveOffice, EnterpriseGoal } from './executive.types.js';
 import { ExecutiveEventType, ExecutiveEvent } from './executive-events.js';
+import { EventBus } from '../events/event-bus.js';
 
 @Injectable()
 export class ExecutiveOffice implements IExecutiveOffice {
   private readonly logger = new Logger(ExecutiveOffice.name);
 
-  constructor(private readonly eventEmitter: EventEmitter2) {}
+  constructor(private readonly eventBus: EventBus) {}
 
   async assignEnterpriseGoal(goal: EnterpriseGoal): Promise<void> {
     this.logger.log(`Assigning enterprise goal: ${goal.goal}`);
-    this.emit(ExecutiveEventType.EXECUTIVE_GOAL_CREATED, { goalId: goal.id });
+    this.eventBus.publish(new ExecutiveEvent(ExecutiveEventType.EXECUTIVE_GOAL_CREATED, { goalId: goal.id }, { source: 'ExecutiveOffice' }));
   }
 
   async approveMission(missionId: string): Promise<void> {
     this.logger.log(`Approving mission: ${missionId}`);
-    this.emit(ExecutiveEventType.EXECUTIVE_GOAL_APPROVED, { missionId });
-  }
-
-  private emit(type: ExecutiveEventType, payload: any): void {
-    this.eventEmitter.emit(type, new ExecutiveEvent(type, payload));
+    this.eventBus.publish(new ExecutiveEvent(ExecutiveEventType.EXECUTIVE_GOAL_APPROVED, { missionId }, { source: 'ExecutiveOffice' }));
   }
 }

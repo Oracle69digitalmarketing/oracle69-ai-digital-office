@@ -1,19 +1,27 @@
-import { IRuntimeEvent } from '../runtime.types.js';
+import { v4 as uuidv4 } from 'uuid';
+import { IRuntimeEvent, IRuntimeContext } from '../runtime.types.js';
 
 /**
- * Enumeration of all runtime event types.
+ * The authoritative event vocabulary for the Enterprise Runtime.
+ *
+ * Every canonical runtime event is named from this catalog. Domain-specific
+ * events (CRM, governance, executive, ...) extend this vocabulary through the
+ * canonical envelope via `RuntimeEventType | string`.
  */
 export enum RuntimeEventType {
+  // Runtime Events
   RUNTIME_STARTED = 'runtime.started',
   RUNTIME_READY = 'runtime.ready',
   RUNTIME_SHUTDOWN = 'runtime.shutdown',
+  RUNTIME_ERROR = 'runtime.error',
+  RUNTIME_WARNING = 'runtime.warning',
+
+  // Agent Events
   AGENT_REGISTERED = 'agent.registered',
   AGENT_LOADED = 'agent.loaded',
   AGENT_LOOKUP = 'agent.lookup',
   AGENT_VALIDATION_FAILED = 'agent.validation.failed',
-  RUNTIME_ERROR = 'runtime.error',
-  RUNTIME_WARNING = 'runtime.warning',
-  
+
   // Planning Events
   PLANNING_STARTED = 'planning.started',
   PLANNING_COMPLETED = 'planning.completed',
@@ -36,7 +44,7 @@ export enum RuntimeEventType {
   WORKFLOW_RETRY_COMPLETED = 'workflow.retry.completed',
   WORKFLOW_COMPENSATION_STARTED = 'workflow.compensation.started',
   WORKFLOW_COMPENSATION_COMPLETED = 'workflow.compensation.completed',
-  
+
   // Tool Events
   TOOL_EXECUTION_STARTED = 'tool.execution.started',
   TOOL_EXECUTION_COMPLETED = 'tool.execution.completed',
@@ -60,7 +68,7 @@ export enum RuntimeEventType {
   MISSION_RECOVERED = 'mission.recovered',
   CHECKPOINT_CREATED = 'checkpoint.created',
   CHECKPOINT_RESTORED = 'checkpoint.restored',
-  
+
   // Memory & Observability Events
   MEMORY_CREATED = 'memory.created',
   MEMORY_UPDATED = 'memory.updated',
@@ -76,15 +84,88 @@ export enum RuntimeEventType {
 }
 
 /**
- * Concrete implementation of a runtime event.
+ * Canonical metadata attached to every runtime event envelope.
  */
-export class RuntimeEvent implements IRuntimeEvent {
+export interface RuntimeEventMetadata {
+  /** System component that originated the event. */
+  readonly source: string;
+  /** Schema version of the canonical event envelope. */
+  readonly version: string;
+  /** Free-form supplemental metadata. */
+  readonly metadata: Record<string, unknown>;
+}
+
+/**
+ * Options used to construct and publish a canonical runtime event.
+ *
+ * Execution context fields reuse the existing `IRuntimeContext` contract:
+ * - `correlationId` is derived from `context.traceId`
+ * - `tenantId` is derived from `context.orgId`
+ * - `executionId` is derived from `context.taskId`
+ */
+export interface RuntimeEventOptions {
+  /** System component that originated the event. */
+  source?: string;
+  /** Schema version of the canonical event envelope. */
+  version?: string;
+  /** Cross-system correlation identifier. */
+  correlationId?: string;
+  /** Identifier of the event that caused this event. */
+  causationId?: string;
+  /** Tenant/organization scope of the event. */
+  tenantId?: string;
+  /** Mission identifier when the event belongs to a mission. */
+  missionId?: string;
+  /** Execution/task identifier when the event belongs to an execution. */
+  executionId?: string;
+  /** Workflow identifier when the event belongs to a workflow. */
+  workflowId?: string;
+  /** Idempotency key enabling exactly-once handling by consumers/recorders. */
+  idempotencyKey?: string;
+  /**
+   * Runtime execution context the event is published from.
+   * Used to propagate correlation, tenant and execution identifiers.
+   */
+  context?: Pick<IRuntimeContext, 'traceId' | 'orgId' | 'taskId'>;
+  /** Free-form supplemental metadata. */
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Concrete implementation of a canonical runtime event.
+ */
+export class RuntimeEvent<T = unknown> implements IRuntimeEvent<T> {
+  public readonly eventId: string;
   public readonly timestamp: number;
+  public readonly source: string;
+  public readonly version: string;
+  public readonly metadata: Record<string, unknown>;
+  public readonly correlationId?: string;
+  public readonly causationId?: string;
+  public readonly tenantId?: string;
+  public readonly missionId?: string;
+  public readonly executionId?: string;
+  public readonly workflowId?: string;
+  public readonly idempotencyKey?: string;
 
   constructor(
     public readonly type: RuntimeEventType | string,
-    public readonly payload: any = {}
+    public readonly payload: T = {} as T,
+    options: RuntimeEventOptions = {}
   ) {
+    this.eventId = uuidv4();
     this.timestamp = Date.now();
+    this.source = options.source ?? 'runtime';
+    this.version = options.version ?? '1.0.0';
+    this.metadata = options.metadata ?? {};
+
+    // Correlation / execution context propagation reuses IRuntimeContext.
+    this.correlationId = options.correlationId ?? options.context?.traceId;
+    this.tenantId = options.tenantId ?? options.context?.orgId;
+    this.executionId = options.executionId ?? options.context?.taskId;
+    this.causationId = options.causationId;
+    this.missionId = options.missionId;
+    this.workflowId = options.workflowId;
+    this.idempotencyKey = options.idempotencyKey;
   }
 }

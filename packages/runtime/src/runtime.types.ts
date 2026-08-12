@@ -97,7 +97,7 @@ export interface IRuntimeLifecycle {
    * @param state The state to listen for.
    * @param callback The function to execute.
    */
-  on(state: RuntimeState, callback: (payload?: any) => void): void;
+  on(state: RuntimeState, callback: (payload?: unknown) => void): void;
 }
 
 /**
@@ -128,13 +128,35 @@ export interface IRuntimeManager extends IRuntimeLifecycle {
 }
 
 /**
- * Represents a runtime event.
+ * Represents a canonical runtime event.
  */
-export interface IRuntimeEvent {
-  /** Unique event identifier (e.g., 'runtime.ready') */
+export interface IRuntimeEvent<T = unknown> {
+  /** Canonical event name (e.g., 'runtime.ready') */
   readonly type: string;
   /** Data associated with the event */
-  readonly payload: any;
+  readonly payload: T;
   /** Unix timestamp of emission */
   readonly timestamp: number;
+  /** Unique event identifier */
+  readonly eventId: string;
+  /** System component that originated the event */
+  readonly source: string;
+  /** Schema version of the canonical event envelope */
+  readonly version: string;
+  /** Cross-system correlation identifier */
+  readonly correlationId?: string;
+  /** Identifier of the event that caused this event */
+  readonly causationId?: string;
+  /** Tenant/organization scope of the event */
+  readonly tenantId?: string;
+  /** Mission identifier when the event belongs to a mission */
+  readonly missionId?: string;
+  /** Execution/task identifier when the event belongs to an execution */
+  readonly executionId?: string;
+  /** Workflow identifier when the event belongs to a workflow */
+  readonly workflowId?: string;
+  /** Idempotency key enabling exactly-once handling */
+  readonly idempotencyKey?: string;
+  /** Free-form supplemental metadata */
+  readonly metadata?: Record<string, unknown>;
 }

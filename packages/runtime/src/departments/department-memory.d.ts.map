@@ -1,1 +1,0 @@
-{"version":3,"file":"department-memory.d.ts","sourceRoot":"","sources":["department-memory.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,gBAAgB,EAAE,MAAM,uBAAuB,CAAC;AAEzD,qBACa,uBAAuB;IAClC,OAAO,CAAC,QAAQ,CAAuC;;IAIvD,SAAS,CAAC,MAAM,EAAE,MAAM,GAAG,gBAAgB;IAI3C,YAAY,CAAC,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,gBAAgB,GAAG,IAAI;CAG7D"}

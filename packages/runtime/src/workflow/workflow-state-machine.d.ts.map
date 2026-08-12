@@ -1,1 +1,0 @@
-{"version":3,"file":"workflow-state-machine.d.ts","sourceRoot":"","sources":["workflow-state-machine.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,qBAAqB,CAAC;AAEpD,qBAAa,oBAAoB;IAC/B,OAAO,CAAC,MAAM,CAAC,QAAQ,CAAC,WAAW,CAUjC;WAEY,aAAa,CAAC,IAAI,EAAE,aAAa,EAAE,EAAE,EAAE,aAAa,GAAG,OAAO;CAG7E"}

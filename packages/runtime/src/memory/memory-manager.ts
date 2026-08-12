@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { IMemoryManager, MemoryRecord } from './memory.types.js';
 import { RuntimeEventType } from '../events/runtime.events.js';
-import { RuntimeEvent } from '../events/runtime.events.js';
+import { EventBus } from '../events/event-bus.js';
 
 @Injectable()
 export class MemoryManager implements IMemoryManager {
   private storage = new Map<string, MemoryRecord>();
 
-  constructor(private readonly eventEmitter: EventEmitter2) {}
+  constructor(private readonly eventBus: EventBus) {}
 
   async save(record: MemoryRecord): Promise<void> {
     this.storage.set(record.id, record);
@@ -21,7 +20,7 @@ export class MemoryManager implements IMemoryManager {
     return results;
   }
 
-  private emit(type: RuntimeEventType, payload: any): void {
-    this.eventEmitter.emit(type, new RuntimeEvent(type, payload));
+  private emit(type: RuntimeEventType, payload: Record<string, unknown>): void {
+    this.eventBus.publish(type, payload, { source: 'MemoryManager' });
   }
 }

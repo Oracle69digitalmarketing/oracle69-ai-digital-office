@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Policy, ApprovalRequest, AuditRecord } from './governance.types.js';
 import { GovernanceEventType, GovernanceEvent } from './governance-events.js';
 

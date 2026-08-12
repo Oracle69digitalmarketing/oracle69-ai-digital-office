@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { WorkflowStep, WorkflowTrace } from '@oracle69/shared';
 import { WorkflowTraceRepository } from './execution-engine.js';
 
 @Injectable()
 export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(@Inject('PrismaService') private readonly prisma: PrismaClient) {}
 
   async saveStep(step: WorkflowStep, organizationId?: string): Promise<void> {
     await this.prisma.workflowStepRecord.upsert({

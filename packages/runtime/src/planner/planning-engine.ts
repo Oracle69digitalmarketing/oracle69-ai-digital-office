@@ -1,5 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { IAgentRegistry, IRuntimeContext } from '../runtime.types.js';
 import { 
   IPlanningEngine, 
@@ -7,16 +6,19 @@ import {
   TaskDefinition, 
   TaskType 
 } from './planner.types.js';
-import { RuntimeEvent, RuntimeEventType } from '../events/runtime.events.js';
+import { RuntimeEventType, RuntimeEventOptions } from '../events/runtime.events.js';
+import { EventBus } from '../events/event-bus.js';
 import { RuntimeError } from '../errors/runtime.errors.js';
+import { AgentRegistry } from '../agent-registry.js';
 
 @Injectable()
 export class PlanningEngine implements IPlanningEngine {
   private readonly logger = new Logger(PlanningEngine.name);
+  private activeContext?: IRuntimeContext;
 
   constructor(
-    private readonly registry: IAgentRegistry,
-    private readonly eventEmitter?: EventEmitter2
+    @Inject(AgentRegistry) private readonly registry: IAgentRegistry,
+    private readonly eventBus: EventBus
   ) {}
 
   /**
@@ -24,7 +26,8 @@ export class PlanningEngine implements IPlanningEngine {
    */
   public async generatePlan(goal: string, context: IRuntimeContext): Promise<ExecutionPlan> {
     this.logger.log(`Generating plan for goal: ${goal}`);
-    this.emit(RuntimeEventType.PLANNING_STARTED, { goal, traceId: context.traceId });
+    this.activeContext = context;
+    this.emit(RuntimeEventType.PLANNING_STARTED, { goal, traceId: context.traceId }, { context });
 
     try {
       // 1. Decompose goal into task templates
@@ -55,12 +58,14 @@ export class PlanningEngine implements IPlanningEngine {
         throw new RuntimeError(`Plan validation failed: ${validation.errors?.join(', ')}`);
       }
 
-      this.emit(RuntimeEventType.PLANNING_COMPLETED, { goal, taskCount: tasks.length });
+      this.emit(RuntimeEventType.PLANNING_COMPLETED, { goal, taskCount: tasks.length }, { context });
       return plan;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.emit(RuntimeEventType.PLANNING_FAILED, { goal, error: message });
+      this.emit(RuntimeEventType.PLANNING_FAILED, { goal, error: message }, { context });
       throw error;
+    } finally {
+      this.activeContext = undefined;
     }
   }
 
@@ -218,9 +223,11 @@ export class PlanningEngine implements IPlanningEngine {
     return false;
   }
 
-  private emit(type: RuntimeEventType, payload: any): void {
-    if (this.eventEmitter) {
-      this.eventEmitter.emit(type, new RuntimeEvent(type, payload));
-    }
+  private emit(
+    type: RuntimeEventType,
+    payload: Record<string, unknown>,
+    options: RuntimeEventOptions = {}
+  ): void {
+    this.eventBus.publish(type, payload, { source: 'PlanningEngine', context: this.activeContext, ...options });
   }
 }

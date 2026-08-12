@@ -74,6 +74,7 @@ export class MiReportService {
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
         owner: 'marketing-intelligence',
         status: MissionStatus.DRAFT,
+        tenantId: organizationId,
       });
 
       this.messageBus.publish(

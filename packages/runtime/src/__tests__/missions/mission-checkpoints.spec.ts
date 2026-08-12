@@ -1,19 +1,32 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { MissionCheckpoints } from '../../missions/mission-checkpoints.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventBus } from '../../events/event-bus.js';
+import { RuntimeEventType } from '../../events/runtime.events.js';
 
 describe('MissionCheckpoints', () => {
   let checkpoints: MissionCheckpoints;
-  let eventEmitter: EventEmitter2;
+  let eventBus: EventBus;
 
   beforeEach(() => {
-    eventEmitter = new EventEmitter2();
-    checkpoints = new MissionCheckpoints(eventEmitter);
+    eventBus = new EventBus();
+    checkpoints = new MissionCheckpoints(eventBus);
   });
 
-  it('should save checkpoint', async () => {
-    const spy = jest.spyOn(eventEmitter, 'emit');
+  it('should save checkpoint and publish through the canonical EventBus', async () => {
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
+
     await checkpoints.saveCheckpoint('m1', 'state');
-    expect(spy).toHaveBeenCalled();
+
+    expect(published).toContain(RuntimeEventType.CHECKPOINT_CREATED);
+  });
+
+  it('should restore checkpoint and publish through the canonical EventBus', async () => {
+    const published: string[] = [];
+    eventBus.allEvents().subscribe((event) => published.push(event.type));
+
+    await checkpoints.restoreCheckpoint('m1');
+
+    expect(published).toContain(RuntimeEventType.CHECKPOINT_RESTORED);
   });
 });

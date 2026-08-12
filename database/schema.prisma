@@ -56,6 +56,50 @@ model Organization {
   oiOpsInsights        OiOpsInsight[]
   oiOpsRecommendations OiOpsRecommendation[]
   oiOperationsReports  OiOperationsReport[]
+  finBudgets           FinBudget[]
+  finInvoices          FinInvoice[]
+  finTransactions      FinTransaction[]
+  hrEmployees          HrEmployee[]
+  hrPositions          HrPosition[]
+  hrCandidates         HrCandidate[]
+  knowledgeArticles    KnowledgeArticle[]
+  knowledgeVersions    KnowledgeArticleVersion[]
+  knowledgeIndexEntries KnowledgeIndexEntry[]
+  knowledgeReports     KnowledgeReport[]
+  procurementSuppliers ProcurementSupplier[]
+  procurementPurchaseOrders ProcurementPurchaseOrder[]
+  missions             Mission[]
+  missionCheckpoints   MissionCheckpoint[]
+  deployments          Deployment[]
+}
+
+model ProcurementSupplier {
+  id             String       @id @default(uuid())
+  name           String
+  category       String?
+  status         String       @default("active")
+  contactEmail   String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  purchaseOrders ProcurementPurchaseOrder[]
+
+  @@index([organizationId, status])
+}
+
+model ProcurementPurchaseOrder {
+  id               String              @id @default(uuid())
+  supplierId       String
+  supplier         ProcurementSupplier @relation(fields: [supplierId], references: [id])
+  amount           Float
+  status           String              @default("pending") // pending, approved, rejected, completed
+  organizationId   String
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([organizationId, status])
 }
 
 model User {
@@ -689,6 +733,7 @@ model Client {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   projects       Project[]
+  finInvoices    FinInvoice[]
 }
 
 model Conversation {
@@ -850,6 +895,258 @@ model IntegrationCredential {
   updatedAt      DateTime     @updatedAt
 
   @@unique([provider, organizationId])
+}
+
+model Mission {
+  id             String             @id @default(uuid())
+  goal           String
+  priority       String             @default("normal")
+  deadline       DateTime?
+  owner          String
+  status         String             @default("draft")
+  missionKey     String
+  workflowId     String?
+  planId         String?
+  executionId    String?
+  correlationId  String?
+  error          String?
+  state          Json?
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  checkpoints    MissionCheckpoint[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([missionKey, organizationId])
+  @@index([organizationId, status, updatedAt])
+}
+
+model MissionCheckpoint {
+  id             String       @id @default(uuid())
+  missionId      String
+  mission        Mission      @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  version        Int
+  state          Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@unique([missionId, version])
+  @@index([missionId, createdAt])
+}
+
+model RuntimeEventLog {
+  id             String   @id @default(uuid())
+  eventId        String   @unique
+  type           String
+  payload        Json
+  source         String
+  version        String   @default("1.0.0")
+  correlationId  String?
+  causationId    String?
+  tenantId       String?
+  missionId      String?
+  executionId    String?
+  workflowId     String?
+  idempotencyKey String?
+  metadata       Json?
+  timestamp      DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([idempotencyKey])
+  @@index([tenantId, createdAt])
+}
+
+model Deployment {
+  id             String       @id @default(uuid())
+  name           String
+  environment    String       @default("production")
+  status         String       @default("active")
+  version        String       @default("1.0.0")
+  config         Json?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([name, environment, organizationId])
+  @@index([organizationId, status])
+}
+
+model FinBudget {
+  id             String       @id @default(uuid())
+  name           String       // e.g., 'Marketing', 'Development'
+  amount         Float
+  spent          Float        @default(0)
+  period         String       // e.g., 'monthly', 'quarterly', 'yearly'
+  startDate      DateTime
+  endDate        DateTime
+  status         String       @default("active")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  transactions   FinTransaction[]
+
+  @@index([organizationId, status])
+}
+
+model FinInvoice {
+  id             String       @id @default(uuid())
+  number         String
+  amount         Float
+  dueDate        DateTime
+  status         String       @default("draft") // draft, sent, paid, overdue, cancelled
+  clientId       String
+  client         Client       @relation(fields: [clientId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  transactions   FinTransaction[]
+
+  @@unique([number, organizationId])
+  @@index([organizationId, status])
+}
+
+model FinTransaction {
+  id             String       @id @default(uuid())
+  type           String       // income, expense
+  category       String
+  amount         Float
+  date           DateTime
+  status         String       @default("completed") // pending, completed, cancelled
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  budgetId       String?
+  budget         FinBudget?   @relation(fields: [budgetId], references: [id])
+  invoiceId      String?
+  invoice        FinInvoice?  @relation(fields: [invoiceId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, type, date])
+}
+
+model HrEmployee {
+  id              String       @id @default(uuid())
+  fullName        String
+  email           String
+  department      String       // e.g., 'Engineering', 'Marketing'
+  title           String
+  status          String       @default("onboarding") // onboarding, active, offboarding, inactive
+  hireDate        DateTime
+  terminationDate DateTime?
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId, status])
+}
+
+model HrPosition {
+  id             String       @id @default(uuid())
+  title          String
+  department     String
+  employmentType String       @default("full_time") // full_time, part_time, contract
+  status         String       @default("open") // open, closed, filled
+  location       String?
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  candidates     HrCandidate[]
+
+  @@index([organizationId, status])
+}
+
+model HrCandidate {
+  id             String       @id @default(uuid())
+  positionId     String
+  position       HrPosition   @relation(fields: [positionId], references: [id])
+  name           String
+  email          String
+  stage          String       @default("applied") // applied, screening, interviewing, offer, hired, rejected
+  appliedAt      DateTime
+  offeredAt      DateTime?
+  hiredAt        DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([positionId, stage])
+  @@index([organizationId, stage])
+}
+
+model KnowledgeArticle {
+  id             String       @id @default(uuid())
+  title          String
+  summary        String?
+  content        String
+  category       String
+  tags           String[]
+  status         String       @default("draft") // draft, published, archived
+  version        Int          @default(1)
+  authorId       String?
+  publishedAt    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  versions       KnowledgeArticleVersion[]
+  indexEntries   KnowledgeIndexEntry[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, category])
+}
+
+model KnowledgeArticleVersion {
+  id             String           @id @default(uuid())
+  articleId      String
+  article        KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  version        Int
+  title          String
+  summary        String?
+  content        String
+  category       String
+  tags           String[]
+  changeNote     String?
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  @@unique([articleId, version])
+  @@index([organizationId, createdAt])
+}
+
+model KnowledgeIndexEntry {
+  id             String           @id @default(uuid())
+  articleId      String
+  article        KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  token          String
+  weight         Float            @default(1)
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  @@index([organizationId, token])
+  @@index([articleId])
+}
+
+model KnowledgeReport {
+  id             String       @id @default(uuid())
+  period         String
+  knowledgeScore Float
+  summary        Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
 }
 
 

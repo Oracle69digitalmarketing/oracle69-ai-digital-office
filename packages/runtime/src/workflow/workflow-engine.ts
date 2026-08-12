@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WorkflowInstance, WorkflowState } from './workflow.types.js';
 import { WorkflowStateMachine } from './workflow-state-machine.js';
 import { CheckpointManager, RetryManager, CompensationManager, ApprovalManager } from './workflow-managers.js';
 import { RuntimeEventType } from '../events/runtime.events.js';
+import { EventBus } from '../events/event-bus.js';
 
 @Injectable()
 export class WorkflowEngine {
   private readonly logger = new Logger(WorkflowEngine.name);
 
   constructor(
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventBus: EventBus,
     private readonly checkpointManager: CheckpointManager,
     private readonly retryManager: RetryManager,
     private readonly compensationManager: CompensationManager,
@@ -31,7 +31,7 @@ export class WorkflowEngine {
       checkpoint: null,
       retryCount: 0,
     };
-    this.emit(RuntimeEventType.WORKFLOW_CREATED, { workflowId: workflow.metadata.id });
+    this.emit(RuntimeEventType.WORKFLOW_CREATED, { workflowId: workflow.metadata.id, planId });
     return workflow;
   }
 
@@ -43,7 +43,7 @@ export class WorkflowEngine {
     this.emit(RuntimeEventType.WORKFLOW_STARTED, { workflowId: workflow.metadata.id });
   }
 
-  private emit(type: RuntimeEventType, payload: any): void {
-    this.eventEmitter.emit(type, payload);
+  private emit(type: RuntimeEventType, payload: Record<string, unknown>): void {
+    this.eventBus.publish(type, payload, { source: 'WorkflowEngine' });
   }
 }
