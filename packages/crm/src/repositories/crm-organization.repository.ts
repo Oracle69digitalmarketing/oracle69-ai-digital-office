@@ -39,6 +39,16 @@ export class CrmOrganizationRepository {
   async findAll(organizationId: string) {
     return this.prisma.crmOrganization.findMany({
       where: { organizationId },
+      include: {
+        contacts: {
+          include: {
+            activities: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+        },
+      },
     });
   }
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/auth-store";
+import { fetchAuthenticated } from "@/lib/api-client";
 import { 
   UserPlus, 
   Search, 
@@ -33,18 +35,27 @@ const statusColors: Record<string, string> = {
 export default function CRMPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    // Mock data for CRM
-    const mockClients: Client[] = [
-      { id: "1", name: "Acme Corp", contactPerson: "John Doe", email: "john@acme.com", industry: "Manufacturing", status: "active", lastActivity: "2 hours ago" },
-      { id: "2", name: "Global Tech", contactPerson: "Jane Smith", email: "jane@globaltech.io", industry: "Technology", status: "opportunity", lastActivity: "1 day ago" },
-      { id: "3", name: "Future Retail", contactPerson: "Mike Ross", email: "mike@future.com", industry: "Retail", status: "lead", lastActivity: "3 days ago" },
-      { id: "4", name: "Eco Systems", contactPerson: "Sarah Connor", email: "sarah@eco.net", industry: "Energy", status: "active", lastActivity: "5 hours ago" },
-    ];
-    setClients(mockClients);
-    setLoading(false);
-  }, []);
+    const fetchClients = async () => {
+      if (!user?.organizationId) return;
+      try {
+        setLoading(true);
+        const data = await fetchAuthenticated(`/crm/organizations?organizationId=${user.organizationId}`);
+        setClients(data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch CRM clients:", err);
+        setError("Failed to load CRM data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, [user?.organizationId]);
 
   return (
     <div className="space-y-6 p-8">
@@ -67,8 +78,8 @@ export default function CRMPage() {
             </div>
             <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Lead Pipeline</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">12 Active Leads</p>
-          <p className="text-sm text-gray-500 mt-1">Potential value: $45,000</p>
+          <p className="text-2xl font-bold text-gray-900">N/A</p>
+          <p className="text-sm text-gray-500 mt-1">Check back later</p>
         </div>
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -77,8 +88,8 @@ export default function CRMPage() {
             </div>
             <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded">Opportunities</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">5 High Value</p>
-          <p className="text-sm text-gray-500 mt-1">Weighted forecast: $120,000</p>
+          <p className="text-2xl font-bold text-gray-900">N/A</p>
+          <p className="text-sm text-gray-500 mt-1">Check back later</p>
         </div>
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -87,8 +98,8 @@ export default function CRMPage() {
             </div>
             <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">Retention</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">98% Satisfied</p>
-          <p className="text-sm text-gray-500 mt-1">Churn rate: 2%</p>
+          <p className="text-2xl font-bold text-gray-900">N/A</p>
+          <p className="text-sm text-gray-500 mt-1">Check back later</p>
         </div>
       </div>
 
@@ -134,6 +145,14 @@ export default function CRMPage() {
                     <td className="px-6 py-4 text-right"><div className="h-4 w-8 bg-gray-100 rounded ml-auto"></div></td>
                   </tr>
                 ))
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-red-500">{error}</td>
+                </tr>
+              ) : clients.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No organizations found.</td>
+                </tr>
               ) : (
                 clients.map((client) => (
                   <tr key={client.id} className="hover:bg-gray-50 transition-colors">

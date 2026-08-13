@@ -20,7 +20,7 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      const data = await apiClient<{ access_token: string; user: { id: string, email: string, name?: string, role: string } }>("/auth/login", {
+      const data = await apiClient<{ access_token: string; user: { id: string, email: string, name?: string, role: string, organizationId: string } }>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });

@@ -1,3 +1,13 @@
+export interface CrmDashboardOrganizationDto {
+  id: string;
+  name: string;
+  industry: string | null;
+  status: string;
+  contactPerson: string;
+  email: string;
+  lastActivity: string;
+}
+
 export interface CreateCrmOrganizationDto {
   name: string;
   industry?: string;

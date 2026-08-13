@@ -44,4 +44,34 @@ describe('CrmOrganizationService', () => {
       })
     );
   });
+
+  it('should list organizations with aggregated data', async () => {
+    const mockOrgs = [
+      {
+        id: 'org-1',
+        name: 'Acme Corp',
+        industry: 'Tech',
+        status: 'active',
+        createdAt: new Date('2023-01-01'),
+        contacts: [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john@acme.com',
+            createdAt: new Date('2023-01-01'),
+            activities: [{ createdAt: new Date(Date.now() - 3600000) }] // 1 hour ago
+          }
+        ]
+      }
+    ];
+
+    repository.findAll.mockResolvedValue(mockOrgs as any);
+
+    const result = await service.listOrganizations('org-1');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Acme Corp');
+    expect(result[0].contactPerson).toBe('John Doe');
+    expect(result[0].lastActivity).toBe('1 hour ago');
+  });
 });
