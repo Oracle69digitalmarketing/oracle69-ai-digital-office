@@ -6,6 +6,7 @@ import { EventBus } from '../../events/event-bus.js';
 import { RuntimeEventType } from '../../events/runtime.events.js';
 import { InMemoryMissionRepository } from '../../persistence/mission.repository.js';
 import { Mission, MissionStatus } from '../../missions/mission.types.js';
+import { TenantContextService } from '../../tenancy/tenant-context.js';
 
 const mission = (overrides: Partial<Mission> = {}): Mission => ({
   id: 'm1',
@@ -22,18 +23,22 @@ describe('MissionRecoveryService', () => {
   let eventBus: EventBus;
   let manager: MissionManager;
   let service: MissionRecoveryService;
+  let tenantContext: TenantContextService;
 
   beforeEach(() => {
     eventBus = new EventBus();
-    manager = new MissionManager(new MissionRegistry(new InMemoryMissionRepository()), eventBus);
+    tenantContext = new TenantContextService();
+    manager = new MissionManager(new MissionRegistry(new InMemoryMissionRepository()), eventBus, tenantContext);
     service = new MissionRecoveryService(manager);
   });
 
   it('should recover interrupted missions through the mission manager', async () => {
-    await manager.createMission(mission({ id: 'm-running', status: MissionStatus.RUNNING }));
-    await manager.createMission(mission({ id: 'm-paused', status: MissionStatus.PAUSED }));
+    await tenantContext.runAsync({ tenantId: 'org-1' }, async () => {
+      await manager.createMission(mission({ id: 'm-running', status: MissionStatus.RUNNING }));
+      await manager.createMission(mission({ id: 'm-paused', status: MissionStatus.PAUSED }));
+    });
 
-    const recovered = await service.recover('org-1');
+    const recovered = await service.recover();
 
     expect(recovered.map((m) => m.id).sort()).toEqual(['m-paused', 'm-running']);
     for (const r of recovered) {
@@ -42,9 +47,11 @@ describe('MissionRecoveryService', () => {
   });
 
   it('should not touch completed missions during recovery', async () => {
-    await manager.createMission(mission({ id: 'm-completed', status: MissionStatus.COMPLETED }));
+    await tenantContext.runAsync({ tenantId: 'org-1' }, async () => {
+      await manager.createMission(mission({ id: 'm-completed', status: MissionStatus.COMPLETED }));
+    });
 
-    const recovered = await service.recover('org-1');
+    const recovered = await service.recover();
 
     expect(recovered).toEqual([]);
   });
@@ -53,8 +60,10 @@ describe('MissionRecoveryService', () => {
     const published: string[] = [];
     eventBus.allEvents().subscribe((event) => published.push(event.type));
 
-    await manager.createMission(mission({ id: 'm-running', status: MissionStatus.RUNNING }));
-    await service.recover('org-1');
+    await tenantContext.runAsync({ tenantId: 'org-1' }, async () => {
+      await manager.createMission(mission({ id: 'm-running', status: MissionStatus.RUNNING }));
+    });
+    await service.recover();
 
     expect(published).toContain(RuntimeEventType.MISSION_RECOVERED);
   });

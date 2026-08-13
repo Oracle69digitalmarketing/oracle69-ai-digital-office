@@ -1,13 +1,16 @@
 export interface Supplier {
   id: string;
   name: string;
+  category: string | null;
+  status: string;
   contactEmail: string;
-  category: string;
+  organizationId: string;
 }
 
 export interface PurchaseOrder {
   id: string;
   supplierId: string;
   amount: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: string;
+  organizationId: string;
 }

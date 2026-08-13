@@ -36,6 +36,7 @@
     "@oracle69/knowledge-intelligence": "workspace:*",
     "@oracle69/memory": "workspace:*",
     "@oracle69/platform-contracts": "workspace:^",
+    "@oracle69/procurement-intelligence": "workspace:*",
     "@oracle69/runtime": "workspace:*",
     "@oracle69/shared": "workspace:*",
     "@prisma/client": "^5.0.0",

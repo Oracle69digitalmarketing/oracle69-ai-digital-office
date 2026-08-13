@@ -152,7 +152,15 @@ export class MissionManager implements IMissionManager {
    * canonical bus so operators and orchestrators can resume or abandon them.
    */
   async recoverInterrupted(tenantId?: string): Promise<Mission[]> {
-    const resolvedTenant = this.tenantContext ? this.tenantContext.resolveTenantId(tenantId) : tenantId;
+    let resolvedTenant: string | undefined = tenantId;
+    if (this.tenantContext && !tenantId) {
+      try {
+        resolvedTenant = this.tenantContext.resolveTenantId(undefined);
+      } catch (e) {
+        // Allow global recovery when no tenant context is active
+        resolvedTenant = undefined;
+      }
+    }
     const interrupted = await this.registry.findInterrupted(resolvedTenant);
 
     const recovered: Mission[] = [];
