@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { MessageBus } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
@@ -17,11 +17,14 @@ export interface BusinessHealthResult {
 @Injectable()
 export class EiBusinessHealthEngine {
   private readonly logger = new Logger(EiBusinessHealthEngine.name);
-  private prisma = new PrismaClient();
+  private readonly prisma: PrismaClient;
 
   constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+    private readonly messageBus: MessageBus,
+    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+  ) {
+    this.prisma = prismaService ?? new PrismaClient();
+  }
 
   /**
    * Deterministically computes the business health result without side effects.

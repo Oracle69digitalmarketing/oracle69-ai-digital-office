@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { MessageBus } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
@@ -30,11 +30,14 @@ const RETENTION_TIERS = {
 @Injectable()
 export class EiForecastEngine {
   private readonly logger = new Logger(EiForecastEngine.name);
-  private prisma = new PrismaClient();
+  private readonly prisma: PrismaClient;
 
   constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+    private readonly messageBus: MessageBus,
+    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+  ) {
+    this.prisma = prismaService ?? new PrismaClient();
+  }
 
   /**
    * Deterministically computes the enterprise forecast without side effects.
