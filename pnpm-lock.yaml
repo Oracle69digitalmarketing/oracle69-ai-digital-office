@@ -230,6 +230,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@oracle69/knowledge-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/knowledge-intelligence
       '@oracle69/procurement-intelligence':
         specifier: workspace:*
         version: link:../../packages/procurement-intelligence
@@ -568,6 +571,9 @@ importers:
       '@oracle69/crm':
         specifier: workspace:*
         version: link:../crm
+      '@oracle69/knowledge-intelligence':
+        specifier: workspace:*
+        version: link:../knowledge-intelligence
       '@oracle69/runtime':
         specifier: workspace:*
         version: link:../runtime

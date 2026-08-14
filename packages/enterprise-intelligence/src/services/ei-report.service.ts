@@ -10,6 +10,7 @@ import { EiKpiEngine } from "./ei-kpi.engine.js";
 import { EiBusinessHealthEngine } from "./ei-business-health.engine.js";
 import { EiForecastEngine } from "./ei-forecast.engine.js";
 import { currentPeriod } from "../utils/period.js";
+import { SearchService } from "@oracle69/knowledge-intelligence";
 
 /**
  * Composes the enterprise intelligence engines into an executive report,
@@ -27,6 +28,7 @@ export class EiReportService {
     private readonly forecastEngine: EiForecastEngine,
     private readonly missionManager: MissionManager,
     private readonly messageBus: MessageBus,
+    private readonly searchService: SearchService,
     @Optional() @Inject("PrismaService") prismaService?: PrismaClient,
   ) {
     this.prisma = prismaService ?? new PrismaClient();
@@ -37,9 +39,13 @@ export class EiReportService {
       `Generating enterprise intelligence report for organization ${organizationId}, period ${period}`,
     );
 
-    const kpis = await this.kpiEngine.compute(organizationId);
-    const health = await this.healthEngine.compute(organizationId);
-    const forecast = await this.forecastEngine.compute(organizationId, period);
+    const [kpis, health, forecast, knowledgeInsights] = await Promise.all([
+      this.kpiEngine.compute(organizationId),
+      this.healthEngine.compute(organizationId),
+      this.forecastEngine.compute(organizationId, period),
+      this.searchService.search(organizationId, 'strategic business health analysis', 5),
+    ]);
+    
     const successPlanCount = await this.prisma.csSuccessPlan.count({
       where: { crmOrganization: { organizationId } },
     });
@@ -54,6 +60,7 @@ export class EiReportService {
       forecast,
       successPlanCount,
       churnRiskCount,
+      knowledgeContext: knowledgeInsights,
     };
 
     const report = await this.prisma.eiEnterpriseReport.create({
