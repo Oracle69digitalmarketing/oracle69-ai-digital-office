@@ -10,54 +10,46 @@ import {
   Clock,
   Lightbulb,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Article {
-  id: string;
-  title: string;
-  category: string;
-  status: "published" | "draft";
-  version: number;
-  updated: string;
-  summary: string;
-}
+import { useAuthStore } from "@/store/auth-store";
+import { knowledgeClient } from "./client";
+import { KnowledgeArticle, KnowledgeKpis } from "@oracle69/knowledge-intelligence/src/types";
 
 export default function KnowledgePage() {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<KnowledgeArticle[]>([]);
+  const [kpis, setKpis] = useState<KnowledgeKpis | null>(null);
   const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
+  const organizationId = user?.organizationId;
 
   useEffect(() => {
-    // Mock data for Knowledge Hub
-    const mockArticles: Article[] = [
-      { id: "1", title: "Onboarding Playbook", category: "Operations", status: "published", version: 3, updated: "2026-08-02", summary: "First 30 days for every new hire, department by department." },
-      { id: "2", title: "Sales Playbook", category: "Sales", status: "published", version: 2, updated: "2026-07-28", summary: "Discovery calls, negotiation best practices and closing tactics." },
-      { id: "3", title: "Security Incident Response", category: "Security", status: "published", version: 1, updated: "2026-07-19", summary: "Standard operating procedure for containment and escalation." },
-      { id: "4", title: "Client Onboarding Checklist", category: "Customer Success", status: "draft", version: 1, updated: "2026-08-08", summary: "Checklist for a smooth client kickoff and implementation." },
-      { id: "5", title: "Internal AI Policy", category: "Policy", status: "draft", version: 1, updated: "2026-08-10", summary: "Guidelines for safe and compliant use of AI tooling." },
-    ];
-    setArticles(mockArticles);
-  }, []);
+    async function fetchData() {
+      if (!organizationId) return;
+      try {
+        setLoading(true);
+        const [articleData, kpiData] = await Promise.all([
+          knowledgeClient.listArticles(organizationId),
+          knowledgeClient.getKpis(organizationId),
+        ]);
+        setArticles(articleData);
+        setKpis(kpiData);
+      } catch (err) {
+        console.error("Failed to fetch knowledge data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [organizationId]);
 
   const stats = [
-    { name: "Total Articles", value: "248", change: "+12 this month", icon: FileText, color: "text-indigo-600", bg: "bg-indigo-100" },
-    { name: "Published", value: "204", change: "82% indexed", icon: BookOpen, color: "text-green-600", bg: "bg-green-100" },
-    { name: "In Review", value: "31", change: "draft backlog", icon: Clock, color: "text-amber-600", bg: "bg-amber-100" },
-    { name: "Coverage", value: "12", change: "categories", icon: Archive, color: "text-blue-600", bg: "bg-blue-100" },
-  ];
-
-  const categories = [
-    { name: "Operations", articles: 64 },
-    { name: "Sales", articles: 52 },
-    { name: "Security", articles: 38 },
-    { name: "Customer Success", articles: 45 },
-    { name: "Policy", articles: 49 },
-  ];
-
-  const recommendations = [
-    { title: "Refresh stale articles", reason: "9 articles have not been updated in over 90 days." },
-    { title: "Clear draft backlog", reason: "31 drafts await review before they can be published." },
-    { title: "Re-index knowledge base", reason: "Search coverage is at 82%; a full re-index keeps results complete." },
+    { name: "Total Articles", value: kpis?.totalArticles ?? 0, change: "Current state", icon: FileText, color: "text-indigo-600", bg: "bg-indigo-100" },
+    { name: "Published", value: kpis?.publishedCount ?? 0, change: `${kpis?.indexCoverage ?? 0}% indexed`, icon: BookOpen, color: "text-green-600", bg: "bg-green-100" },
+    { name: "In Review", value: kpis?.draftCount ?? 0, change: "draft backlog", icon: Clock, color: "text-amber-600", bg: "bg-amber-100" },
+    { name: "Categories", value: kpis?.categories.length ?? 0, change: "active areas", icon: Archive, color: "text-blue-600", bg: "bg-blue-100" },
   ];
 
   const filtered = articles.filter((a) => {
@@ -65,6 +57,14 @@ export default function KnowledgePage() {
     if (!q) return true;
     return a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q);
   });
+
+  if (loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 p-8">
@@ -106,8 +106,7 @@ export default function KnowledgePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Articles Table */}
-        <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="lg:col-span-3 rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
             <h2 className="font-bold text-gray-900">Recent Articles</h2>
             <div className="relative">
@@ -159,7 +158,7 @@ export default function KnowledgePage() {
                         {a.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-500">{a.updated}</td>
+                    <td className="px-6 py-4 text-gray-500">{new Date(a.updatedAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
@@ -171,41 +170,6 @@ export default function KnowledgePage() {
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-8">
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="font-bold text-gray-900 mb-6">Categories</h2>
-            <div className="space-y-6">
-              {categories.map((c) => (
-                <div key={c.name}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">{c.name}</span>
-                    <span className="text-sm font-bold text-gray-900">{c.articles}</span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-indigo-600 rounded-full"
-                      style={{ width: `${Math.min(100, (c.articles / 64) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="font-bold text-gray-900 mb-4">AI Recommendations</h2>
-            <div className="space-y-4">
-              {recommendations.map((r) => (
-                <div key={r.title} className="rounded-lg bg-gray-50 p-3">
-                  <p className="text-sm font-semibold text-gray-900">{r.title}</p>
-                  <p className="text-xs text-gray-500 mt-1">{r.reason}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

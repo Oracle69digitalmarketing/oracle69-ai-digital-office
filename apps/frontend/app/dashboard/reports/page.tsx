@@ -1,171 +1,157 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { 
   BarChart3, 
   TrendingUp, 
   PieChart, 
   LineChart, 
-  Users, 
-  Briefcase, 
-  DollarSign, 
-  Bot,
-  ArrowUpRight,
-  ArrowDownRight,
   Filter,
-  Download
+  Download,
+  Loader2,
+  FileText,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { eiClient } from "../ei-client";
+import { EnterpriseReport } from "../ei-types";
 
 export default function AnalyticsPage() {
-  const stats = [
-    { name: "Total Sales", value: "$154,200", change: "+12.5%", trending: "up", icon: DollarSign, color: "text-green-600", bg: "bg-green-100" },
-    { name: "Project Success", value: "94%", change: "+2.3%", trending: "up", icon: Briefcase, color: "text-blue-600", bg: "bg-blue-100" },
-    { name: "AI Efficiency", value: "88%", change: "+5.1%", trending: "up", icon: Bot, color: "text-purple-600", bg: "bg-purple-100" },
-    { name: "Client Growth", value: "+15", change: "-1.2%", trending: "down", icon: Users, color: "text-amber-600", bg: "bg-amber-100" },
-  ];
+  const [reports, setReports] = useState<EnterpriseReport[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchReports() {
+      try {
+        setLoading(true);
+        const data = await eiClient.getReports();
+        setReports(data);
+      } catch (err) {
+        console.error("Failed to fetch reports:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchReports();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics & Insights</h1>
-          <p className="text-gray-500">Data-driven performance tracking across your organization.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Executive Report Archive</h1>
+          <p className="text-gray-500">Historical snapshots of enterprise performance and intelligence.</p>
         </div>
         <div className="flex space-x-3">
           <button className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
             <Filter className="h-4 w-4" />
-            <span>Date Range</span>
-          </button>
-          <button className="flex items-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
-            <Download className="h-4 w-4" />
-            <span>Download PDF</span>
+            <span>Filter Period</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", stat.bg, stat.color)}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <div className={cn(
-                "flex items-center text-xs font-medium",
-                stat.trending === "up" ? "text-green-600" : "text-red-600"
-              )}>
-                {stat.trending === "up" ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                {stat.change}
-              </div>
+      <div className="grid grid-cols-1 gap-8">
+        {reports.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-12 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+              <FileText className="h-6 w-6 text-gray-400" />
             </div>
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-500">{stat.name}</p>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-            </div>
+            <h3 className="mt-4 text-sm font-bold text-gray-900">No reports generated yet</h3>
+            <p className="mt-1 text-sm text-gray-500">The Executive Intelligence engine will generate reports as your organization grows.</p>
           </div>
-        ))}
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Report Period</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Health Score</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Revenue Forecast</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Generated At</th>
+                  <th scope="col" className="relative px-6 py-3">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {reports.map((report) => (
+                  <tr key={report.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 text-indigo-500 mr-2" />
+                        <span className="text-sm font-bold text-gray-900">{report.period}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={cn(
+                        "px-2.5 py-0.5 rounded-full text-xs font-medium",
+                        (report.healthScore ?? 0) >= 75 ? "bg-green-100 text-green-800" :
+                        (report.healthScore ?? 0) >= 45 ? "bg-amber-100 text-amber-800" :
+                        "bg-red-100 text-red-800"
+                      )}>
+                        {report.healthScore ?? 0}/100
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                      ${report.summary.forecast.expectedRevenue.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(report.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button className="text-indigo-600 hover:text-indigo-900 flex items-center ml-auto">
+                        <Download className="h-4 w-4 mr-1" />
+                        <span>PDF</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
+      {/* Historical Trend Placeholder - Real data would be needed for a proper chart */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
             <TrendingUp className="mr-2 h-5 w-5 text-indigo-600" />
-            Revenue Growth
+            Executive Health Trend
           </h2>
-          <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            <LineChart className="h-12 w-12 text-gray-200" />
-            <p className="ml-3 text-gray-400 text-sm italic">Revenue Chart Placeholder</p>
+          <div className="h-64 flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+            {reports.length > 1 ? (
+              <>
+                <LineChart className="h-12 w-12 text-gray-200" />
+                <p className="mt-2 text-gray-400 text-sm italic">Multi-period trend visualization active</p>
+              </>
+            ) : (
+              <p className="text-gray-400 text-sm italic">Accumulate more reports to visualize trends</p>
+            )}
           </div>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
             <BarChart3 className="mr-2 h-5 w-5 text-indigo-600" />
-            Department Productivity
+            Forecast Accuracy
           </h2>
-          <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
             <PieChart className="h-12 w-12 text-gray-200" />
-            <p className="ml-3 text-gray-400 text-sm italic">Productivity Chart Placeholder</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Sales Pipeline Distribution</h2>
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Discovery</span>
-                <span className="text-sm font-bold text-gray-900">12 Leads</span>
-              </div>
-              <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: '40%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Proposal Sent</span>
-                <span className="text-sm font-bold text-gray-900">8 Leads</span>
-              </div>
-              <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500 rounded-full" style={{ width: '25%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Negotiation</span>
-                <span className="text-sm font-bold text-gray-900">5 Leads</span>
-              </div>
-              <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 rounded-full" style={{ width: '15%' }}></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">AI Utilization</h2>
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="h-10 w-10 rounded bg-indigo-50 flex items-center justify-center text-indigo-600">
-                  <Bot className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">GPT-4o</p>
-                  <p className="text-xs text-gray-500">85% of requests</p>
-                </div>
-              </div>
-              <span className="text-sm font-bold text-green-600">Active</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="h-10 w-10 rounded bg-blue-50 flex items-center justify-center text-blue-600">
-                  <Bot className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">Claude 3.5</p>
-                  <p className="text-xs text-gray-500">12% of requests</p>
-                </div>
-              </div>
-              <span className="text-sm font-bold text-green-600">Active</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="h-10 w-10 rounded bg-gray-50 flex items-center justify-center text-gray-400">
-                  <Bot className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">Local Llama</p>
-                  <p className="text-xs text-gray-500">3% of requests</p>
-                </div>
-              </div>
-              <span className="text-sm font-bold text-gray-400">Standby</span>
-            </div>
+            <p className="ml-3 text-gray-400 text-sm italic">Historical variance analysis pending</p>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

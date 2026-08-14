@@ -22,6 +22,7 @@ import { AgentsModule } from "./agents/agents.module.js";
 import { WorkflowsModule } from "./workflows/workflows.module.js";
 import { PlatformModule } from "./platform/platform.module.js";
 import { EiModule } from "./ei/ei.module.js";
+import { KnowledgeIndexingSubscriber } from "./automation/knowledge-indexing.subscriber.js";
 
 @Module({
   imports: [
@@ -48,7 +49,7 @@ import { EiModule } from "./ei/ei.module.js";
     EiModule,
   ],
   controllers: [AppController, HealthController],
-  providers: [AppService],
+  providers: [AppService, KnowledgeIndexingSubscriber],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
