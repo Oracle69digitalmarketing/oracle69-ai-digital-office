@@ -108,6 +108,7 @@ import { AiModelProvider } from './models/ai-model.interface.js';
     RelationshipIntelligenceEngine,
     CustomerSignalEngine,
     ExecutiveIntelligenceEngine,
+    'AiModelProvider', // Ensure export for DI resolution
   ],
 })
 export class SalesIntelligenceModule {}
