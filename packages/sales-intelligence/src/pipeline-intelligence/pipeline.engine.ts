@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
@@ -22,10 +22,12 @@ export class PipelineIntelligenceEngine {
 
   constructor(
     private readonly modelProvider: any,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
-  async getPipelineIntelligence(organizationId: string): Promise<PipelineIntelligence | null> {
+  async getPipelineIntelligence(): Promise<PipelineIntelligence | null> {
+    const organizationId = this.tenantContext.resolveTenantId();
     this.logger.log(`Analyzing pipeline for organization: ${organizationId}`);
 
     const opportunities = await this.prisma.crmOpportunity.findMany({
@@ -46,7 +48,11 @@ export class PipelineIntelligenceEngine {
       if (result.anomalies.length > 0) {
         this.messageBus.publish(
           SalesIntelligenceEventType.PIPELINE_ANOMALY_DETECTED,
-          new SalesIntelligenceEvent(SalesIntelligenceEventType.PIPELINE_ANOMALY_DETECTED, { organizationId, anomalies: result.anomalies })
+          new SalesIntelligenceEvent(SalesIntelligenceEventType.PIPELINE_ANOMALY_DETECTED, {
+            organizationId,
+            anomalies: result.anomalies,
+            tenantId: organizationId
+          })
         );
       }
 

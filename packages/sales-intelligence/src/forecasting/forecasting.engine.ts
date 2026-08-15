@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
 
@@ -19,14 +19,17 @@ export class ForecastingEngine {
   private prisma = new PrismaClient();
 
   constructor(
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async generateForecast(organizationId: string, period: string = 'Q3 2026'): Promise<ForecastResult> {
     this.logger.log(`Generating forecast for organization ${organizationId}, period ${period}`);
 
     const opportunities = await this.prisma.crmOpportunity.findMany({
-      where: { organizationId },
+      where: {
+        organizationId: this.tenantContext.resolveTenantId()
+      },
       include: { pipeline: true },
     });
 
@@ -52,7 +55,11 @@ export class ForecastingEngine {
 
     this.messageBus.publish(
       SalesIntelligenceEventType.FORECAST_UPDATED,
-      new SalesIntelligenceEvent(SalesIntelligenceEventType.FORECAST_UPDATED, { organizationId, forecast })
+      new SalesIntelligenceEvent(SalesIntelligenceEventType.FORECAST_UPDATED, {
+        organizationId,
+        forecast,
+        tenantId: this.tenantContext.resolveTenantId()
+      })
     );
 
     return forecast;

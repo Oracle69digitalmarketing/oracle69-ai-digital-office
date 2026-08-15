@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
@@ -19,19 +19,22 @@ export class NextBestActionEngine {
 
   constructor(
     private readonly modelProvider: any,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async recommendNextAction(entityType: 'lead' | 'opportunity' | 'account', entityId: string): Promise<NextBestAction | null> {
     this.logger.log(`Generating NBA for ${entityType}: ${entityId}`);
 
     let entityData: any;
+    const organizationId = this.tenantContext.resolveTenantId();
+
     if (entityType === 'lead') {
-      entityData = await this.prisma.crmLead.findUnique({ where: { id: entityId }, include: { activities: true, notes: true } });
+      entityData = await this.prisma.crmLead.findFirst({ where: { id: entityId, organizationId }, include: { activities: true, notes: true } });
     } else if (entityType === 'opportunity') {
-      entityData = await this.prisma.crmOpportunity.findUnique({ where: { id: entityId }, include: { activities: true, notes: true, contacts: true } });
+      entityData = await this.prisma.crmOpportunity.findFirst({ where: { id: entityId, organizationId }, include: { activities: true, notes: true, contacts: true } });
     } else if (entityType === 'account') {
-      entityData = await this.prisma.crmOrganization.findUnique({ where: { id: entityId }, include: { contacts: true, opportunities: true, notes: true } });
+      entityData = await this.prisma.crmOrganization.findFirst({ where: { id: entityId, organizationId }, include: { contacts: true, opportunities: true, notes: true } });
     }
 
     if (!entityData) return null;
@@ -47,7 +50,12 @@ export class NextBestActionEngine {
 
       this.messageBus.publish(
         SalesIntelligenceEventType.NEXT_BEST_ACTION_GENERATED,
-        new SalesIntelligenceEvent(SalesIntelligenceEventType.NEXT_BEST_ACTION_GENERATED, { entityType, entityId, nba })
+        new SalesIntelligenceEvent(SalesIntelligenceEventType.NEXT_BEST_ACTION_GENERATED, {
+          entityType,
+          entityId,
+          nba,
+          tenantId: organizationId
+        })
       );
 
       return nba;

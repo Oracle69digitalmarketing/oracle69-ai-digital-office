@@ -10,7 +10,7 @@ import { PipelineIntelligenceEngine } from '../pipeline-intelligence/pipeline.en
 import { RelationshipIntelligenceEngine } from '../relationship-intelligence/relationship.engine.js';
 import { CustomerSignalEngine } from '../customer-signals/signal.engine.js';
 import { ExecutiveIntelligenceEngine } from '../executive-intelligence/executive.engine.js';
-import { MemoryManager, MissionManager, MissionStatus } from '@oracle69/runtime';
+import { MemoryManager, MissionManager, MissionStatus, TenantContextService } from '@oracle69/runtime';
 
 @Injectable()
 export class SalesIntelligenceService {
@@ -28,13 +28,13 @@ export class SalesIntelligenceService {
     private readonly customerSignals: CustomerSignalEngine,
     private readonly executiveEngine: ExecutiveIntelligenceEngine,
     private readonly memory: MemoryManager,
-    private readonly missionManager: MissionManager
+    private readonly missionManager: MissionManager,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async requestMission(
     goal: string,
-    priority: 'low' | 'normal' | 'high' | 'critical' = 'normal',
-    tenantId?: string
+    priority: 'low' | 'normal' | 'high' | 'critical' = 'normal'
   ) {
     const missionId = uuidv4();
     await this.missionManager.createMission({
@@ -44,7 +44,7 @@ export class SalesIntelligenceService {
       deadline: new Date(Date.now() + 86400000 * 7).toISOString(), // 1 week
       owner: 'sales-intelligence',
       status: MissionStatus.DRAFT,
-      tenantId: tenantId ?? 'system'
+      tenantId: this.tenantContext.resolveTenantId()
     });
     return { missionId };
   }
@@ -85,15 +85,15 @@ export class SalesIntelligenceService {
     return this.accountEngine.getAccount360(accountId);
   }
 
-  async getPipelineIntelligence(organizationId: string) {
-    return this.pipelineEngine.getPipelineIntelligence(organizationId);
+  async getPipelineIntelligence() {
+    return this.pipelineEngine.getPipelineIntelligence(this.tenantContext.resolveTenantId());
   }
 
-  async getForecast(organizationId: string) {
-    return this.forecasting.generateForecast(organizationId);
+  async getForecast() {
+    return this.forecasting.generateForecast(this.tenantContext.resolveTenantId());
   }
 
-  async getExecutiveIntelligence(organizationId: string) {
-    return this.executiveEngine.generateExecutiveSummary(organizationId);
+  async getExecutiveIntelligence() {
+    return this.executiveEngine.generateExecutiveSummary(this.tenantContext.resolveTenantId());
   }
 }

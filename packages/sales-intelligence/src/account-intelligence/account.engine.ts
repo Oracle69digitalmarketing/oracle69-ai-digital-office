@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
@@ -21,14 +21,18 @@ export class AccountIntelligenceEngine {
 
   constructor(
     private readonly modelProvider: any,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async getAccount360(accountId: string): Promise<Account360 | null> {
     this.logger.log(`Generating Account 360 for account: ${accountId}`);
 
     const account = await this.prisma.crmOrganization.findUnique({
-      where: { id: accountId },
+      where: {
+        id: accountId,
+        organizationId: this.tenantContext.resolveTenantId()
+      },
       include: {
         contacts: true,
         opportunities: true,
@@ -52,7 +56,11 @@ export class AccountIntelligenceEngine {
 
       this.messageBus.publish(
         SalesIntelligenceEventType.ACCOUNT_HEALTH_CHANGED,
-        new SalesIntelligenceEvent(SalesIntelligenceEventType.ACCOUNT_HEALTH_CHANGED, { accountId, healthScore: result.healthScore })
+        new SalesIntelligenceEvent(SalesIntelligenceEventType.ACCOUNT_HEALTH_CHANGED, {
+          accountId,
+          healthScore: result.healthScore,
+          tenantId: this.tenantContext.resolveTenantId()
+        })
       );
 
       return result;

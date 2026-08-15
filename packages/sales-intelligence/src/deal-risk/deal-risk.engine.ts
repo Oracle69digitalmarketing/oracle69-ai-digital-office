@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
@@ -19,14 +19,18 @@ export class DealRiskEngine {
 
   constructor(
     private readonly modelProvider: any,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async detectRisks(opportunityId: string): Promise<DealRisk[] | null> {
     this.logger.log(`Detecting risks for opportunity: ${opportunityId}`);
 
     const opportunity = await this.prisma.crmOpportunity.findUnique({
-      where: { id: opportunityId },
+      where: {
+        id: opportunityId,
+        organizationId: this.tenantContext.resolveTenantId()
+      },
       include: {
         activities: { orderBy: { createdAt: 'desc' }, take: 10 },
         notes: true,
@@ -50,7 +54,11 @@ export class DealRiskEngine {
       if (risks.length > 0) {
         this.messageBus.publish(
           SalesIntelligenceEventType.DEAL_RISK_DETECTED,
-          new SalesIntelligenceEvent(SalesIntelligenceEventType.DEAL_RISK_DETECTED, { opportunityId, risks })
+          new SalesIntelligenceEvent(SalesIntelligenceEventType.DEAL_RISK_DETECTED, {
+            opportunityId,
+            risks,
+            tenantId: this.tenantContext.resolveTenantId()
+          })
         );
       }
 
