@@ -21,6 +21,7 @@ import { ActivityModule } from "./activity/activity.module.js";
 import { AgentsModule } from "./agents/agents.module.js";
 import { WorkflowsModule } from "./workflows/workflows.module.js";
 import { PlatformModule } from "./platform/platform.module.js";
+import { EiModule } from "./ei/ei.module.js";
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PlatformModule } from "./platform/platform.module.js";
     AgentsModule,
     WorkflowsModule,
     PlatformModule,
+    EiModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

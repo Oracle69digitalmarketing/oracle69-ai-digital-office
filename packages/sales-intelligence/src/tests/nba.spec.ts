@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { TenantContextService } from '@oracle69/runtime';
 import { NextBestActionEngine } from '../next-best-action/nba.engine.js';
 import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
 
@@ -6,6 +7,7 @@ describe('NextBestActionEngine', () => {
   let engine: NextBestActionEngine;
   let modelProvider: any;
   let messageBus: any;
+  let tenantContextService: any;
 
   beforeEach(() => {
     modelProvider = {
@@ -14,7 +16,10 @@ describe('NextBestActionEngine', () => {
     messageBus = {
       publish: jest.fn(),
     };
-    engine = new NextBestActionEngine(modelProvider, messageBus);
+    tenantContextService = {
+      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+    };
+    engine = new NextBestActionEngine(modelProvider, messageBus, tenantContextService);
   });
 
   it('should recommend next action and publish an event', async () => {

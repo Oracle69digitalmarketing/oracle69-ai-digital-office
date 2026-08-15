@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { TenantContextService } from '@oracle69/runtime';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 
 export interface Stakeholder {
@@ -28,21 +29,24 @@ export class RelationshipIntelligenceEngine {
   private prisma = new PrismaClient();
 
   constructor(
-    private readonly modelProvider: any
+    private readonly modelProvider: any,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async getRelationshipIntelligence(entityType: 'account' | 'opportunity', entityId: string): Promise<RelationshipIntelligence | null> {
     this.logger.log(`Analyzing relationships for ${entityType}: ${entityId}`);
 
+    const organizationId = this.tenantContext.resolveTenantId();
+
     let data: any;
     if (entityType === 'account') {
-      data = await this.prisma.crmOrganization.findUnique({
-        where: { id: entityId },
+      data = await this.prisma.crmOrganization.findFirst({
+        where: { id: entityId, organizationId },
         include: { contacts: { include: { activities: true } }, opportunities: true },
       });
     } else {
-      data = await this.prisma.crmOpportunity.findUnique({
-        where: { id: entityId },
+      data = await this.prisma.crmOpportunity.findFirst({
+        where: { id: entityId, organizationId },
         include: { contacts: { include: { activities: true } }, activities: true },
       });
     }

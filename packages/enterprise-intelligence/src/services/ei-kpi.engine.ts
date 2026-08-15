@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { MessageBus } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
@@ -36,11 +36,14 @@ export interface EnterpriseKpiMetrics {
 @Injectable()
 export class EiKpiEngine {
   private readonly logger = new Logger(EiKpiEngine.name);
-  private prisma = new PrismaClient();
+  private readonly prisma: PrismaClient;
 
   constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+    private readonly messageBus: MessageBus,
+    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+  ) {
+    this.prisma = prismaService ?? new PrismaClient();
+  }
 
   /**
    * Deterministically computes enterprise KPIs without side effects.

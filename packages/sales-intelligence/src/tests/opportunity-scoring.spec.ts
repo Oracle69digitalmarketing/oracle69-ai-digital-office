@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { TenantContextService } from '@oracle69/runtime';
 import { OpportunityEngine } from '../opportunity-scoring/opportunity.engine.js';
 import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
 
@@ -6,6 +7,7 @@ describe('OpportunityEngine', () => {
   let engine: OpportunityEngine;
   let modelProvider: any;
   let messageBus: any;
+  let tenantContextService: any;
 
   beforeEach(() => {
     modelProvider = {
@@ -14,7 +16,10 @@ describe('OpportunityEngine', () => {
     messageBus = {
       publish: jest.fn(),
     };
-    engine = new OpportunityEngine(modelProvider, messageBus);
+    tenantContextService = {
+      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+    };
+    engine = new OpportunityEngine(modelProvider, messageBus, tenantContextService);
   });
 
   it('should analyze an opportunity and publish an event', async () => {

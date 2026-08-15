@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { MessageBus, MissionManager, MissionStatus } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,15 +16,18 @@ import { currentPeriod } from '../utils/period.js';
 @Injectable()
 export class EiReportService {
   private readonly logger = new Logger(EiReportService.name);
-  private prisma = new PrismaClient();
+  private readonly prisma: PrismaClient;
 
   constructor(
     private readonly kpiEngine: EiKpiEngine,
     private readonly healthEngine: EiBusinessHealthEngine,
     private readonly forecastEngine: EiForecastEngine,
     private readonly missionManager: MissionManager,
-    private readonly messageBus: MessageBus
-  ) {}
+    private readonly messageBus: MessageBus,
+    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+  ) {
+    this.prisma = prismaService ?? new PrismaClient();
+  }
 
   async generateReport(organizationId: string, period: string = currentPeriod()) {
     this.logger.log(`Generating enterprise intelligence report for organization ${organizationId}, period ${period}`);

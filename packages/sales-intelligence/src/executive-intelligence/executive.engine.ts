@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
@@ -19,14 +19,17 @@ export class ExecutiveIntelligenceEngine {
 
   constructor(
     private readonly modelProvider: any,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async generateExecutiveSummary(organizationId: string): Promise<ExecutiveAlert[] | null> {
     this.logger.log(`Generating executive intelligence for organization: ${organizationId}`);
 
     const data = await this.prisma.organization.findUnique({
-      where: { id: organizationId },
+      where: {
+        id: this.tenantContext.resolveTenantId(organizationId)
+      },
       include: {
         crmOpportunities: { include: { activities: true } },
         crmPipelines: true,
@@ -49,7 +52,11 @@ export class ExecutiveIntelligenceEngine {
       if (alerts.some(a => a.severity === 'critical')) {
         this.messageBus.publish(
           SalesIntelligenceEventType.EXECUTIVE_SALES_ALERT_CREATED,
-          new SalesIntelligenceEvent(SalesIntelligenceEventType.EXECUTIVE_SALES_ALERT_CREATED, { organizationId, alerts })
+          new SalesIntelligenceEvent(SalesIntelligenceEventType.EXECUTIVE_SALES_ALERT_CREATED, {
+            organizationId,
+            alerts,
+            tenantId: this.tenantContext.resolveTenantId()
+          })
         );
       }
 

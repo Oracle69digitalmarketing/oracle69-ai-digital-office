@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { AiModelProvider } from '../models/ai-model.interface.js';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
@@ -20,14 +20,18 @@ export class LeadScoringEngine {
 
   constructor(
     private readonly modelProvider: any,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async scoreLead(leadId: string): Promise<LeadScoreResult | null> {
     this.logger.log(`Scoring lead: ${leadId}`);
 
-    const lead = await this.prisma.crmLead.findUnique({
-      where: { id: leadId },
+    const lead = await this.prisma.crmLead.findFirst({
+      where: {
+        id: leadId,
+        organizationId: this.tenantContext.resolveTenantId()
+      },
       include: {
         crmOrganization: true,
         activities: true,
@@ -70,7 +74,11 @@ export class LeadScoringEngine {
       // Publish event
       this.messageBus.publish(
         SalesIntelligenceEventType.LEAD_SCORED,
-        new SalesIntelligenceEvent(SalesIntelligenceEventType.LEAD_SCORED, { leadId, ...result })
+        new SalesIntelligenceEvent(SalesIntelligenceEventType.LEAD_SCORED, {
+          leadId,
+          ...result,
+          tenantId: this.tenantContext.resolveTenantId()
+        })
       );
 
       return result;

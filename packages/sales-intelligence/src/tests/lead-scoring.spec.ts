@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { TenantContextService } from '@oracle69/runtime';
 import { LeadScoringEngine } from '../lead-scoring/lead-scoring.engine.js';
 import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
 
@@ -6,6 +7,7 @@ describe('LeadScoringEngine', () => {
   let engine: LeadScoringEngine;
   let modelProvider: any;
   let messageBus: any;
+  let tenantContextService: any;
 
   beforeEach(() => {
     modelProvider = {
@@ -14,7 +16,10 @@ describe('LeadScoringEngine', () => {
     messageBus = {
       publish: jest.fn(),
     };
-    engine = new LeadScoringEngine(modelProvider, messageBus);
+    tenantContextService = {
+      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+    };
+    engine = new LeadScoringEngine(modelProvider, messageBus, tenantContextService);
   });
 
   it('should score a lead and publish an event', async () => {

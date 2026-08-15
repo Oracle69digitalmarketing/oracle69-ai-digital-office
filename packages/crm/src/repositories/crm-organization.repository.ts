@@ -6,28 +6,32 @@ import { CreateCrmOrganizationDto, UpdateCrmOrganizationDto } from '../dto/crm.d
 export class CrmOrganizationRepository {
   private prisma = new PrismaClient();
 
-  async create(data: CreateCrmOrganizationDto) {
+  async create(data: CreateCrmOrganizationDto & { organizationId: string }) {
     return this.prisma.crmOrganization.create({
       data,
     });
   }
 
-  async update(id: string, data: UpdateCrmOrganizationDto) {
+  async update(id: string, organizationId: string, data: UpdateCrmOrganizationDto) {
+    const record = await this.prisma.crmOrganization.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmOrganization.update({
       where: { id },
       data,
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string, organizationId: string) {
+    const record = await this.prisma.crmOrganization.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmOrganization.delete({
       where: { id },
     });
   }
 
-  async findById(id: string) {
-    return this.prisma.crmOrganization.findUnique({
-      where: { id },
+  async findById(id: string, organizationId: string) {
+    return this.prisma.crmOrganization.findFirst({
+      where: { id, organizationId },
       include: {
         contacts: true,
         opportunities: true,

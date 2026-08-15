@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { TenantContextService } from '@oracle69/runtime';
 import { DealRiskEngine } from '../deal-risk/deal-risk.engine.js';
 import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
 
@@ -6,6 +7,7 @@ describe('DealRiskEngine', () => {
   let engine: DealRiskEngine;
   let modelProvider: any;
   let messageBus: any;
+  let tenantContextService: any;
 
   beforeEach(() => {
     modelProvider = {
@@ -14,7 +16,10 @@ describe('DealRiskEngine', () => {
     messageBus = {
       publish: jest.fn(),
     };
-    engine = new DealRiskEngine(modelProvider, messageBus);
+    tenantContextService = {
+      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+    };
+    engine = new DealRiskEngine(modelProvider, messageBus, tenantContextService);
   });
 
   it('should detect risks and publish an event', async () => {

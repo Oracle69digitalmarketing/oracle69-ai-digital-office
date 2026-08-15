@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
 
@@ -18,12 +18,16 @@ export class CustomerSignalEngine {
   private prisma = new PrismaClient();
 
   constructor(
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async detectSignalsFromActivity(activityId: string): Promise<SalesSignal | null> {
     const activity = await this.prisma.crmActivity.findUnique({
-      where: { id: activityId },
+      where: {
+        id: activityId,
+        organizationId: this.tenantContext.resolveTenantId()
+      },
       include: { crmContact: true, crmOpportunity: true, crmLead: true },
     });
 
@@ -54,7 +58,10 @@ export class CustomerSignalEngine {
     if (signal) {
       this.messageBus.publish(
         SalesIntelligenceEventType.SALES_SIGNAL_DETECTED,
-        new SalesIntelligenceEvent(SalesIntelligenceEventType.SALES_SIGNAL_DETECTED, { signal })
+        new SalesIntelligenceEvent(SalesIntelligenceEventType.SALES_SIGNAL_DETECTED, {
+          signal,
+          tenantId: this.tenantContext.resolveTenantId()
+        })
       );
     }
 
