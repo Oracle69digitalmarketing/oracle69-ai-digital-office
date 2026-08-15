@@ -116,7 +116,7 @@ export class CrmOpportunityService {
   }
 
   // Pipeline Stage Methods
-  async createPipelineStage(data: CreateCrmPipelineStageDto) {
+  async createPipelineStage(data: CreateCrmPipelineStageDto & { organizationId?: string }) {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     return this.repository.createPipelineStage({ ...data, organizationId: tenantId });
   }

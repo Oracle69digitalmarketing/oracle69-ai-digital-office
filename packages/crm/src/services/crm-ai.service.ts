@@ -8,14 +8,52 @@ import { CrmEventType, CrmEvent } from '../events/crm.events.js';
 export class CrmAiService {
   private readonly logger = new Logger(CrmAiService.name);
   private prisma = new PrismaClient();
-  private genAI: GoogleGenerativeAI;
+  private genAI?: GoogleGenerativeAI;
+  private groqApiKey?: string;
 
   constructor(
     private readonly messageBus: MessageBus,
     private readonly tenantContext: TenantContextService
   ) {
-    const apiKey = process.env.GOOGLE_AI_API_KEY || '';
-    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.groqApiKey = process.env.GROQ_API_KEY;
+    if (!this.groqApiKey) {
+      const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || '';
+      this.genAI = new GoogleGenerativeAI(apiKey);
+    }
+  }
+
+  private async generate(prompt: string): Promise<string> {
+    if (this.groqApiKey) {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.groqApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Groq API error (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json() as any;
+      return data.choices[0]?.message?.content || '';
+    }
+
+    if (this.genAI) {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    }
+
+    throw new Error('No AI provider configured');
   }
 
   async scoreLead(leadId: string) {
@@ -44,10 +82,7 @@ export class CrmAiService {
     `;
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text().replace(/```json/g, '').replace(/```/g, '');
+      const text = (await this.generate(prompt)).replace(/```json/g, '').replace(/```/g, '');
       const data = JSON.parse(text);
 
       await this.prisma.crmLead.update({
@@ -93,10 +128,7 @@ export class CrmAiService {
     `;
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text().replace(/```json/g, '').replace(/```/g, '');
+      const text = (await this.generate(prompt)).replace(/```json/g, '').replace(/```/g, '');
       const data = JSON.parse(text);
 
       await this.prisma.crmOpportunity.update({
@@ -136,10 +168,7 @@ export class CrmAiService {
     `;
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text().replace(/```json/g, '').replace(/```/g, '');
+      const text = (await this.generate(prompt)).replace(/```json/g, '').replace(/```/g, '');
       const data = JSON.parse(text);
 
       this.messageBus.publish(

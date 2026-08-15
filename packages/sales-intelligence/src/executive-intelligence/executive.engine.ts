@@ -28,8 +28,7 @@ export class ExecutiveIntelligenceEngine {
 
     const data = await this.prisma.organization.findUnique({
       where: {
-        id: organizationId,
-        organizationId: this.tenantContext.resolveTenantId()
+        id: this.tenantContext.resolveTenantId(organizationId)
       },
       include: {
         crmOpportunities: { include: { activities: true } },

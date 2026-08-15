@@ -13,8 +13,8 @@ export class CrmOrganizationService {
   ) {}
 
   async createOrganization(data: CreateCrmOrganizationDto) {
-    const tenantId = this.tenantContext.resolveTenantId(data.id);
-    const organization = await this.repository.create({ ...data, id: tenantId });
+    const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
+    const organization = await this.repository.create({ ...data, organizationId: tenantId });
     
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_CREATED,

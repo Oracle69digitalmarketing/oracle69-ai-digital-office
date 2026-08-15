@@ -23,10 +23,10 @@ export class ProcurementHealthEngine {
     const pendingOrders = pos.filter(po => po.status === 'pending');
     const score = pos.length > 0 ? Math.max(0, 100 - (pendingOrders.length / pos.length) * 100) : 100;
     
-    const status = score > 70 ? 'healthy' : score > 40 ? 'warning' : 'critical';
+    const status: 'healthy' | 'warning' | 'critical' = score > 70 ? 'healthy' : score > 40 ? 'warning' : 'critical';
     const reasoning = `Health based on pending PO ratio of ${pendingOrders.length}/${pos.length}`;
 
-    const result = { status, score, reasoning };
+    const result: ProcurementHealthResult = { status, score, reasoning };
 
     await this.messageBus.publish(ProcurementEventType.HEALTH_UPDATED, {
       tenantId: organizationId,

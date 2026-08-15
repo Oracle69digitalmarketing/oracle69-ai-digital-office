@@ -86,7 +86,7 @@ export class SalesIntelligenceService {
   }
 
   async getPipelineIntelligence() {
-    return this.pipelineEngine.getPipelineIntelligence(this.tenantContext.resolveTenantId());
+    return this.pipelineEngine.getPipelineIntelligence();
   }
 
   async getForecast() {

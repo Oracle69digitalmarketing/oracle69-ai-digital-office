@@ -56,13 +56,27 @@ export class CrmActivityRepository {
 
   // Note CRUD
   async createNote(data: CreateCrmNoteDto & { organizationId: string }) {
+    // Remove organizationId from data if it's not in the model
+    const { organizationId, ...rest } = data;
     return this.prisma.crmNote.create({
-      data,
+      data: rest,
     });
   }
 
   async updateNote(id: string, organizationId: string, data: UpdateCrmNoteDto) {
-    const record = await this.prisma.crmNote.findFirst({ where: { id, organizationId } });
+    // Find note where it's linked to an entity in this organization
+    const record = await this.prisma.crmNote.findFirst({ 
+      where: { 
+        id, 
+        OR: [
+          { crmOrganization: { organizationId } },
+          { crmContact: { organizationId } },
+          { crmLead: { organizationId } },
+          { crmOpportunity: { organizationId } },
+          { crmActivity: { organization: { id: organizationId } } }
+        ]
+      } 
+    });
     if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmNote.update({
       where: { id },
@@ -71,7 +85,18 @@ export class CrmActivityRepository {
   }
 
   async deleteNote(id: string, organizationId: string) {
-    const record = await this.prisma.crmNote.findFirst({ where: { id, organizationId } });
+    const record = await this.prisma.crmNote.findFirst({ 
+      where: { 
+        id, 
+        OR: [
+          { crmOrganization: { organizationId } },
+          { crmContact: { organizationId } },
+          { crmLead: { organizationId } },
+          { crmOpportunity: { organizationId } },
+          { crmActivity: { organization: { id: organizationId } } }
+        ]
+      } 
+    });
     if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmNote.delete({
       where: { id },

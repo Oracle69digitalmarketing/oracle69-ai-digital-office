@@ -63,7 +63,7 @@ export class CrmActivityService {
   }
 
   // Note Methods
-  async createNote(data: CreateCrmNoteDto) {
+  async createNote(data: CreateCrmNoteDto & { organizationId?: string }) {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     return this.repository.createNote({ ...data, organizationId: tenantId });
   }

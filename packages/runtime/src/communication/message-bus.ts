@@ -13,11 +13,11 @@ import { EventBus } from '../events/event-bus.js';
 export class MessageBus {
   constructor(private readonly eventBus: EventBus) {}
 
-  publish(event: string, payload: unknown = {}): void {
+  publish(event: string, payload: any = {}, metadata: any = {}): void {
     if (payload instanceof RuntimeEvent) {
       this.eventBus.publish(payload);
     } else {
-      this.eventBus.publish(event, payload, { source: 'MessageBus' });
+      this.eventBus.publish(event, payload, metadata);
     }
   }
 }

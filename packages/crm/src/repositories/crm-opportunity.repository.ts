@@ -103,13 +103,20 @@ export class CrmOpportunityRepository {
 
   // Pipeline Stage CRUD
   async createPipelineStage(data: CreateCrmPipelineStageDto & { organizationId: string }) {
+    // Remove organizationId from data if it's not in the model
+    const { organizationId, ...rest } = data;
     return this.prisma.crmPipelineStage.create({
-      data,
+      data: rest,
     });
   }
 
   async updatePipelineStage(id: string, organizationId: string, data: UpdateCrmPipelineStageDto) {
-    const record = await this.prisma.crmPipelineStage.findFirst({ where: { id, organizationId } });
+    const record = await this.prisma.crmPipelineStage.findFirst({ 
+      where: { 
+        id, 
+        pipeline: { organizationId } 
+      } 
+    });
     if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmPipelineStage.update({
       where: { id },
@@ -118,7 +125,12 @@ export class CrmOpportunityRepository {
   }
 
   async deletePipelineStage(id: string, organizationId: string) {
-    const record = await this.prisma.crmPipelineStage.findFirst({ where: { id, organizationId } });
+    const record = await this.prisma.crmPipelineStage.findFirst({ 
+      where: { 
+        id, 
+        pipeline: { organizationId } 
+      } 
+    });
     if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmPipelineStage.delete({
       where: { id },
