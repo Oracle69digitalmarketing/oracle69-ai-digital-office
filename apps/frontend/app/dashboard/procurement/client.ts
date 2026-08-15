@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api';
+import { apiClient } from '@/lib/api-client';
 
 export const procurementClient = {
   getKpi: () => apiClient.get('/v1/procurement/kpi'),
