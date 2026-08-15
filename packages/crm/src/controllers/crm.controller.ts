@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Req } from '@nestjs/common';
+import { TenantContextService } from '@oracle69/runtime';
 import { CrmOrganizationService } from '../services/crm-organization.service.js';
 import { CrmContactService } from '../services/crm-contact.service.js';
 import { CrmLeadService } from '../services/crm-lead.service.js';
@@ -6,11 +7,11 @@ import { CrmOpportunityService } from '../services/crm-opportunity.service.js';
 import { CrmActivityService } from '../services/crm-activity.service.js';
 import { CrmAiService } from '../services/crm-ai.service.js';
 import { 
-  type CreateCrmOrganizationDto, type UpdateCrmOrganizationDto,
-  type CreateCrmContactDto, type UpdateCrmContactDto,
-  type CreateCrmLeadDto, type UpdateCrmLeadDto,
-  type CreateCrmOpportunityDto, type UpdateCrmOpportunityDto,
-  type CreateCrmActivityDto, type UpdateCrmActivityDto
+  type CreateCrmOrganizationDto,
+  type CreateCrmContactDto,
+  type CreateCrmLeadDto,
+  type CreateCrmOpportunityDto,
+  type CreateCrmActivityDto
 } from '../dto/crm.dto.js';
 
 @Controller('crm')
@@ -21,81 +22,100 @@ export class CrmController {
     private readonly leadService: CrmLeadService,
     private readonly opportunityService: CrmOpportunityService,
     private readonly activityService: CrmActivityService,
-    private readonly aiService: CrmAiService
+    private readonly aiService: CrmAiService,
+    private readonly tenantContext: TenantContextService
   ) {}
+
+  private runInTenant<T>(orgId: string, fn: () => Promise<T>): Promise<T> {
+    return this.tenantContext.run({ tenantId: orgId }, fn);
+  }
 
   // Organizations
   @Post('organizations')
-  createOrganization(@Body() dto: CreateCrmOrganizationDto) {
-    return this.organizationService.createOrganization(dto);
+  createOrganization(@Req() req: any, @Body() dto: CreateCrmOrganizationDto) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.organizationService.createOrganization({ ...dto, organizationId: orgId }));
   }
 
   @Get('organizations/:id')
-  getOrganization(@Param('id') id: string) {
-    return this.organizationService.getOrganization(id);
+  getOrganization(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.organizationService.getOrganization(id));
   }
 
   @Get('organizations')
-  listOrganizations(@Query('organizationId') orgId: string) {
-    return this.organizationService.listOrganizations(orgId);
+  listOrganizations(@Req() req: any) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.organizationService.listOrganizations(orgId));
   }
 
   // Contacts
   @Post('contacts')
-  createContact(@Body() dto: CreateCrmContactDto) {
-    return this.contactService.createContact(dto);
+  createContact(@Req() req: any, @Body() dto: CreateCrmContactDto) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.contactService.createContact({ ...dto, organizationId: orgId }));
   }
 
   @Get('contacts/:id')
-  getContact(@Param('id') id: string) {
-    return this.contactService.getContact(id);
+  getContact(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.contactService.getContact(id));
   }
 
   @Get('contacts')
-  listContacts(@Query('organizationId') orgId: string) {
-    return this.contactService.listContacts(orgId);
+  listContacts(@Req() req: any) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.contactService.listContacts(orgId));
   }
 
   // Leads
   @Post('leads')
-  createLead(@Body() dto: CreateCrmLeadDto) {
-    return this.leadService.createLead(dto);
+  createLead(@Req() req: any, @Body() dto: CreateCrmLeadDto) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.leadService.createLead({ ...dto, organizationId: orgId }));
   }
 
   @Get('leads/:id')
-  getLead(@Param('id') id: string) {
-    return this.leadService.getLead(id);
+  getLead(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.leadService.getLead(id));
   }
 
   @Post('leads/:id/score')
-  scoreLead(@Param('id') id: string) {
-    return this.aiService.scoreLead(id);
+  scoreLead(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.aiService.scoreLead(id));
   }
 
   // Opportunities
   @Post('opportunities')
-  createOpportunity(@Body() dto: CreateCrmOpportunityDto) {
-    return this.opportunityService.createOpportunity(dto);
+  createOpportunity(@Req() req: any, @Body() dto: CreateCrmOpportunityDto) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.opportunityService.createOpportunity({ ...dto, organizationId: orgId }));
   }
 
   @Get('opportunities/:id')
-  getOpportunity(@Param('id') id: string) {
-    return this.opportunityService.getOpportunity(id);
+  getOpportunity(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.opportunityService.getOpportunity(id));
   }
 
   @Post('opportunities/:id/predict')
-  predictOpportunity(@Param('id') id: string) {
-    return this.aiService.predictOpportunityProbability(id);
+  predictOpportunity(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.aiService.predictOpportunityProbability(id));
   }
 
   // Activities
   @Post('activities')
-  createActivity(@Body() dto: CreateCrmActivityDto) {
-    return this.activityService.createActivity(dto);
+  createActivity(@Req() req: any, @Body() dto: CreateCrmActivityDto) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.activityService.createActivity({ ...dto, organizationId: orgId }));
   }
 
   @Post('activities/:id/summarize')
-  summarizeActivity(@Param('id') id: string) {
-    return this.aiService.summarizeActivity(id);
+  summarizeActivity(@Req() req: any, @Param('id') id: string) {
+    const orgId = req.user.organizationId;
+    return this.runInTenant(orgId, () => this.aiService.summarizeActivity(id));
   }
 }

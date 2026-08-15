@@ -7,28 +7,32 @@ export class CrmActivityRepository {
   private prisma = new PrismaClient();
 
   // Activity CRUD
-  async createActivity(data: CreateCrmActivityDto) {
+  async createActivity(data: CreateCrmActivityDto & { organizationId: string }) {
     return this.prisma.crmActivity.create({
       data,
     });
   }
 
-  async updateActivity(id: string, data: UpdateCrmActivityDto) {
+  async updateActivity(id: string, organizationId: string, data: UpdateCrmActivityDto) {
+    const record = await this.prisma.crmActivity.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmActivity.update({
       where: { id },
       data,
     });
   }
 
-  async deleteActivity(id: string) {
+  async deleteActivity(id: string, organizationId: string) {
+    const record = await this.prisma.crmActivity.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmActivity.delete({
       where: { id },
     });
   }
 
-  async findActivityById(id: string) {
-    return this.prisma.crmActivity.findUnique({
-      where: { id },
+  async findActivityById(id: string, organizationId: string) {
+    return this.prisma.crmActivity.findFirst({
+      where: { id, organizationId },
       include: {
         crmContact: true,
         crmLead: true,
@@ -51,20 +55,24 @@ export class CrmActivityRepository {
   }
 
   // Note CRUD
-  async createNote(data: CreateCrmNoteDto) {
+  async createNote(data: CreateCrmNoteDto & { organizationId: string }) {
     return this.prisma.crmNote.create({
       data,
     });
   }
 
-  async updateNote(id: string, data: UpdateCrmNoteDto) {
+  async updateNote(id: string, organizationId: string, data: UpdateCrmNoteDto) {
+    const record = await this.prisma.crmNote.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmNote.update({
       where: { id },
       data,
     });
   }
 
-  async deleteNote(id: string) {
+  async deleteNote(id: string, organizationId: string) {
+    const record = await this.prisma.crmNote.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmNote.delete({
       where: { id },
     });

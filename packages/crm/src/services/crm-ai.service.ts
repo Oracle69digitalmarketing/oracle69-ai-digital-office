@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { PrismaClient } from '@prisma/client';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CrmEventType, CrmEvent } from '../events/crm.events.js';
@@ -11,15 +11,17 @@ export class CrmAiService {
   private genAI: GoogleGenerativeAI;
 
   constructor(
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {
     const apiKey = process.env.GOOGLE_AI_API_KEY || '';
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
   async scoreLead(leadId: string) {
+    const tenantId = this.tenantContext.resolveTenantId();
     const lead = await this.prisma.crmLead.findUnique({
-      where: { id: leadId },
+      where: { id: leadId, organizationId: tenantId },
       include: {
         crmOrganization: true,
         notes: true,
@@ -49,13 +51,14 @@ export class CrmAiService {
       const data = JSON.parse(text);
 
       await this.prisma.crmLead.update({
-        where: { id: leadId },
+        where: { id: leadId, organizationId: tenantId },
         data: { score: data.score },
       });
 
       this.messageBus.publish(
         CrmEventType.LEAD_SCORED,
-        new CrmEvent(CrmEventType.LEAD_SCORED, { leadId, score: data.score, rationale: data.rationale })
+        new CrmEvent(CrmEventType.LEAD_SCORED, { leadId, score: data.score, rationale: data.rationale }),
+        { tenantId }
       );
 
       return data;
@@ -66,8 +69,9 @@ export class CrmAiService {
   }
 
   async predictOpportunityProbability(opportunityId: string) {
+    const tenantId = this.tenantContext.resolveTenantId();
     const opportunity = await this.prisma.crmOpportunity.findUnique({
-      where: { id: opportunityId },
+      where: { id: opportunityId, organizationId: tenantId },
       include: {
         crmOrganization: true,
         pipeline: { include: { stages: true } },
@@ -96,13 +100,14 @@ export class CrmAiService {
       const data = JSON.parse(text);
 
       await this.prisma.crmOpportunity.update({
-        where: { id: opportunityId },
+        where: { id: opportunityId, organizationId: tenantId },
         data: { probability: data.probability },
       });
 
       this.messageBus.publish(
         CrmEventType.OPPORTUNITY_PREDICTED,
-        new CrmEvent(CrmEventType.OPPORTUNITY_PREDICTED, { opportunityId, probability: data.probability, rationale: data.rationale })
+        new CrmEvent(CrmEventType.OPPORTUNITY_PREDICTED, { opportunityId, probability: data.probability, rationale: data.rationale }),
+        { tenantId }
       );
 
       return data;
@@ -113,8 +118,9 @@ export class CrmAiService {
   }
 
   async summarizeActivity(activityId: string) {
+    const tenantId = this.tenantContext.resolveTenantId();
     const activity = await this.prisma.crmActivity.findUnique({
-      where: { id: activityId },
+      where: { id: activityId, organizationId: tenantId },
       include: { notes: true },
     });
 
@@ -138,7 +144,8 @@ export class CrmAiService {
 
       this.messageBus.publish(
         CrmEventType.ACTIVITY_SUMMARIZED,
-        new CrmEvent(CrmEventType.ACTIVITY_SUMMARIZED, { activityId, ...data })
+        new CrmEvent(CrmEventType.ACTIVITY_SUMMARIZED, { activityId, ...data }),
+        { tenantId }
       );
 
       return data;

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
+import { MessageBus, TenantContextService } from '@oracle69/runtime';
 import { CrmOrganizationRepository } from '../repositories/crm-organization.repository.js';
 import { CreateCrmOrganizationDto, UpdateCrmOrganizationDto, CrmDashboardOrganizationDto } from '../dto/crm.dto.js';
 import { CrmEventType, CrmEvent } from '../events/crm.events.js';
@@ -8,48 +8,57 @@ import { CrmEventType, CrmEvent } from '../events/crm.events.js';
 export class CrmOrganizationService {
   constructor(
     private readonly repository: CrmOrganizationRepository,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService
   ) {}
 
   async createOrganization(data: CreateCrmOrganizationDto) {
-    const organization = await this.repository.create(data);
+    const tenantId = this.tenantContext.resolveTenantId(data.id);
+    const organization = await this.repository.create({ ...data, id: tenantId });
     
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_CREATED,
-      new CrmEvent(CrmEventType.ORGANIZATION_CREATED, { organization })
+      new CrmEvent(CrmEventType.ORGANIZATION_CREATED, { organization }),
+      { tenantId }
     );
 
     return organization;
   }
 
   async updateOrganization(id: string, data: UpdateCrmOrganizationDto) {
-    const organization = await this.repository.update(id, data);
+    const tenantId = this.tenantContext.resolveTenantId(id);
+    const organization = await this.repository.update(id, tenantId, data);
 
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_UPDATED,
-      new CrmEvent(CrmEventType.ORGANIZATION_UPDATED, { organization })
+      new CrmEvent(CrmEventType.ORGANIZATION_UPDATED, { organization }),
+      { tenantId }
     );
 
     return organization;
   }
 
   async deleteOrganization(id: string) {
-    const organization = await this.repository.delete(id);
+    const tenantId = this.tenantContext.resolveTenantId(id);
+    const organization = await this.repository.delete(id, tenantId);
 
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_DELETED,
-      new CrmEvent(CrmEventType.ORGANIZATION_DELETED, { organizationId: id })
+      new CrmEvent(CrmEventType.ORGANIZATION_DELETED, { organizationId: id }),
+      { tenantId }
     );
 
     return organization;
   }
 
   async getOrganization(id: string) {
-    return this.repository.findById(id);
+    const tenantId = this.tenantContext.resolveTenantId(id);
+    return this.repository.findById(id, tenantId);
   }
 
   async listOrganizations(organizationId: string): Promise<CrmDashboardOrganizationDto[]> {
-    const orgs = await this.repository.findAll(organizationId);
+    const tenantId = this.tenantContext.resolveTenantId(organizationId);
+    const orgs = await this.repository.findAll(tenantId);
     return orgs.map((org) => {
       // Find contact with latest createdAt
       const contacts = org.contacts.sort((a, b) => 
@@ -96,6 +105,7 @@ export class CrmOrganizationService {
   }
 
   async searchOrganizations(organizationId: string, query: string) {
-    return this.repository.search(organizationId, query);
+    const tenantId = this.tenantContext.resolveTenantId(organizationId);
+    return this.repository.search(tenantId, query);
   }
 }

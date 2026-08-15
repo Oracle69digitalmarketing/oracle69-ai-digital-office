@@ -7,28 +7,32 @@ export class CrmOpportunityRepository {
   private prisma = new PrismaClient();
 
   // Opportunity CRUD
-  async createOpportunity(data: CreateCrmOpportunityDto) {
+  async createOpportunity(data: CreateCrmOpportunityDto & { organizationId: string }) {
     return this.prisma.crmOpportunity.create({
       data,
     });
   }
 
-  async updateOpportunity(id: string, data: UpdateCrmOpportunityDto) {
+  async updateOpportunity(id: string, organizationId: string, data: UpdateCrmOpportunityDto) {
+    const record = await this.prisma.crmOpportunity.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmOpportunity.update({
       where: { id },
       data,
     });
   }
 
-  async deleteOpportunity(id: string) {
+  async deleteOpportunity(id: string, organizationId: string) {
+    const record = await this.prisma.crmOpportunity.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmOpportunity.delete({
       where: { id },
     });
   }
 
-  async findOpportunityById(id: string) {
-    return this.prisma.crmOpportunity.findUnique({
-      where: { id },
+  async findOpportunityById(id: string, organizationId: string) {
+    return this.prisma.crmOpportunity.findFirst({
+      where: { id, organizationId },
       include: {
         crmOrganization: true,
         owner: true,
@@ -51,28 +55,32 @@ export class CrmOpportunityRepository {
   }
 
   // Pipeline CRUD
-  async createPipeline(data: CreateCrmPipelineDto) {
+  async createPipeline(data: CreateCrmPipelineDto & { organizationId: string }) {
     return this.prisma.crmPipeline.create({
       data,
     });
   }
 
-  async updatePipeline(id: string, data: UpdateCrmPipelineDto) {
+  async updatePipeline(id: string, organizationId: string, data: UpdateCrmPipelineDto) {
+    const record = await this.prisma.crmPipeline.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmPipeline.update({
       where: { id },
       data,
     });
   }
 
-  async deletePipeline(id: string) {
+  async deletePipeline(id: string, organizationId: string) {
+    const record = await this.prisma.crmPipeline.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmPipeline.delete({
       where: { id },
     });
   }
 
-  async findPipelineById(id: string) {
-    return this.prisma.crmPipeline.findUnique({
-      where: { id },
+  async findPipelineById(id: string, organizationId: string) {
+    return this.prisma.crmPipeline.findFirst({
+      where: { id, organizationId },
       include: {
         stages: {
           orderBy: { order: 'asc' },
@@ -94,20 +102,24 @@ export class CrmOpportunityRepository {
   }
 
   // Pipeline Stage CRUD
-  async createPipelineStage(data: CreateCrmPipelineStageDto) {
+  async createPipelineStage(data: CreateCrmPipelineStageDto & { organizationId: string }) {
     return this.prisma.crmPipelineStage.create({
       data,
     });
   }
 
-  async updatePipelineStage(id: string, data: UpdateCrmPipelineStageDto) {
+  async updatePipelineStage(id: string, organizationId: string, data: UpdateCrmPipelineStageDto) {
+    const record = await this.prisma.crmPipelineStage.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmPipelineStage.update({
       where: { id },
       data,
     });
   }
 
-  async deletePipelineStage(id: string) {
+  async deletePipelineStage(id: string, organizationId: string) {
+    const record = await this.prisma.crmPipelineStage.findFirst({ where: { id, organizationId } });
+    if (!record) throw new Error('Not found or access denied');
     return this.prisma.crmPipelineStage.delete({
       where: { id },
     });
