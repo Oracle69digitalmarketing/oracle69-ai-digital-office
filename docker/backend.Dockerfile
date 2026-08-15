@@ -15,4 +15,4 @@ COPY --from=build /usr/src/app/apps/backend/dist ./dist
 COPY --from=build /usr/src/app/apps/backend/package.json ./package.json
 
 EXPOSE 3000
-CMD ["node", "dist/main"]
+CMD ["pnpm", "start:prod"]
