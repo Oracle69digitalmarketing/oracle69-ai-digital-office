@@ -2,24 +2,29 @@
 import { useEffect, useState } from 'react';
 import { procurementClient } from './client';
 import { Card, CardContent, CardHeader, CardTitle } from '@oracle69/ui';
+import { ProcurementKpiMetrics } from '@oracle69/procurement-intelligence';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export default function ProcurementDashboard() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<{ kpi: ProcurementKpiMetrics; health: { status: string }; insights: { summary: string } } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      procurementClient.getKpi(),
-      procurementClient.getHealth(),
-      procurementClient.getInsights()
+      procurementClient.getKpi() as Promise<ApiResponse<ProcurementKpiMetrics>>,
+      procurementClient.getHealth() as Promise<ApiResponse<{ status: string }>>,
+      procurementClient.getInsights() as Promise<ApiResponse<{ summary: string }>>
     ]).then(([kpi, health, insights]) => {
       setData({ kpi: kpi.data, health: health.data, insights: insights.data });
       setLoading(false);
     });
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading || !data) return <div>Loading...</div>;
 
   const spendData = Object.entries(data.kpi.spendBySupplier).map(([name, value]) => ({ name, value }));
 

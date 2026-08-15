@@ -227,6 +227,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@oracle69/procurement-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/procurement-intelligence
       '@oracle69/shared':
         specifier: workspace:*
         version: link:../../shared
