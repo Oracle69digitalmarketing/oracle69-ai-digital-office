@@ -85,6 +85,9 @@ importers:
       '@oracle69/agent-engine':
         specifier: workspace:*
         version: link:../../agent-engine
+      '@oracle69/crm':
+        specifier: workspace:*
+        version: link:../../packages/crm
       '@oracle69/enterprise-intelligence':
         specifier: workspace:*
         version: link:../../packages/enterprise-intelligence
