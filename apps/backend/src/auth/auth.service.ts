@@ -51,7 +51,8 @@ export class AuthService {
 
   async register(data: any) {
     console.log("STEP 1: validating input");
-    console.log("AuthService.register: Starting registration for data:", JSON.stringify(data));
+    const { password, ...safeData } = data;
+    console.log("AuthService.register: Starting registration for data:", JSON.stringify(safeData));
 
     try {
       console.log("STEP 2: checking existing user");
