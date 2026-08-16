@@ -14,10 +14,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
-    origin: [
-      "https://oracle69-ai-digital-office-frontend.onrender.com",
-      "http://localhost:3000",
-    ],
+    origin: ["https://oracle69-ai-digital-office-frontend.onrender.com", "http://localhost:3000"],
     credentials: true,
   });
   app.use(helmet());

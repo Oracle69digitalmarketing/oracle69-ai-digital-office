@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { CustomerSuccessEventType, CustomerSuccessEvent } from '../events/cs.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { CustomerSuccessEventType, CustomerSuccessEvent } from "../events/cs.events.js";
 
 export interface HealthScoreResult {
   score: number;
-  status: 'healthy' | 'at_risk' | 'critical';
+  status: "healthy" | "at_risk" | "critical";
   reasoning: string;
   factors: string[];
 }
@@ -15,9 +15,7 @@ export class CsHealthEngine {
   private readonly logger = new Logger(CsHealthEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+  constructor(private readonly messageBus: MessageBus) {}
 
   async calculateHealth(crmOrganizationId: string): Promise<HealthScoreResult> {
     this.logger.log(`Calculating health for organization: ${crmOrganizationId}`);
@@ -25,18 +23,18 @@ export class CsHealthEngine {
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
       include: {
-        contacts: { orderBy: { createdAt: 'desc' } },
-        opportunities: { orderBy: { updatedAt: 'desc' }, take: 100 },
-        interactions: { orderBy: { createdAt: 'desc' }, take: 100 },
+        contacts: { orderBy: { createdAt: "desc" } },
+        opportunities: { orderBy: { updatedAt: "desc" }, take: 100 },
+        interactions: { orderBy: { createdAt: "desc" }, take: 100 },
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
-    const wonOpportunities = organization.opportunities.filter((o) => o.stage === 'won');
-    const lostOpportunities = organization.opportunities.filter((o) => o.stage === 'lost');
+    const wonOpportunities = organization.opportunities.filter((o) => o.stage === "won");
+    const lostOpportunities = organization.opportunities.filter((o) => o.stage === "lost");
     const openOpportunities = organization.opportunities.filter(
-      (o) => o.stage !== 'won' && o.stage !== 'lost'
+      (o) => o.stage !== "won" && o.stage !== "lost",
     );
     const interactionCount = organization.interactions.length;
     const contactCount = organization.contacts.length;
@@ -72,16 +70,20 @@ export class CsHealthEngine {
     // Negative: no engagement
     if (interactionCount === 0) {
       score -= 15;
-      negative.push('No recorded interactions');
+      negative.push("No recorded interactions");
     } else if (interactionCount < 3) {
       score -= 10;
-      negative.push('Low recent interaction volume');
+      negative.push("Low recent interaction volume");
     }
 
     // Negative: pipeline fully closed without wins
-    if (organization.opportunities.length > 0 && wonOpportunities.length === 0 && openOpportunities.length === 0) {
+    if (
+      organization.opportunities.length > 0 &&
+      wonOpportunities.length === 0 &&
+      openOpportunities.length === 0
+    ) {
       score -= 15;
-      negative.push('All opportunities closed without wins');
+      negative.push("All opportunities closed without wins");
     }
 
     // Negative: unusually high loss concentration
@@ -95,8 +97,8 @@ export class CsHealthEngine {
 
     score = Math.max(0, Math.min(100, score));
 
-    const status: HealthScoreResult['status'] =
-      score >= 75 ? 'healthy' : (score >= 45 ? 'at_risk' : 'critical');
+    const status: HealthScoreResult["status"] =
+      score >= 75 ? "healthy" : score >= 45 ? "at_risk" : "critical";
 
     const reasoning =
       `Based on opportunity outcomes, interaction volume, contact base and pipeline activity, ` +
@@ -112,7 +114,7 @@ export class CsHealthEngine {
     // Compare against the previous score to detect deterioration
     const previousScore = await this.prisma.csHealthScore.findFirst({
       where: { crmOrganizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     // Persistence
@@ -126,17 +128,20 @@ export class CsHealthEngine {
 
     await this.prisma.crmOrganization.update({
       where: { id: crmOrganizationId },
-      data: { healthScore: result.score, lastHealthUpdate: new Date() }
+      data: { healthScore: result.score, lastHealthUpdate: new Date() },
     });
 
     // Events
     this.messageBus.publish(
       CustomerSuccessEventType.HEALTH_UPDATED,
-      new CustomerSuccessEvent(CustomerSuccessEventType.HEALTH_UPDATED, { crmOrganizationId, ...result })
+      new CustomerSuccessEvent(CustomerSuccessEventType.HEALTH_UPDATED, {
+        crmOrganizationId,
+        ...result,
+      }),
     );
 
     const deteriorated =
-      status === 'critical' || (previousScore !== null && result.score < previousScore.score);
+      status === "critical" || (previousScore !== null && result.score < previousScore.score);
 
     if (deteriorated) {
       this.messageBus.publish(
@@ -145,7 +150,7 @@ export class CsHealthEngine {
           crmOrganizationId,
           ...result,
           previousScore: previousScore?.score ?? null,
-        })
+        }),
       );
     }
 

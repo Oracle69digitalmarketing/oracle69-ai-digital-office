@@ -1,9 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { KNOWLEDGE_ARTICLE_REPOSITORY, type ArticleRepository } from '../repositories/article.repository.js';
-import { KNOWLEDGE_INDEX_REPOSITORY, type IndexRepository } from '../repositories/index.repository.js';
-import { KnowledgeArticle, KnowledgeArticleStatus, KnowledgeSearchResult } from '../types.js';
-import { IndexService } from './index.service.js';
-import { TenantContextService } from '@oracle69/runtime';
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  KNOWLEDGE_ARTICLE_REPOSITORY,
+  type ArticleRepository,
+} from "../repositories/article.repository.js";
+import {
+  KNOWLEDGE_INDEX_REPOSITORY,
+  type IndexRepository,
+} from "../repositories/index.repository.js";
+import { KnowledgeArticle, KnowledgeArticleStatus, KnowledgeSearchResult } from "../types.js";
+import { IndexService } from "./index.service.js";
+import { TenantContextService } from "@oracle69/runtime";
 
 /**
  * Tenant-scoped knowledge search. Scores published articles by the weighted
@@ -38,7 +44,10 @@ export class SearchService {
     const indexedArticles = new Set(indexEntries.map((e) => e.articleId));
     const scoreByArticle = new Map<string, number>();
     for (const entry of indexEntries) {
-      scoreByArticle.set(entry.articleId, (scoreByArticle.get(entry.articleId) ?? 0) + entry.weight);
+      scoreByArticle.set(
+        entry.articleId,
+        (scoreByArticle.get(entry.articleId) ?? 0) + entry.weight,
+      );
     }
 
     const lowerQuery = query.toLowerCase();
@@ -77,11 +86,14 @@ export class SearchService {
   private buildExcerpt(article: KnowledgeArticle, lowerQuery: string, window = 80): string {
     const index = article.content.toLowerCase().indexOf(lowerQuery);
     if (index === -1) {
-      const cleaned = article.content.replace(/\s+/g, ' ').trim();
+      const cleaned = article.content.replace(/\s+/g, " ").trim();
       return cleaned.length > window ? `${cleaned.slice(0, window)}...` : cleaned;
     }
     const start = Math.max(0, index - 30);
-    const snippet = article.content.slice(start, index + lowerQuery.length + window).replace(/\s+/g, ' ').trim();
+    const snippet = article.content
+      .slice(start, index + lowerQuery.length + window)
+      .replace(/\s+/g, " ")
+      .trim();
     return start > 0 ? `...${snippet}...` : snippet;
   }
 }

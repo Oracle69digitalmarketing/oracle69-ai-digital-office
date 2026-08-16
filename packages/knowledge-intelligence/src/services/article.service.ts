@@ -1,13 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from "@nestjs/common";
 import {
   KNOWLEDGE_ARTICLE_REPOSITORY,
   type ArticleRepository,
-} from '../repositories/article.repository.js';
-import { KnowledgeArticle, KnowledgeArticleStatus, KnowledgeArticleVersion } from '../types.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
-import { KnowledgeEventType } from '../events/knowledge.events.js';
+} from "../repositories/article.repository.js";
+import { KnowledgeArticle, KnowledgeArticleStatus, KnowledgeArticleVersion } from "../types.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
+import { KnowledgeEventType } from "../events/knowledge.events.js";
 
-const EVENT_SOURCE = 'knowledge-intelligence';
+const EVENT_SOURCE = "knowledge-intelligence";
 
 export interface UpdateArticleData {
   title?: string;
@@ -32,7 +32,10 @@ export class ArticleService {
   ) {}
 
   async createArticle(
-    data: Omit<KnowledgeArticle, 'id' | 'createdAt' | 'updatedAt' | 'organizationId' | 'version'> & {
+    data: Omit<
+      KnowledgeArticle,
+      "id" | "createdAt" | "updatedAt" | "organizationId" | "version"
+    > & {
       organizationId?: string;
       version?: number;
     },
@@ -47,7 +50,8 @@ export class ArticleService {
       status: data.status ?? KnowledgeArticleStatus.DRAFT,
       version: data.version ?? 1,
       authorId: data.authorId,
-      publishedAt: data.status === KnowledgeArticleStatus.PUBLISHED ? new Date().toISOString() : undefined,
+      publishedAt:
+        data.status === KnowledgeArticleStatus.PUBLISHED ? new Date().toISOString() : undefined,
       organizationId: tenantId,
     });
     await this.eventBus.publish(KnowledgeEventType.ARTICLE_CREATED, created, {
@@ -60,7 +64,7 @@ export class ArticleService {
   async publishArticle(id: string, organizationId?: string): Promise<KnowledgeArticle> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const existing = await this.articleRepo.findById(id, tenantId);
-    if (!existing) throw new Error('Article not found');
+    if (!existing) throw new Error("Article not found");
     if (existing.status === KnowledgeArticleStatus.PUBLISHED) return existing;
 
     const updated = await this.articleRepo.update(id, {
@@ -77,7 +81,7 @@ export class ArticleService {
   async archiveArticle(id: string, organizationId?: string): Promise<KnowledgeArticle> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const existing = await this.articleRepo.findById(id, tenantId);
-    if (!existing) throw new Error('Article not found');
+    if (!existing) throw new Error("Article not found");
     if (existing.status === KnowledgeArticleStatus.ARCHIVED) return existing;
 
     const updated = await this.articleRepo.update(id, {
@@ -98,7 +102,7 @@ export class ArticleService {
   ): Promise<KnowledgeArticle> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const existing = await this.articleRepo.findById(id, tenantId);
-    if (!existing) throw new Error('Article not found');
+    if (!existing) throw new Error("Article not found");
 
     const nextVersion = existing.version + 1;
     await this.articleRepo.saveVersion({
@@ -145,14 +149,17 @@ export class ArticleService {
   async getArticle(id: string, organizationId?: string): Promise<KnowledgeArticle> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const article = await this.articleRepo.findById(id, tenantId);
-    if (!article) throw new Error('Article not found');
+    if (!article) throw new Error("Article not found");
     return article;
   }
 
-  async getVersionHistory(articleId: string, organizationId?: string): Promise<KnowledgeArticleVersion[]> {
+  async getVersionHistory(
+    articleId: string,
+    organizationId?: string,
+  ): Promise<KnowledgeArticleVersion[]> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const article = await this.articleRepo.findById(articleId, tenantId);
-    if (!article) throw new Error('Article not found');
+    if (!article) throw new Error("Article not found");
     return this.articleRepo.listVersions(articleId, tenantId);
   }
 
@@ -163,10 +170,10 @@ export class ArticleService {
   ): Promise<KnowledgeArticleVersion | KnowledgeArticle> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const article = await this.articleRepo.findById(articleId, tenantId);
-    if (!article) throw new Error('Article not found');
+    if (!article) throw new Error("Article not found");
     if (version === article.version) return article;
     const snapshot = await this.articleRepo.findVersion(articleId, version, tenantId);
-    if (!snapshot) throw new Error('Article version not found');
+    if (!snapshot) throw new Error("Article version not found");
     return snapshot;
   }
 }

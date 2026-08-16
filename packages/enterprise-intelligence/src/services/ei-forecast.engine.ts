@@ -1,8 +1,11 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  EnterpriseIntelligenceEventType,
+  EnterpriseIntelligenceEvent,
+} from "../events/ei.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface EnterpriseForecast {
   period: string;
@@ -34,7 +37,7 @@ export class EiForecastEngine {
 
   constructor(
     private readonly messageBus: MessageBus,
-    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+    @Optional() @Inject("PrismaService") prismaService?: PrismaClient,
   ) {
     this.prisma = prismaService ?? new PrismaClient();
   }
@@ -42,7 +45,10 @@ export class EiForecastEngine {
   /**
    * Deterministically computes the enterprise forecast without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<EnterpriseForecast> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<EnterpriseForecast> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       include: {
@@ -53,23 +59,23 @@ export class EiForecastEngine {
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const opportunities = organization.crmOpportunities;
-    const openOpportunities = opportunities.filter((o) => o.stage !== 'won' && o.stage !== 'lost');
-    const wonOpportunities = opportunities.filter((o) => o.stage === 'won');
+    const openOpportunities = opportunities.filter((o) => o.stage !== "won" && o.stage !== "lost");
+    const wonOpportunities = opportunities.filter((o) => o.stage === "won");
 
     const openValue = openOpportunities.reduce((sum, o) => sum + o.value, 0);
     const weightedPipeline = openOpportunities.reduce(
       (sum, o) => sum + o.value * (o.probability || 0.5),
-      0
+      0,
     );
     const wonRevenue = wonOpportunities.reduce((sum, o) => sum + o.value, 0);
 
     let retentionRevenue = 0;
     for (const account of organization.crmOrganizations) {
       const accountWonRevenue = account.opportunities
-        .filter((o) => o.stage === 'won')
+        .filter((o) => o.stage === "won")
         .reduce((sum, o) => sum + o.value, 0);
       if (accountWonRevenue === 0) continue;
 
@@ -79,7 +85,9 @@ export class EiForecastEngine {
         factor =
           health >= 75
             ? RETENTION_TIERS.healthy
-            : (health >= 45 ? RETENTION_TIERS.atRisk : RETENTION_TIERS.critical);
+            : health >= 45
+              ? RETENTION_TIERS.atRisk
+              : RETENTION_TIERS.critical;
       }
       retentionRevenue += accountWonRevenue * factor;
     }
@@ -105,8 +113,13 @@ export class EiForecastEngine {
   /**
    * Computes, persists and publishes the enterprise forecast.
    */
-  async generateForecast(organizationId: string, period: string = currentPeriod()): Promise<EnterpriseForecast> {
-    this.logger.log(`Generating enterprise forecast for organization ${organizationId}, period ${period}`);
+  async generateForecast(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<EnterpriseForecast> {
+    this.logger.log(
+      `Generating enterprise forecast for organization ${organizationId}, period ${period}`,
+    );
 
     const forecast = await this.compute(organizationId, period);
 
@@ -129,7 +142,7 @@ export class EiForecastEngine {
       new EnterpriseIntelligenceEvent(EnterpriseIntelligenceEventType.FORECAST_UPDATED, {
         organizationId,
         forecast,
-      })
+      }),
     );
 
     return forecast;

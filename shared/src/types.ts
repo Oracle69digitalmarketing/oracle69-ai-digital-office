@@ -1,6 +1,6 @@
-import { EventCatalog } from '@oracle69/platform-contracts';
+import { EventCatalog } from "@oracle69/platform-contracts";
 
-export type Priority = 'low' | 'medium' | 'high' | 'critical';
+export type Priority = "low" | "medium" | "high" | "critical";
 
 export interface TaskContext {
   taskId: string;
@@ -16,7 +16,8 @@ export interface TaskContext {
   expectedDeliverable?: string;
 }
 
-export type AgentStatus = 'offline' | 'idle' | 'busy' | 'waiting' | 'blocked' | 'error' | 'maintenance';
+export type AgentStatus =
+  "offline" | "idle" | "busy" | "waiting" | "blocked" | "error" | "maintenance";
 
 export interface AgentMetadata {
   id: string;
@@ -30,14 +31,14 @@ export interface AgentMetadata {
   healthStatus: AgentStatus;
 }
 
-export type ModelTier = 'nano' | 'mini' | 'gpt-5.6';
+export type ModelTier = "nano" | "mini" | "gpt-5.6";
 
 export interface ModelRoutingRequest {
   taskId: string;
   taskDescription: string;
   department: string;
   complexity: number;
-  businessRisk?: 'low' | 'medium' | 'high';
+  businessRisk?: "low" | "medium" | "high";
 }
 
 export interface ModelUsage {
@@ -54,14 +55,14 @@ export interface WorkflowTrace {
   steps: WorkflowStep[];
   startTime: Date;
   endTime?: Date;
-  status: 'pending' | 'executing' | 'completed' | 'failed';
+  status: "pending" | "executing" | "completed" | "failed";
 }
 
 export interface WorkflowStep {
   stepId: string;
   taskId: string;
   agentId: string;
-  status: 'pending' | 'executing' | 'completed' | 'failed';
+  status: "pending" | "executing" | "completed" | "failed";
   startTime: Date;
   endTime?: Date;
   result?: any;
@@ -78,7 +79,7 @@ export interface DomainEvent<T = any> {
 
 export interface MemoryRecord {
   id: string;
-  type: 'session' | 'working' | 'long-term';
+  type: "session" | "working" | "long-term";
   sessionId: string;
   content: any;
   metadata: Record<string, any>;

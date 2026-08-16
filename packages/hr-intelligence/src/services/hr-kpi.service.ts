@@ -1,9 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { HR_EMPLOYEE_REPOSITORY, type EmployeeRepository } from '../repositories/employee.repository.js';
-import { HR_POSITION_REPOSITORY, type PositionRepository } from '../repositories/position.repository.js';
-import { HR_CANDIDATE_REPOSITORY, type CandidateRepository } from '../repositories/candidate.repository.js';
-import { CandidateStage, EmployeeStatus, HrKpis, PositionStatus } from '../types.js';
-import { TenantContextService } from '@oracle69/runtime';
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  HR_EMPLOYEE_REPOSITORY,
+  type EmployeeRepository,
+} from "../repositories/employee.repository.js";
+import {
+  HR_POSITION_REPOSITORY,
+  type PositionRepository,
+} from "../repositories/position.repository.js";
+import {
+  HR_CANDIDATE_REPOSITORY,
+  type CandidateRepository,
+} from "../repositories/candidate.repository.js";
+import { CandidateStage, EmployeeStatus, HrKpis, PositionStatus } from "../types.js";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class HrKpiService {
@@ -22,15 +31,22 @@ export class HrKpiService {
       this.candidateRepo.findByOrganization(tenantId),
     ]);
 
-    const headcount = employees.filter((e) => e.status === EmployeeStatus.ACTIVE || e.status === EmployeeStatus.ONBOARDING).length;
+    const headcount = employees.filter(
+      (e) => e.status === EmployeeStatus.ACTIVE || e.status === EmployeeStatus.ONBOARDING,
+    ).length;
     const activeHeadcount = employees.filter((e) => e.status === EmployeeStatus.ACTIVE).length;
     const onboardingCount = employees.filter((e) => e.status === EmployeeStatus.ONBOARDING).length;
-    const offboardingCount = employees.filter((e) => e.status === EmployeeStatus.OFFBOARDING).length;
+    const offboardingCount = employees.filter(
+      (e) => e.status === EmployeeStatus.OFFBOARDING,
+    ).length;
     const turnoverCount = employees.filter((e) => e.status === EmployeeStatus.INACTIVE).length;
-    const turnoverRate = activeHeadcount + turnoverCount > 0 ? turnoverCount / (activeHeadcount + turnoverCount) : 0;
+    const turnoverRate =
+      activeHeadcount + turnoverCount > 0 ? turnoverCount / (activeHeadcount + turnoverCount) : 0;
 
     const openPositions = positions.filter((p) => p.status === PositionStatus.OPEN).length;
-    const filledPositions = positions.filter((p) => p.status === PositionStatus.FILLED || p.status === PositionStatus.CLOSED).length;
+    const filledPositions = positions.filter(
+      (p) => p.status === PositionStatus.FILLED || p.status === PositionStatus.CLOSED,
+    ).length;
 
     const pipelineStages = new Set([
       CandidateStage.APPLIED,

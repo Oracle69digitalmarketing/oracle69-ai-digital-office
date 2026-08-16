@@ -21,11 +21,13 @@ As the **Operate** layer of the Oracle69 Enterprise AI Platform, Digital Office 
 # 2. Capability Ownership Boundaries
 
 ### [Digital Office Only] - Core Ownership
+
 - **Operational APIs:** All endpoints for task management, agent status, and workflow execution.
 - **Operational Memory APIs:** Searching and managing mid-term organizational memory.
 - **Integration Layer:** Maintaining the `packages/platform-contracts` implementation.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Architect (Discover) APIs:** Strategic mapping and blueprinting endpoints.
 - **Launch (Build) APIs:** Global tenant provisioning and infrastructure setup.
 - **Growth (Optimize) APIs:** Cross-product intelligence and market optimization.
@@ -38,17 +40,23 @@ As the **Operate** layer of the Oracle69 Enterprise AI Platform, Digital Office 
 Digital Office exposes a formal integration surface for sibling products and the platform core.
 
 ### Provisioning
+
 `POST /api/v1/platform/provision`
+
 - **Purpose:** Initializes a new operational workspace for a tenant.
 - **Source:** Build (Launch) product.
 
 ### Event Streaming
+
 `POST /api/v1/platform/events/subscribe`
+
 - **Purpose:** Allows platform services to subscribe to operational events.
 - **Events:** `task.completed`, `agent.error`, `workflow.started`.
 
 ### Enterprise Memory
+
 `POST /api/v1/platform/memory/query`
+
 - **Purpose:** Provides cross-product access to enterprise memory records.
 - **Contract:** Uses standard memory query contracts from `platform-contracts`.
 
@@ -593,11 +601,11 @@ Request ID
 Example
 
 {
-  "success": true,
-  "message": "Task created successfully.",
-  "data": {},
-  "timestamp": "",
-  "requestId": ""
+"success": true,
+"message": "Task created successfully.",
+"data": {},
+"timestamp": "",
+"requestId": ""
 }
 
 ---
@@ -623,9 +631,9 @@ Request ID
 Example
 
 {
-  "success": false,
-  "error": "TASK_NOT_FOUND",
-  "message": "Requested task does not exist."
+"success": false,
+"error": "TASK_NOT_FOUND",
+"message": "Requested task does not exist."
 }
 
 ---

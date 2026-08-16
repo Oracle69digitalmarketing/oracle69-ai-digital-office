@@ -21,11 +21,13 @@ As the **Operate** environment, Digital Office handles local session management 
 # 2. Capability Ownership Boundaries
 
 ### [Digital Office Only] - Core Ownership
+
 - **Operational RBAC:** Defining and enforcing roles within the Digital Office workspace (e.g., Department Head, Agent Supervisor).
 - **Session Management:** Local JWT issuance and validation for API access within the `v1/*` surface.
 - **Agent Identity:** Managing the cryptographic identity and authorization of AI Employees.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Global Identity (IAM):** Master user records and cross-product SSO (Launch/Build).
 - **Tenant Isolation Policy:** Platform-wide security boundaries between different organizations.
 - **Strategic Access Governance:** High-level permissioning for executive dashboards (Decide).

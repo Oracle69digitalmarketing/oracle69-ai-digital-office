@@ -1,7 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { TRANSACTION_REPOSITORY, type TransactionRepository } from '../repositories/transaction.repository.js';
-import { FinancialKpis, TransactionStatus, TransactionType } from '../types.js';
-import { TenantContextService } from '@oracle69/runtime';
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  TRANSACTION_REPOSITORY,
+  type TransactionRepository,
+} from "../repositories/transaction.repository.js";
+import { FinancialKpis, TransactionStatus, TransactionType } from "../types.js";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class FinancialKpiService {
@@ -42,7 +45,7 @@ export class FinancialKpiService {
 
     const netProfit = totalRevenue - totalExpenses;
     const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
-    
+
     // Simple burn rate calculation (average expenses over the last 3 months)
     const sortedMonths = Array.from(monthlyTrends.keys()).sort().reverse();
     const last3Months = sortedMonths.slice(0, 3);
@@ -50,11 +53,17 @@ export class FinancialKpiService {
     const burnRate = last3Months.length > 0 ? recentExpenses / last3Months.length : 0;
 
     const trends = Array.from(monthlyTrends.entries())
-      .map(([period, data]) => ({ period, revenue: data.revenue, expenses: data.expenses, netProfit: data.revenue - data.expenses }))
+      .map(([period, data]) => ({
+        period,
+        revenue: data.revenue,
+        expenses: data.expenses,
+        netProfit: data.revenue - data.expenses,
+      }))
       .sort((a, b) => a.period.localeCompare(b.period));
 
     // Runway estimate in months: available surplus divided by the monthly burn rate.
-    const runway = burnRate > 0 && netProfit > 0 ? Math.round((netProfit / burnRate) * 10) / 10 : undefined;
+    const runway =
+      burnRate > 0 && netProfit > 0 ? Math.round((netProfit / burnRate) * 10) / 10 : undefined;
 
     return {
       totalRevenue,

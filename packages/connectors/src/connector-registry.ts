@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { IConnector, ConnectorMetadata } from './types.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { IConnector, ConnectorMetadata } from "./types.js";
 
 @Injectable()
 export class ConnectorRegistry {
@@ -11,7 +11,9 @@ export class ConnectorRegistry {
       this.logger.warn(`Overwriting existing connector for type: ${connector.metadata.type}`);
     }
     this.connectors.set(connector.metadata.type, connector);
-    this.logger.log(`Registered connector: ${connector.metadata.name} (${connector.metadata.type})`);
+    this.logger.log(
+      `Registered connector: ${connector.metadata.name} (${connector.metadata.type})`,
+    );
   }
 
   unregister(type: string) {
@@ -26,7 +28,7 @@ export class ConnectorRegistry {
   }
 
   discover(): ConnectorMetadata[] {
-    return Array.from(this.connectors.values()).map(c => c.metadata);
+    return Array.from(this.connectors.values()).map((c) => c.metadata);
   }
 
   // Alias for backward compatibility or different naming conventions

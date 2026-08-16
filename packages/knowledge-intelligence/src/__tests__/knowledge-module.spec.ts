@@ -1,18 +1,18 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { EventCatalogService } from '@oracle69/runtime';
-import { KnowledgeIntelligenceModule } from '../knowledge-intelligence.module.js';
-import { KnowledgeEventType } from '../events/knowledge.events.js';
-import { createKnowledgeTestModule, KnowledgeTestContext } from '../testing/test-fixture.js';
-import { KnowledgeArticleStatus } from '../types.js';
+import { describe, it, expect, beforeEach } from "@jest/globals";
+import { EventCatalogService } from "@oracle69/runtime";
+import { KnowledgeIntelligenceModule } from "../knowledge-intelligence.module.js";
+import { KnowledgeEventType } from "../events/knowledge.events.js";
+import { createKnowledgeTestModule, KnowledgeTestContext } from "../testing/test-fixture.js";
+import { KnowledgeArticleStatus } from "../types.js";
 
-describe('Knowledge Intelligence module (Event Bus integration)', () => {
+describe("Knowledge Intelligence module (Event Bus integration)", () => {
   let ctx: KnowledgeTestContext;
 
   beforeEach(() => {
     ctx = createKnowledgeTestModule();
   });
 
-  it('should register Knowledge domain events in the canonical Event Catalog', () => {
+  it("should register Knowledge domain events in the canonical Event Catalog", () => {
     const catalog = new EventCatalogService();
     new KnowledgeIntelligenceModule(catalog);
 
@@ -26,23 +26,25 @@ describe('Knowledge Intelligence module (Event Bus integration)', () => {
     expect(catalog.isCanonical(KnowledgeEventType.INSIGHT_GENERATED)).toBe(true);
 
     const entry = catalog.entry(KnowledgeEventType.ARTICLE_PUBLISHED);
-    expect(entry?.description).toContain('published');
-    expect(catalog.entry(KnowledgeEventType.ARTICLE_CREATED)?.category).toBe('executive');
+    expect(entry?.description).toContain("published");
+    expect(catalog.entry(KnowledgeEventType.ARTICLE_CREATED)?.category).toBe("executive");
   });
 
-  it('should publish canonical Knowledge events through the shared EventBus', async () => {
-    const orgId = 'org-module-1';
+  it("should publish canonical Knowledge events through the shared EventBus", async () => {
+    const orgId = "org-module-1";
     await ctx.tenantContext.runAsync({ tenantId: orgId }, async () => {
       const article = await ctx.articleService.createArticle({
-        title: 'Onboarding Playbook',
-        summary: 'First 30 days',
-        content: 'How to onboard new employees.',
-        category: 'Operations',
-        tags: ['onboarding'],
+        title: "Onboarding Playbook",
+        summary: "First 30 days",
+        content: "How to onboard new employees.",
+        category: "Operations",
+        tags: ["onboarding"],
       });
 
       await ctx.articleService.publishArticle(article.id);
-      await ctx.articleService.updateArticle(article.id, { content: 'Updated onboarding content.' });
+      await ctx.articleService.updateArticle(article.id, {
+        content: "Updated onboarding content.",
+      });
       await ctx.indexService.reindexArticle(article.id);
     });
 
@@ -56,6 +58,9 @@ describe('Knowledge Intelligence module (Event Bus integration)', () => {
 
     const created = published.find((e) => e.type === KnowledgeEventType.ARTICLE_CREATED);
     expect(created).toBeDefined();
-    expect(created.payload).toMatchObject({ title: 'Onboarding Playbook', status: KnowledgeArticleStatus.DRAFT });
+    expect(created.payload).toMatchObject({
+      title: "Onboarding Playbook",
+      status: KnowledgeArticleStatus.DRAFT,
+    });
   });
 });

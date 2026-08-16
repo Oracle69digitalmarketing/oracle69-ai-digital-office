@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { VectorMemoryAdapter } from './memory-manager.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { VectorMemoryAdapter } from "./memory-manager.js";
 
 @Injectable()
 export class PgVectorAdapter implements VectorMemoryAdapter {
@@ -7,7 +7,7 @@ export class PgVectorAdapter implements VectorMemoryAdapter {
 
   constructor(
     private readonly prisma: any,
-    private readonly embeddingProvider: { embed(text: string): Promise<number[]> }
+    private readonly embeddingProvider: { embed(text: string): Promise<number[]> },
   ) {}
 
   async embed(text: string): Promise<number[]> {
@@ -15,8 +15,8 @@ export class PgVectorAdapter implements VectorMemoryAdapter {
   }
 
   async upsert(id: string, vector: number[], metadata: any): Promise<void> {
-    const vectorStr = `[${vector.join(',')}]`;
-    
+    const vectorStr = `[${vector.join(",")}]`;
+
     // Prisma doesn't support vector types directly, so we use raw SQL
     await this.prisma.$executeRaw`
       UPDATE "LongTermMemoryRecord"
@@ -27,8 +27,8 @@ export class PgVectorAdapter implements VectorMemoryAdapter {
   }
 
   async similaritySearch(vector: number[], limit: number): Promise<any[]> {
-    const vectorStr = `[${vector.join(',')}]`;
-    
+    const vectorStr = `[${vector.join(",")}]`;
+
     const results = await this.prisma.$queryRaw`
       SELECT id, content, metadata, timestamp, (embedding <=> ${vectorStr}::vector) as distance
       FROM "LongTermMemoryRecord"

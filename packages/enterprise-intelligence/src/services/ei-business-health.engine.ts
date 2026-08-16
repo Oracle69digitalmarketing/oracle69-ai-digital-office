@@ -1,11 +1,14 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  EnterpriseIntelligenceEventType,
+  EnterpriseIntelligenceEvent,
+} from "../events/ei.events.js";
 
 export interface BusinessHealthResult {
   score: number;
-  status: 'healthy' | 'at_risk' | 'critical';
+  status: "healthy" | "at_risk" | "critical";
   reasoning: string;
   factors: string[];
 }
@@ -21,7 +24,7 @@ export class EiBusinessHealthEngine {
 
   constructor(
     private readonly messageBus: MessageBus,
-    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+    @Optional() @Inject("PrismaService") prismaService?: PrismaClient,
   ) {
     this.prisma = prismaService ?? new PrismaClient();
   }
@@ -44,14 +47,14 @@ export class EiBusinessHealthEngine {
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const opportunities = organization.crmOpportunities;
     const accounts = organization.crmOrganizations;
 
-    const wonOpportunities = opportunities.filter((o) => o.stage === 'won');
-    const lostOpportunities = opportunities.filter((o) => o.stage === 'lost');
-    const openOpportunities = opportunities.filter((o) => o.stage !== 'won' && o.stage !== 'lost');
+    const wonOpportunities = opportunities.filter((o) => o.stage === "won");
+    const lostOpportunities = opportunities.filter((o) => o.stage === "lost");
+    const openOpportunities = opportunities.filter((o) => o.stage !== "won" && o.stage !== "lost");
 
     const healthScores = accounts
       .map((a) => a.healthScore)
@@ -61,10 +64,13 @@ export class EiBusinessHealthEngine {
         ? healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length
         : 0;
 
-    const accountsAtRisk = accounts.filter((a) => a.healthScore !== null && a.healthScore !== undefined && a.healthScore < 75).length;
+    const accountsAtRisk = accounts.filter(
+      (a) => a.healthScore !== null && a.healthScore !== undefined && a.healthScore < 75,
+    ).length;
     const activeChurnRisks = accounts.reduce(
-      (sum, a) => sum + a.churnRisks.filter((r) => r.severity === 'high' || r.severity === 'critical').length,
-      0
+      (sum, a) =>
+        sum + a.churnRisks.filter((r) => r.severity === "high" || r.severity === "critical").length,
+      0,
     );
     const totalInteractions = accounts.reduce((sum, a) => sum + a.interactions.length, 0);
 
@@ -74,7 +80,9 @@ export class EiBusinessHealthEngine {
 
     if (healthScores.length > 0) {
       score += Math.min(20, averageCustomerHealth / 5);
-      positive.push(`Average customer health ${Math.round(averageCustomerHealth)}/100 across ${healthScores.length} account(s)`);
+      positive.push(
+        `Average customer health ${Math.round(averageCustomerHealth)}/100 across ${healthScores.length} account(s)`,
+      );
     }
 
     if (wonOpportunities.length > 0) {
@@ -105,18 +113,22 @@ export class EiBusinessHealthEngine {
 
     if (totalInteractions === 0) {
       score -= 10;
-      negative.push('No recorded customer interactions');
+      negative.push("No recorded customer interactions");
     }
 
-    if (opportunities.length > 0 && wonOpportunities.length === 0 && openOpportunities.length === 0) {
+    if (
+      opportunities.length > 0 &&
+      wonOpportunities.length === 0 &&
+      openOpportunities.length === 0
+    ) {
       score -= 10;
-      negative.push('All opportunities closed without wins');
+      negative.push("All opportunities closed without wins");
     }
 
     score = Math.max(0, Math.min(100, Math.round(score)));
 
-    const status: BusinessHealthResult['status'] =
-      score >= 75 ? 'healthy' : (score >= 45 ? 'at_risk' : 'critical');
+    const status: BusinessHealthResult["status"] =
+      score >= 75 ? "healthy" : score >= 45 ? "at_risk" : "critical";
 
     const reasoning =
       `Business health is ${status} (score ${score}/100) based on customer health, ` +
@@ -135,13 +147,15 @@ export class EiBusinessHealthEngine {
    * deterioration event when health is critical or drops versus the previous snapshot.
    */
   async generateSnapshot(organizationId: string): Promise<BusinessHealthResult> {
-    this.logger.log(`Generating enterprise business health snapshot for organization ${organizationId}`);
+    this.logger.log(
+      `Generating enterprise business health snapshot for organization ${organizationId}`,
+    );
 
     const result = await this.compute(organizationId);
 
     const previous = await this.prisma.eiBusinessHealthSnapshot.findFirst({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     await this.prisma.eiBusinessHealthSnapshot.create({
@@ -159,20 +173,23 @@ export class EiBusinessHealthEngine {
       new EnterpriseIntelligenceEvent(EnterpriseIntelligenceEventType.BUSINESS_HEALTH_UPDATED, {
         organizationId,
         ...result,
-      })
+      }),
     );
 
     const deteriorated =
-      result.status === 'critical' || (previous !== null && result.score < previous.score);
+      result.status === "critical" || (previous !== null && result.score < previous.score);
 
     if (deteriorated) {
       this.messageBus.publish(
         EnterpriseIntelligenceEventType.BUSINESS_HEALTH_DETERIORATED,
-        new EnterpriseIntelligenceEvent(EnterpriseIntelligenceEventType.BUSINESS_HEALTH_DETERIORATED, {
-          organizationId,
-          ...result,
-          previousScore: previous?.score ?? null,
-        })
+        new EnterpriseIntelligenceEvent(
+          EnterpriseIntelligenceEventType.BUSINESS_HEALTH_DETERIORATED,
+          {
+            organizationId,
+            ...result,
+            previousScore: previous?.score ?? null,
+          },
+        ),
       );
     }
 

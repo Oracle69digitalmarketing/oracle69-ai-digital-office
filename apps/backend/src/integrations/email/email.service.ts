@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
 
 import { IEmailProvider } from "@oracle69/shared";
 

@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { MissionManager } from './mission-manager.js';
-import { Mission } from './mission.types.js';
+import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
+import { MissionManager } from "./mission-manager.js";
+import { Mission } from "./mission.types.js";
 
 /**
  * Recovers missions that were interrupted by a process restart.
@@ -20,9 +20,11 @@ export class MissionRecoveryService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     try {
       const recovered = await this.missionManager.recoverInterrupted();
-      this.logger.log(`Mission recovery completed: ${recovered.length} interrupted mission(s) recovered.`);
+      this.logger.log(
+        `Mission recovery completed: ${recovered.length} interrupted mission(s) recovered.`,
+      );
     } catch (error) {
-      this.logger.error('Mission recovery failed during bootstrap.', error);
+      this.logger.error("Mission recovery failed during bootstrap.", error);
     }
   }
 

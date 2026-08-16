@@ -1,9 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { WorkflowInstance, WorkflowState } from './workflow.types.js';
-import { WorkflowStateMachine } from './workflow-state-machine.js';
-import { CheckpointManager, RetryManager, CompensationManager, ApprovalManager } from './workflow-managers.js';
-import { RuntimeEventType } from '../events/runtime.events.js';
-import { EventBus } from '../events/event-bus.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { WorkflowInstance, WorkflowState } from "./workflow.types.js";
+import { WorkflowStateMachine } from "./workflow-state-machine.js";
+import {
+  CheckpointManager,
+  RetryManager,
+  CompensationManager,
+  ApprovalManager,
+} from "./workflow-managers.js";
+import { RuntimeEventType } from "../events/runtime.events.js";
+import { EventBus } from "../events/event-bus.js";
 
 @Injectable()
 export class WorkflowEngine {
@@ -14,7 +19,7 @@ export class WorkflowEngine {
     private readonly checkpointManager: CheckpointManager,
     private readonly retryManager: RetryManager,
     private readonly compensationManager: CompensationManager,
-    private readonly approvalManager: ApprovalManager
+    private readonly approvalManager: ApprovalManager,
   ) {}
 
   async createWorkflow(planId: string, context: any): Promise<WorkflowInstance> {
@@ -37,13 +42,13 @@ export class WorkflowEngine {
 
   async startWorkflow(workflow: WorkflowInstance): Promise<void> {
     if (!WorkflowStateMachine.canTransition(workflow.metadata.state, WorkflowState.RUNNING)) {
-        throw new Error(`Invalid transition from ${workflow.metadata.state} to RUNNING`);
+      throw new Error(`Invalid transition from ${workflow.metadata.state} to RUNNING`);
     }
     workflow.metadata.state = WorkflowState.RUNNING;
     this.emit(RuntimeEventType.WORKFLOW_STARTED, { workflowId: workflow.metadata.id });
   }
 
   private emit(type: RuntimeEventType, payload: Record<string, unknown>): void {
-    this.eventBus.publish(type, payload, { source: 'WorkflowEngine' });
+    this.eventBus.publish(type, payload, { source: "WorkflowEngine" });
   }
 }

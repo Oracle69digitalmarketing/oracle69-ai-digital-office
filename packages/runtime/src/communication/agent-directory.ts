@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { AgentMetadata } from '../runtime.types.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { AgentMetadata } from "../runtime.types.js";
 
 @Injectable()
 export class AgentDirectory {
@@ -21,11 +21,11 @@ export class AgentDirectory {
   }
 
   findByDepartment(deptId: string): AgentMetadata[] {
-    return Array.from(this.agents.values()).filter(a => a.metadata?.departmentId === deptId);
+    return Array.from(this.agents.values()).filter((a) => a.metadata?.departmentId === deptId);
   }
 
   findByCapability(capability: string): AgentMetadata[] {
-    return Array.from(this.agents.values()).filter(a => a.capabilities?.includes(capability));
+    return Array.from(this.agents.values()).filter((a) => a.capabilities?.includes(capability));
   }
 
   findAvailable(): AgentMetadata[] {

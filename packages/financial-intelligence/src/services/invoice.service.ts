@@ -1,11 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { INVOICE_REPOSITORY, type InvoiceRepository } from '../repositories/invoice.repository.js';
-import { TransactionService } from './transaction.service.js';
-import { FinInvoice, InvoiceStatus, TransactionType, TransactionStatus } from '../types.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
-import { FinancialEventType } from '../events/financial.events.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { INVOICE_REPOSITORY, type InvoiceRepository } from "../repositories/invoice.repository.js";
+import { TransactionService } from "./transaction.service.js";
+import { FinInvoice, InvoiceStatus, TransactionType, TransactionStatus } from "../types.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
+import { FinancialEventType } from "../events/financial.events.js";
 
-const EVENT_SOURCE = 'financial-intelligence';
+const EVENT_SOURCE = "financial-intelligence";
 
 @Injectable()
 export class InvoiceService {
@@ -16,7 +16,11 @@ export class InvoiceService {
     private readonly tenantContext: TenantContextService,
   ) {}
 
-  async createInvoice(invoice: Omit<FinInvoice, 'id' | 'createdAt' | 'updatedAt' | 'organizationId'> & { organizationId?: string }): Promise<FinInvoice> {
+  async createInvoice(
+    invoice: Omit<FinInvoice, "id" | "createdAt" | "updatedAt" | "organizationId"> & {
+      organizationId?: string;
+    },
+  ): Promise<FinInvoice> {
     const tenantId = this.tenantContext.resolveTenantId(invoice.organizationId);
     const created = await this.invoiceRepo.create({ ...invoice, organizationId: tenantId });
     await this.eventBus.publish(FinancialEventType.INVOICE_CREATED, created, {
@@ -48,7 +52,7 @@ export class InvoiceService {
     // Paid invoices integrate into financial transactions as income.
     await this.transactionService.recordTransaction({
       type: TransactionType.INCOME,
-      category: 'Invoice Payment',
+      category: "Invoice Payment",
       amount: invoice.amount,
       date: new Date().toISOString(),
       status: TransactionStatus.COMPLETED,
@@ -92,7 +96,7 @@ export class InvoiceService {
 
   private async requireInvoice(id: string, tenantId: string): Promise<FinInvoice> {
     const invoice = await this.invoiceRepo.findById(id, tenantId);
-    if (!invoice) throw new Error('Invoice not found');
+    if (!invoice) throw new Error("Invoice not found");
     return invoice;
   }
 }

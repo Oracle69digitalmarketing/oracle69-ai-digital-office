@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { RuntimeEvent } from '../events/runtime.events.js';
-import { EventBus } from '../events/event-bus.js';
+import { Injectable } from "@nestjs/common";
+import { RuntimeEvent } from "../events/runtime.events.js";
+import { EventBus } from "../events/event-bus.js";
 
 /**
  * Compatibility facade over the canonical {@link EventBus}.

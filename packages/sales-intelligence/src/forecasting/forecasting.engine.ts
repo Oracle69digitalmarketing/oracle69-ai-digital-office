@@ -1,7 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface ForecastResult {
   weightedPipeline: number;
@@ -20,15 +23,18 @@ export class ForecastingEngine {
 
   constructor(
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
-  async generateForecast(organizationId: string, period: string = 'Q3 2026'): Promise<ForecastResult> {
+  async generateForecast(
+    organizationId: string,
+    period: string = "Q3 2026",
+  ): Promise<ForecastResult> {
     this.logger.log(`Generating forecast for organization ${organizationId}, period ${period}`);
 
     const opportunities = await this.prisma.crmOpportunity.findMany({
       where: {
-        organizationId: this.tenantContext.resolveTenantId()
+        organizationId: this.tenantContext.resolveTenantId(),
       },
       include: { pipeline: true },
     });
@@ -37,18 +43,18 @@ export class ForecastingEngine {
     let totalValue = 0;
     let wonValue = 0;
 
-    opportunities.forEach(opp => {
+    opportunities.forEach((opp) => {
       totalValue += opp.value;
       weightedPipeline += opp.value * (opp.probability || 0.5);
-      if (opp.stage === 'won') wonValue += opp.value;
+      if (opp.stage === "won") wonValue += opp.value;
     });
 
     const forecast: ForecastResult = {
       weightedPipeline,
       expectedRevenue: weightedPipeline,
       bestCase: totalValue * 0.8,
-      commit: wonValue + (weightedPipeline * 0.4),
-      conservative: wonValue + (weightedPipeline * 0.2),
+      commit: wonValue + weightedPipeline * 0.4,
+      conservative: wonValue + weightedPipeline * 0.2,
       forecastVariance: totalValue - weightedPipeline,
       period,
     };
@@ -58,8 +64,8 @@ export class ForecastingEngine {
       new SalesIntelligenceEvent(SalesIntelligenceEventType.FORECAST_UPDATED, {
         organizationId,
         forecast,
-        tenantId: this.tenantContext.resolveTenantId()
-      })
+        tenantId: this.tenantContext.resolveTenantId(),
+      }),
     );
 
     return forecast;

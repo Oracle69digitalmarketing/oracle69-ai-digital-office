@@ -1,12 +1,12 @@
-import { Logger } from '@nestjs/common';
-import { ModelTier } from '@oracle69/shared';
-import { ModelProvider } from './model-router.js';
+import { Logger } from "@nestjs/common";
+import { ModelTier } from "@oracle69/shared";
+import { ModelProvider } from "./model-router.js";
 
 export class GroqModelProvider implements ModelProvider {
   private readonly logger = new Logger(GroqModelProvider.name);
-  public readonly name = 'groq';
+  public readonly name = "groq";
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
+  private readonly baseUrl = "https://api.groq.com/openai/v1/chat/completions";
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -18,14 +18,14 @@ export class GroqModelProvider implements ModelProvider {
 
     try {
       const response = await fetch(this.baseUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           model: modelName,
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
         }),
       });
@@ -35,8 +35,8 @@ export class GroqModelProvider implements ModelProvider {
         throw new Error(`Groq API error (${response.status}): ${errorText}`);
       }
 
-      const data = await response.json() as any;
-      const content = data.choices[0]?.message?.content || '';
+      const data = (await response.json()) as any;
+      const content = data.choices[0]?.message?.content || "";
 
       return {
         content,
@@ -52,14 +52,14 @@ export class GroqModelProvider implements ModelProvider {
 
   private mapTierToModel(tier: ModelTier): string {
     switch (tier) {
-      case 'nano':
-        return 'llama-3.1-8b-instant';
-      case 'mini':
-        return 'llama-3.3-70b-versatile';
-      case 'gpt-5.6':
-        return 'llama-3.3-70b-versatile';
+      case "nano":
+        return "llama-3.1-8b-instant";
+      case "mini":
+        return "llama-3.3-70b-versatile";
+      case "gpt-5.6":
+        return "llama-3.3-70b-versatile";
       default:
-        return 'llama-3.1-8b-instant';
+        return "llama-3.1-8b-instant";
     }
   }
 }

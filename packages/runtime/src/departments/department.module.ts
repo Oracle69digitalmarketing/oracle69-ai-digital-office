@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { DepartmentRegistry } from './department-registry.js';
-import { DepartmentMemoryManager } from './department-memory.js';
+import { Module } from "@nestjs/common";
+import { DepartmentRegistry } from "./department-registry.js";
+import { DepartmentMemoryManager } from "./department-memory.js";
 
 @Module({
   providers: [DepartmentRegistry, DepartmentMemoryManager],

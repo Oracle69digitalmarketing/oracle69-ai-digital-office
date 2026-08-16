@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { AiModelProvider } from '../models/ai-model.interface.js';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { AiModelProvider } from "../models/ai-model.interface.js";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface LeadScoreResult {
   score: number;
@@ -21,7 +24,7 @@ export class LeadScoringEngine {
   constructor(
     private readonly modelProvider: any,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async scoreLead(leadId: string): Promise<LeadScoreResult | null> {
@@ -30,7 +33,7 @@ export class LeadScoringEngine {
     const lead = await this.prisma.crmLead.findFirst({
       where: {
         id: leadId,
-        organizationId: this.tenantContext.resolveTenantId()
+        organizationId: this.tenantContext.resolveTenantId(),
       },
       include: {
         crmOrganization: true,
@@ -46,7 +49,7 @@ export class LeadScoringEngine {
 
     // Deterministic base score
     let baseScore = 0;
-    if (lead.source === 'referral') baseScore += 20;
+    if (lead.source === "referral") baseScore += 20;
     if (lead.crmOrganization?.revenue && lead.crmOrganization.revenue > 1000000) baseScore += 15;
     if (lead.activities.length > 5) baseScore += 10;
 
@@ -59,8 +62,10 @@ export class LeadScoringEngine {
 
     try {
       const response = await this.modelProvider.analyze(lead, aiInstruction);
-      const result: LeadScoreResult = JSON.parse(response.content.replace(/```json/g, '').replace(/```/g, ''));
-      
+      const result: LeadScoreResult = JSON.parse(
+        response.content.replace(/```json/g, "").replace(/```/g, ""),
+      );
+
       // Combine scores
       const finalScore = Math.min(100, Math.round((result.score + baseScore) / 1.1));
       result.score = finalScore;
@@ -77,8 +82,8 @@ export class LeadScoringEngine {
         new SalesIntelligenceEvent(SalesIntelligenceEventType.LEAD_SCORED, {
           leadId,
           ...result,
-          tenantId: this.tenantContext.resolveTenantId()
-        })
+          tenantId: this.tenantContext.resolveTenantId(),
+        }),
       );
 
       return result;

@@ -77,14 +77,14 @@ All event types use the existing `RuntimeEvent` base class (`CustomerSuccessEven
 
 ## API Endpoints
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/customer-success/health/:crmOrganizationId` | Calculate + persist customer health |
-| GET | `/customer-success/risks/:crmOrganizationId` | Detect + persist churn/retention risks |
-| GET | `/customer-success/plans/:crmOrganizationId` | List success plans with milestones |
-| POST | `/customer-success/plans/:crmOrganizationId` | Create a success plan (optional milestones) |
-| POST | `/customer-success/plans/milestones/:milestoneId/complete` | Complete a plan milestone |
-| POST | `/customer-success/interventions/:crmOrganizationId` | Trigger an autonomous intervention |
+| Method | Path                                                       | Description                                 |
+| ------ | ---------------------------------------------------------- | ------------------------------------------- |
+| GET    | `/customer-success/health/:crmOrganizationId`              | Calculate + persist customer health         |
+| GET    | `/customer-success/risks/:crmOrganizationId`               | Detect + persist churn/retention risks      |
+| GET    | `/customer-success/plans/:crmOrganizationId`               | List success plans with milestones          |
+| POST   | `/customer-success/plans/:crmOrganizationId`               | Create a success plan (optional milestones) |
+| POST   | `/customer-success/plans/milestones/:milestoneId/complete` | Complete a plan milestone                   |
+| POST   | `/customer-success/interventions/:crmOrganizationId`       | Trigger an autonomous intervention          |
 
 ## Package Exports
 

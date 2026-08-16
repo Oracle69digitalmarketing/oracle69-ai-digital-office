@@ -22,7 +22,7 @@ export class ActivityService implements OnModuleInit {
             resource: event.source,
             status: "EVENT",
             userId: (event.payload as any)?.userId || null,
-            organizationId: (event.payload as any)?.organizationId || 'system',
+            organizationId: (event.payload as any)?.organizationId || "system",
             // We can store the whole payload as a string or handle specific fields
             ipAddress: JSON.stringify(event.payload).substring(0, 255),
             createdAt: event.timestamp || new Date(),

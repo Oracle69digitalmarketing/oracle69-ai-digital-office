@@ -4,7 +4,20 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@oracle69/crm": ["../../packages/crm/src/index.ts"],
+      "@oracle69/shared": ["../../shared/src/index.ts"],
+      "@oracle69/runtime": ["../../packages/runtime/src/index.ts"]
+    },
+    "jsx": "react-jsx",
+    "skipLibCheck": true
   },
+  "references": [
+    { "path": "../../packages/crm" },
+    { "path": "../../shared" },
+    { "path": "../../packages/runtime" }
+  ],
   "include": ["src", "test"]
 }

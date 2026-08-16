@@ -2,11 +2,11 @@
  * Represents the lifecycle state of the Enterprise Runtime.
  */
 export enum RuntimeState {
-  UNINITIALIZED = 'uninitialized',
-  STARTING = 'starting',
-  READY = 'ready',
-  STOPPING = 'stopping',
-  STOPPED = 'stopped',
+  UNINITIALIZED = "uninitialized",
+  STARTING = "starting",
+  READY = "ready",
+  STOPPING = "stopping",
+  STOPPED = "stopped",
 }
 
 /**
@@ -39,13 +39,13 @@ export interface IRuntimeContext {
   readonly taskId: string;
   /** ISO timestamp of when the context was created */
   readonly startTime: string;
-  
+
   /**
    * Retrieves a value from the context metadata.
    * @param key The key to look up.
    */
   get(key: string): any;
-  
+
   /**
    * Updates a value in the context metadata.
    * @param key The key to update.
@@ -63,19 +63,19 @@ export interface IAgentRegistry {
    * @param metadata The metadata of the agent to register.
    */
   register(metadata: AgentMetadata): void;
-  
+
   /**
    * Retrieves an agent by its unique ID.
    * @param id The agent ID.
    */
   getAgent(id: string): AgentMetadata | null;
-  
+
   /**
    * Lists all agents registered with a specific role.
    * @param role The role to filter by.
    */
   listAgentsByRole(role: string): AgentMetadata[];
-  
+
   /**
    * Validates if the given metadata conforms to the agent schema.
    * @param metadata The metadata to validate.
@@ -91,7 +91,7 @@ export interface IRuntimeLifecycle {
    * Returns the current lifecycle state.
    */
   getState(): RuntimeState;
-  
+
   /**
    * Registers a callback for a specific lifecycle state transition.
    * @param state The state to listen for.
@@ -108,19 +108,19 @@ export interface IRuntimeManager extends IRuntimeLifecycle {
    * Initializes the runtime and its internal services.
    */
   initialize(): Promise<void>;
-  
+
   /**
    * Gracefully shuts down the runtime.
    */
   shutdown(): Promise<void>;
-  
+
   /**
    * Creates a new execution context.
    * @param taskId The ID of the task.
    * @param orgId The organization ID.
    */
   createContext(taskId: string, orgId: string): IRuntimeContext;
-  
+
   /**
    * Returns the agent registry.
    */

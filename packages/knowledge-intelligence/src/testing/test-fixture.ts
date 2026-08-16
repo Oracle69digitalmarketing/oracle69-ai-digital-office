@@ -1,27 +1,27 @@
-import { EventBus, EventCatalogService, TenantContextService } from '@oracle69/runtime';
-import { ArticleService } from '../services/article.service.js';
-import { IndexService } from '../services/index.service.js';
-import { SearchService } from '../services/search.service.js';
-import { KnowledgeKpiService } from '../services/knowledge-kpi.service.js';
-import { KnowledgeHealthService } from '../services/knowledge-health.service.js';
-import { KnowledgeAiService } from '../services/knowledge-ai.service.js';
-import { RecommendationService } from '../services/recommendation.service.js';
-import { KnowledgeReportService } from '../services/knowledge-report.service.js';
+import { EventBus, EventCatalogService, TenantContextService } from "@oracle69/runtime";
+import { ArticleService } from "../services/article.service.js";
+import { IndexService } from "../services/index.service.js";
+import { SearchService } from "../services/search.service.js";
+import { KnowledgeKpiService } from "../services/knowledge-kpi.service.js";
+import { KnowledgeHealthService } from "../services/knowledge-health.service.js";
+import { KnowledgeAiService } from "../services/knowledge-ai.service.js";
+import { RecommendationService } from "../services/recommendation.service.js";
+import { KnowledgeReportService } from "../services/knowledge-report.service.js";
 import {
   ArticleRepository,
   KNOWLEDGE_ARTICLE_REPOSITORY,
   InMemoryArticleRepository,
-} from '../repositories/article.repository.js';
+} from "../repositories/article.repository.js";
 import {
   IndexRepository,
   KNOWLEDGE_INDEX_REPOSITORY,
   InMemoryIndexRepository,
-} from '../repositories/index.repository.js';
+} from "../repositories/index.repository.js";
 import {
   ReportRepository,
   KNOWLEDGE_REPORT_REPOSITORY,
   InMemoryReportRepository,
-} from '../repositories/report.repository.js';
+} from "../repositories/report.repository.js";
 
 export interface KnowledgeTestContext {
   articleService: ArticleService;

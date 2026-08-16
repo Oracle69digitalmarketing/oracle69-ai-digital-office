@@ -1,2 +1,2 @@
-import { DepartmentManager } from '../department-manager.js';
+import { DepartmentManager } from "../department-manager.js";
 export class HRManager extends DepartmentManager {}

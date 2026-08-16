@@ -1,12 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, MissionManager, MissionStatus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { OperationsIntelligenceEventType, OperationsIntelligenceEvent } from '../events/oi.events.js';
-import { OiOperationsEngine } from './oi-operations.engine.js';
-import { OiWorkflowEngine } from './oi-workflow.engine.js';
-import { OiAgentEngine } from './oi-agent.engine.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, MissionManager, MissionStatus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  OperationsIntelligenceEventType,
+  OperationsIntelligenceEvent,
+} from "../events/oi.events.js";
+import { OiOperationsEngine } from "./oi-operations.engine.js";
+import { OiWorkflowEngine } from "./oi-workflow.engine.js";
+import { OiAgentEngine } from "./oi-agent.engine.js";
+import { currentPeriod } from "../utils/period.js";
 
 /**
  * Composes the operations intelligence engines into an operational report,
@@ -24,11 +27,13 @@ export class OiReportService {
     private readonly workflowEngine: OiWorkflowEngine,
     private readonly agentEngine: OiAgentEngine,
     private readonly missionManager: MissionManager,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
   ) {}
 
   async generateReport(organizationId: string, period: string = currentPeriod()) {
-    this.logger.log(`Generating operations report for organization ${organizationId}, period ${period}`);
+    this.logger.log(
+      `Generating operations report for organization ${organizationId}, period ${period}`,
+    );
 
     const operations = await this.operationsEngine.compute(organizationId, period);
     const workflows = await this.workflowEngine.compute(organizationId, period);
@@ -60,7 +65,7 @@ export class OiReportService {
         reportId: report.id,
         period,
         opsScore,
-      })
+      }),
     );
 
     if (opsScore < OPS_ALERT_THRESHOLD) {
@@ -70,9 +75,9 @@ export class OiReportService {
         goal:
           `Operations intelligence: the operational score is ${Math.round(opsScore)}/100 (below ` +
           `${OPS_ALERT_THRESHOLD}) for organization ${organizationId}. Execute the operational recovery plan.`,
-        priority: 'critical',
+        priority: "critical",
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
-        owner: 'operations-intelligence',
+        owner: "operations-intelligence",
         status: MissionStatus.DRAFT,
         tenantId: organizationId,
       });
@@ -83,7 +88,7 @@ export class OiReportService {
           organizationId,
           missionId,
           opsScore,
-        })
+        }),
       );
     }
 
@@ -93,7 +98,7 @@ export class OiReportService {
   async listReports(organizationId: string, take = 20) {
     return this.prisma.oiOperationsReport.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }

@@ -1,26 +1,26 @@
-import { AbstractConnector } from './abstract-connector.js';
-import { ConnectorActionRequest, ConnectorResult, ConnectorMetadata } from './types.js';
-import { WebClient } from '@slack/web-api';
-import { Readable } from 'stream';
+import { AbstractConnector } from "./abstract-connector.js";
+import { ConnectorActionRequest, ConnectorResult, ConnectorMetadata } from "./types.js";
+import { WebClient } from "@slack/web-api";
+import { Readable } from "stream";
 
 export class SlackConnector extends AbstractConnector {
   private slackClient?: WebClient;
 
   constructor() {
     const metadata: ConnectorMetadata = {
-      id: 'slack-01',
-      name: 'Slack Connector',
-      type: 'slack',
-      version: '1.0.0',
+      id: "slack-01",
+      name: "Slack Connector",
+      type: "slack",
+      version: "1.0.0",
       capabilities: [
-        'send_message',
-        'send_rich_message',
-        'upload_file',
-        'create_channel',
-        'invite_user',
-        'search_channels',
-        'search_users',
-        'health_check'
+        "send_message",
+        "send_rich_message",
+        "upload_file",
+        "create_channel",
+        "invite_user",
+        "search_channels",
+        "search_users",
+        "health_check",
       ],
     };
     super(metadata);
@@ -33,32 +33,32 @@ export class SlackConnector extends AbstractConnector {
 
   async execute(request: ConnectorActionRequest): Promise<ConnectorResult> {
     if (!this.slackClient) {
-      return this.handleError(new Error('Slack client not initialized. Call connect() first.'));
+      return this.handleError(new Error("Slack client not initialized. Call connect() first."));
     }
 
     return this.withRetry(async () => {
       switch (request.action) {
-        case 'send_message':
+        case "send_message":
           return this.sendMessage(request.params);
-        case 'send_rich_message':
+        case "send_rich_message":
           return this.sendRichMessage(request.params);
-        case 'upload_file':
+        case "upload_file":
           return this.uploadFile(request.params);
-        case 'create_channel':
+        case "create_channel":
           return this.createChannel(request.params);
-        case 'invite_user':
+        case "invite_user":
           return this.inviteUser(request.params);
-        case 'search_channels':
+        case "search_channels":
           return this.searchChannels(request.params);
-        case 'search_users':
+        case "search_users":
           return this.searchUsers(request.params);
-        case 'health_check':
+        case "health_check":
           const health = await this.health();
           return { success: true, data: health };
         default:
           throw new Error(`Unsupported action: ${request.action}`);
       }
-    }).catch(err => this.handleError(err));
+    }).catch((err) => this.handleError(err));
   }
 
   private async sendMessage(params: any): Promise<ConnectorResult> {
@@ -86,7 +86,7 @@ export class SlackConnector extends AbstractConnector {
     const { channels, file, filename, title, initial_comment } = params;
     const response = await this.slackClient!.files.uploadV2({
       channel_id: channels,
-      file: typeof file === 'string' ? Buffer.from(file) : file,
+      file: typeof file === "string" ? Buffer.from(file) : file,
       filename,
       title,
       initial_comment,
@@ -113,7 +113,7 @@ export class SlackConnector extends AbstractConnector {
   }
 
   private async searchChannels(params: any): Promise<ConnectorResult> {
-    const { types = 'public_channel,private_channel', cursor, limit = 100 } = params;
+    const { types = "public_channel,private_channel", cursor, limit = 100 } = params;
     const response = await this.slackClient!.conversations.list({
       types,
       cursor,
@@ -133,16 +133,16 @@ export class SlackConnector extends AbstractConnector {
 
   async health(): Promise<any> {
     try {
-      if (!this.slackClient) return { status: 'disconnected' };
+      if (!this.slackClient) return { status: "disconnected" };
       const response = await this.slackClient.auth.test();
       return {
-        status: response.ok ? 'connected' : 'error',
+        status: response.ok ? "connected" : "error",
         lastCheck: new Date(),
         details: response,
       };
     } catch (error: any) {
       return {
-        status: 'error',
+        status: "error",
         lastCheck: new Date(),
         error: error.message,
       };

@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { DepartmentMetadata } from './department.types.js';
+import { Injectable } from "@nestjs/common";
+import { DepartmentMetadata } from "./department.types.js";
 
 @Injectable()
 export class DepartmentRegistry {

@@ -1,11 +1,20 @@
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { BUDGET_REPOSITORY, type BudgetRepository } from '../repositories/budget.repository.js';
-import { TRANSACTION_REPOSITORY, type TransactionRepository } from '../repositories/transaction.repository.js';
-import { BudgetSummary, FinBudget, BudgetStatus, TransactionType, TransactionStatus } from '../types.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
-import { FinancialEventType } from '../events/financial.events.js';
+import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { BUDGET_REPOSITORY, type BudgetRepository } from "../repositories/budget.repository.js";
+import {
+  TRANSACTION_REPOSITORY,
+  type TransactionRepository,
+} from "../repositories/transaction.repository.js";
+import {
+  BudgetSummary,
+  FinBudget,
+  BudgetStatus,
+  TransactionType,
+  TransactionStatus,
+} from "../types.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
+import { FinancialEventType } from "../events/financial.events.js";
 
-const EVENT_SOURCE = 'financial-intelligence';
+const EVENT_SOURCE = "financial-intelligence";
 
 @Injectable()
 export class BudgetService implements OnModuleInit, OnModuleDestroy {
@@ -35,7 +44,11 @@ export class BudgetService implements OnModuleInit, OnModuleDestroy {
 
   private subscription?: { unsubscribe(): void };
 
-  async createBudget(budget: Omit<FinBudget, 'id' | 'createdAt' | 'updatedAt' | 'spent' | 'organizationId'> & { organizationId?: string }): Promise<FinBudget> {
+  async createBudget(
+    budget: Omit<FinBudget, "id" | "createdAt" | "updatedAt" | "spent" | "organizationId"> & {
+      organizationId?: string;
+    },
+  ): Promise<FinBudget> {
     const tenantId = this.tenantContext.resolveTenantId(budget.organizationId);
     const created = await this.budgetRepo.create({ ...budget, organizationId: tenantId, spent: 0 });
     await this.eventBus.publish(FinancialEventType.BUDGET_CREATED, created, {
@@ -45,10 +58,13 @@ export class BudgetService implements OnModuleInit, OnModuleDestroy {
     return created;
   }
 
-  async updateBudget(id: string, data: Partial<FinBudget> & { organizationId?: string }): Promise<FinBudget> {
+  async updateBudget(
+    id: string,
+    data: Partial<FinBudget> & { organizationId?: string },
+  ): Promise<FinBudget> {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     const existing = await this.budgetRepo.findById(id, tenantId);
-    if (!existing) throw new Error('Budget not found');
+    if (!existing) throw new Error("Budget not found");
     const updated = await this.budgetRepo.update(id, data);
     await this.eventBus.publish(FinancialEventType.BUDGET_UPDATED, updated, {
       tenantId,
@@ -64,7 +80,10 @@ export class BudgetService implements OnModuleInit, OnModuleDestroy {
   }
 
   /** Returns budgets enriched with remaining amount and utilization percentage. */
-  async getBudgetSummaries(organizationId?: string, status?: BudgetStatus): Promise<BudgetSummary[]> {
+  async getBudgetSummaries(
+    organizationId?: string,
+    status?: BudgetStatus,
+  ): Promise<BudgetSummary[]> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const budgets = await this.getBudgets(tenantId, status);
     return budgets.map((budget) => this.toSummary(budget));
@@ -82,7 +101,7 @@ export class BudgetService implements OnModuleInit, OnModuleDestroy {
   async refreshSpent(budgetId: string, organizationId?: string): Promise<FinBudget> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const budget = await this.budgetRepo.findById(budgetId, tenantId);
-    if (!budget) throw new Error('Budget not found');
+    if (!budget) throw new Error("Budget not found");
 
     const transactions = await this.transactionRepo.findByOrganization(tenantId, {
       type: TransactionType.EXPENSE,
@@ -100,7 +119,13 @@ export class BudgetService implements OnModuleInit, OnModuleDestroy {
     if (spent > budget.amount) {
       await this.eventBus.publish(
         FinancialEventType.BUDGET_EXCEEDED,
-        { budgetId, name: budget.name, amount: budget.amount, spent, utilization: this.utilization(spent, budget.amount) },
+        {
+          budgetId,
+          name: budget.name,
+          amount: budget.amount,
+          spent,
+          utilization: this.utilization(spent, budget.amount),
+        },
         { tenantId, source: EVENT_SOURCE },
       );
     }

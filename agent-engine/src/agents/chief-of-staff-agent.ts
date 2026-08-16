@@ -1,9 +1,9 @@
-import { BaseAgent } from '../base-agent.js';
-import { TaskContext, AgentMetadata } from '@oracle69/shared';
-import { AgentRegistry } from '../agent-registry.js';
-import { ModelRouter } from '../model-router.js';
-import { PromptLoader } from '../prompt-loader.js';
-import { KnowledgeService } from '@oracle69/memory';
+import { BaseAgent } from "../base-agent.js";
+import { TaskContext, AgentMetadata } from "@oracle69/shared";
+import { AgentRegistry } from "../agent-registry.js";
+import { ModelRouter } from "../model-router.js";
+import { PromptLoader } from "../prompt-loader.js";
+import { KnowledgeService } from "@oracle69/memory";
 
 export class ChiefOfStaffAgent extends BaseAgent {
   constructor(
@@ -19,12 +19,12 @@ export class ChiefOfStaffAgent extends BaseAgent {
 
   async execute(task: TaskContext): Promise<any> {
     this.logger.log(`Planning strategic response for task: ${task.taskId}`);
-    
+
     // Strategic Knowledge Retrieval
     const knowledge = await this.knowledgeService.getRelevantContext(task.objective, {
-      organizationId: 'system',
+      organizationId: "system",
       sessionId: task.sessionId,
-      limit: 10 // Higher limit for CoS planning
+      limit: 10, // Higher limit for CoS planning
     });
 
     const prompt = await this.promptLoader.getPrompt(this.metadata.role);
@@ -36,7 +36,7 @@ export class ChiefOfStaffAgent extends BaseAgent {
         taskDescription: task.objective,
         department: "Strategy",
         complexity: 8,
-      }
+      },
     );
 
     // Find Project Manager to handle the breakdown
@@ -46,7 +46,7 @@ export class ChiefOfStaffAgent extends BaseAgent {
         ...task,
         taskId: `${task.taskId}-pm`,
         objective: `Execute strategy: ${strategy}`,
-        context: { ...task.context, strategy, originalTaskId: task.taskId }
+        context: { ...task.context, strategy, originalTaskId: task.taskId },
       };
       return await this.executionEngine.executeTask(pmTask, pmAgents[0]);
     }

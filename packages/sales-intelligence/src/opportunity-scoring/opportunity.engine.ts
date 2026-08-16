@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { AiModelProvider } from '../models/ai-model.interface.js';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { AiModelProvider } from "../models/ai-model.interface.js";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface OpportunityAnalysis {
   opportunityScore: number;
@@ -22,7 +25,7 @@ export class OpportunityEngine {
   constructor(
     private readonly modelProvider: any,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async analyzeOpportunity(opportunityId: string): Promise<OpportunityAnalysis | null> {
@@ -33,7 +36,7 @@ export class OpportunityEngine {
     const opportunity = await this.prisma.crmOpportunity.findFirst({
       where: {
         id: opportunityId,
-        organizationId
+        organizationId,
       },
       include: {
         crmOrganization: true,
@@ -59,7 +62,9 @@ export class OpportunityEngine {
 
     try {
       const response = await this.modelProvider.analyze(opportunity, aiInstruction);
-      const result: OpportunityAnalysis = JSON.parse(response.content.replace(/```json/g, '').replace(/```/g, ''));
+      const result: OpportunityAnalysis = JSON.parse(
+        response.content.replace(/```json/g, "").replace(/```/g, ""),
+      );
 
       // Update CRM
       await this.prisma.crmOpportunity.update({
@@ -73,8 +78,8 @@ export class OpportunityEngine {
         new SalesIntelligenceEvent(SalesIntelligenceEventType.OPPORTUNITY_SCORED, {
           opportunityId,
           ...result,
-          tenantId: organizationId
-        })
+          tenantId: organizationId,
+        }),
       );
 
       return result;

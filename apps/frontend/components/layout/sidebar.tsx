@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Bot, 
-  Briefcase, 
-  CheckSquare, 
-  Building2, 
-  BookOpen, 
-  FileText, 
-  Calendar, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Bot,
+  Briefcase,
+  CheckSquare,
+  Building2,
+  BookOpen,
+  FileText,
+  Calendar,
+  BarChart3,
   Settings,
   Users,
-  Wallet
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,10 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col bg-gray-900 text-white">
       <div className="flex h-16 items-center px-6">
-        <Link href="/dashboard" className="text-xl font-bold hover:text-indigo-400 transition-colors">
+        <Link
+          href="/dashboard"
+          className="text-xl font-bold hover:text-indigo-400 transition-colors"
+        >
           Oracle69
         </Link>
       </div>
@@ -52,7 +55,7 @@ export function Sidebar() {
               "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
               pathname === item.href
                 ? "bg-gray-800 text-white"
-                : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                : "text-gray-400 hover:bg-gray-800 hover:text-white",
             )}
           >
             <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />

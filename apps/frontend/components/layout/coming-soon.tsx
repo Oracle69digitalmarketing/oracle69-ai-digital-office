@@ -16,9 +16,10 @@ export function ComingSoon({ title, description }: ComingSoonProps) {
       </div>
       <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
       <p className="text-lg text-gray-500 max-w-md mb-8">
-        {description || "We're currently building this module to provide you with the best AI-driven experience. Stay tuned!"}
+        {description ||
+          "We're currently building this module to provide you with the best AI-driven experience. Stay tuned!"}
       </p>
-      <Link 
+      <Link
         href="/dashboard"
         className="flex items-center space-x-2 text-indigo-600 font-semibold hover:text-indigo-500 transition-colors"
       >

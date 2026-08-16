@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Injectable, Logger } from "@nestjs/common";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 @Injectable()
 export class GeminiEmbeddingProvider {
   private readonly logger = new Logger(GeminiEmbeddingProvider.name);
   private genAI: GoogleGenerativeAI;
-  private readonly modelName = 'text-embedding-004';
+  private readonly modelName = "text-embedding-004";
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -18,7 +18,7 @@ export class GeminiEmbeddingProvider {
       const result = await model.embedContent(text);
       return result.embedding.values;
     } catch (error) {
-      this.logger.error('Failed to generate embedding with Gemini', error);
+      this.logger.error("Failed to generate embedding with Gemini", error);
       throw error;
     }
   }

@@ -21,12 +21,14 @@ As the **Operate** engine for the Oracle69 Enterprise AI Platform, the Execution
 # 2. Capability Ownership Boundaries
 
 ### [Digital Office Only] - Core Ownership
+
 - **Task Lifecycle Management:** Handling the transition of tasks from `Pending` to `Completed`.
 - **Multi-Agent Orchestration:** Managing the dependencies and handoffs between AI employees.
 - **Operational Logic:** Real-time execution of Finance, Marketing, Sales, and HR workflows.
 - **Runtime Error Recovery:** Handling execution failures and agent retries within a workflow.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Business Logic Discovery:** Identifying which workflows need to be built (Discover/Architect).
 - **Workflow Template Library:** Platform-wide repository of reusable process definitions (Launch/Build).
 - **Executive Oversight:** High-level monitoring of cross-product business health (Decide).

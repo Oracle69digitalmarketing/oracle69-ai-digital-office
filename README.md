@@ -41,11 +41,13 @@ pnpm install
 ### Development
 
 1. Start the infrastructure (PostgreSQL, Redis):
+
 ```bash
 docker-compose up -d
 ```
 
 2. Run the development environment:
+
 ```bash
 pnpm dev
 ```

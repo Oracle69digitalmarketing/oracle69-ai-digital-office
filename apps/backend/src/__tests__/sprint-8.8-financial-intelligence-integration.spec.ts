@@ -338,11 +338,13 @@ describe("Financial Intelligence backend integration (Sprint 8.8)", () => {
     });
 
     expect(await controller.getBudgets("org-attacker")).toEqual([]);
-    await expect(controller.updateBudget("org-attacker", budget.id, { amount: 9999 })).rejects.toThrow(
-      "Budget not found",
-    );
+    await expect(
+      controller.updateBudget("org-attacker", budget.id, { amount: 9999 }),
+    ).rejects.toThrow("Budget not found");
     expect(await controller.listTransactions("org-attacker")).toEqual([]);
-    await expect(controller.payInvoice("org-attacker", "inv-owner")).rejects.toThrow("Invoice not found");
+    await expect(controller.payInvoice("org-attacker", "inv-owner")).rejects.toThrow(
+      "Invoice not found",
+    );
   });
 
   it("should assess financial health and generate deterministic insights without an AI provider", async () => {

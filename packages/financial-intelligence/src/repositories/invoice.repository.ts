@@ -1,11 +1,11 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
-import { FinInvoice, InvoiceStatus } from '../types.js';
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
+import { FinInvoice, InvoiceStatus } from "../types.js";
 
-export const INVOICE_REPOSITORY = 'INVOICE_REPOSITORY';
+export const INVOICE_REPOSITORY = "INVOICE_REPOSITORY";
 
 export interface InvoiceRepository {
-  create(invoice: Omit<FinInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinInvoice>;
+  create(invoice: Omit<FinInvoice, "id" | "createdAt" | "updatedAt">): Promise<FinInvoice>;
   update(id: string, data: Partial<FinInvoice>): Promise<FinInvoice>;
   findById(id: string, organizationId?: string): Promise<FinInvoice | null>;
   findByOrganization(organizationId: string, status?: InvoiceStatus): Promise<FinInvoice[]>;
@@ -14,16 +14,16 @@ export interface InvoiceRepository {
 
 @Injectable()
 export class PrismaInvoiceRepository implements InvoiceRepository {
-  constructor(@Optional() @Inject('PrismaService') private readonly prisma?: PrismaClient) {}
+  constructor(@Optional() @Inject("PrismaService") private readonly prisma?: PrismaClient) {}
 
   private get db(): PrismaClient {
     if (!this.prisma) {
-      throw new Error('PrismaService is not available');
+      throw new Error("PrismaService is not available");
     }
     return this.prisma;
   }
 
-  async create(invoice: Omit<FinInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinInvoice> {
+  async create(invoice: Omit<FinInvoice, "id" | "createdAt" | "updatedAt">): Promise<FinInvoice> {
     const data = {
       ...invoice,
       dueDate: new Date(invoice.dueDate),
@@ -36,11 +36,11 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const updated = await this.db.finInvoice.update({
       where: { id },
       data: {
-        ...data as any,
+        ...(data as any),
         ...(data.dueDate ? { dueDate: new Date(data.dueDate) } : {}),
       },
     });
-    return this.fromRow({ ...data as any, ...updated });
+    return this.fromRow({ ...(data as any), ...updated });
   }
 
   async findById(id: string, organizationId?: string): Promise<FinInvoice | null> {
@@ -56,9 +56,9 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         organizationId,
         ...(status ? { status } : {}),
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
-    return rows.map(row => this.fromRow(row));
+    return rows.map((row) => this.fromRow(row));
   }
 
   async delete(id: string, organizationId: string): Promise<void> {
@@ -81,7 +81,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
 export class InMemoryInvoiceRepository implements InvoiceRepository {
   private invoices = new Map<string, FinInvoice>();
 
-  async create(invoice: Omit<FinInvoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinInvoice> {
+  async create(invoice: Omit<FinInvoice, "id" | "createdAt" | "updatedAt">): Promise<FinInvoice> {
     const id = Math.random().toString(36).substring(7);
     const now = new Date().toISOString();
     const created: FinInvoice = {
@@ -96,7 +96,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
 
   async update(id: string, data: Partial<FinInvoice>): Promise<FinInvoice> {
     const existing = this.invoices.get(id);
-    if (!existing) throw new Error('Invoice not found');
+    if (!existing) throw new Error("Invoice not found");
     const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
     this.invoices.set(id, updated);
     return updated;
@@ -111,7 +111,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
 
   async findByOrganization(organizationId: string, status?: InvoiceStatus): Promise<FinInvoice[]> {
     return Array.from(this.invoices.values())
-      .filter(i => i.organizationId === organizationId && (!status || i.status === status))
+      .filter((i) => i.organizationId === organizationId && (!status || i.status === status))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 

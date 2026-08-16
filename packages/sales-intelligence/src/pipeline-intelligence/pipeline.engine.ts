@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { AiModelProvider } from '../models/ai-model.interface.js';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { AiModelProvider } from "../models/ai-model.interface.js";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface PipelineIntelligence {
   totalPipelineValue: number;
@@ -12,7 +15,7 @@ export interface PipelineIntelligence {
   winRate: number;
   avgDealVelocity: string;
   anomalies: string[];
-  riskConcentration: 'low' | 'medium' | 'high';
+  riskConcentration: "low" | "medium" | "high";
 }
 
 @Injectable()
@@ -23,7 +26,7 @@ export class PipelineIntelligenceEngine {
   constructor(
     private readonly modelProvider: any,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async getPipelineIntelligence(): Promise<PipelineIntelligence | null> {
@@ -43,7 +46,9 @@ export class PipelineIntelligenceEngine {
 
     try {
       const response = await this.modelProvider.analyze(opportunities, aiInstruction);
-      const result: PipelineIntelligence = JSON.parse(response.content.replace(/```json/g, '').replace(/```/g, ''));
+      const result: PipelineIntelligence = JSON.parse(
+        response.content.replace(/```json/g, "").replace(/```/g, ""),
+      );
 
       if (result.anomalies.length > 0) {
         this.messageBus.publish(
@@ -51,14 +56,17 @@ export class PipelineIntelligenceEngine {
           new SalesIntelligenceEvent(SalesIntelligenceEventType.PIPELINE_ANOMALY_DETECTED, {
             organizationId,
             anomalies: result.anomalies,
-            tenantId: organizationId
-          })
+            tenantId: organizationId,
+          }),
         );
       }
 
       return result;
     } catch (error) {
-      this.logger.error(`Failed to analyze pipeline for organization ${organizationId} via AI:`, error);
+      this.logger.error(
+        `Failed to analyze pipeline for organization ${organizationId} via AI:`,
+        error,
+      );
       return null;
     }
   }

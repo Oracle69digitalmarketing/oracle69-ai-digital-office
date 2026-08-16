@@ -1,25 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { CrmOrganizationRepository } from '../repositories/crm-organization.repository.js';
-import { CreateCrmOrganizationDto, UpdateCrmOrganizationDto, CrmDashboardOrganizationDto } from '../dto/crm.dto.js';
-import { CrmEventType, CrmEvent } from '../events/crm.events.js';
+import { Injectable } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { CrmOrganizationRepository } from "../repositories/crm-organization.repository.js";
+import {
+  CreateCrmOrganizationDto,
+  UpdateCrmOrganizationDto,
+  CrmDashboardOrganizationDto,
+} from "../dto/crm.dto.js";
+import { CrmEventType, CrmEvent } from "../events/crm.events.js";
 
 @Injectable()
 export class CrmOrganizationService {
   constructor(
     private readonly repository: CrmOrganizationRepository,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async createOrganization(data: CreateCrmOrganizationDto) {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     const organization = await this.repository.create({ ...data, organizationId: tenantId });
-    
+
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_CREATED,
       new CrmEvent(CrmEventType.ORGANIZATION_CREATED, { organization }),
-      { tenantId }
+      { tenantId },
     );
 
     return organization;
@@ -32,7 +36,7 @@ export class CrmOrganizationService {
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_UPDATED,
       new CrmEvent(CrmEventType.ORGANIZATION_UPDATED, { organization }),
-      { tenantId }
+      { tenantId },
     );
 
     return organization;
@@ -45,7 +49,7 @@ export class CrmOrganizationService {
     this.messageBus.publish(
       CrmEventType.ORGANIZATION_DELETED,
       new CrmEvent(CrmEventType.ORGANIZATION_DELETED, { organizationId: id }),
-      { tenantId }
+      { tenantId },
     );
 
     return organization;
@@ -61,8 +65,8 @@ export class CrmOrganizationService {
     const orgs = await this.repository.findAll(tenantId);
     return orgs.map((org) => {
       // Find contact with latest createdAt
-      const contacts = org.contacts.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const contacts = org.contacts.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
       const primaryContact = contacts[0];
 
@@ -82,13 +86,11 @@ export class CrmOrganizationService {
         name: org.name,
         industry: org.industry,
         status: org.status,
-        contactPerson: primaryContact 
-          ? `${primaryContact.firstName} ${primaryContact.lastName}` 
-          : 'N/A',
-        email: primaryContact?.email ?? 'N/A',
-        lastActivity: latestActivityDate 
-          ? this.formatDate(latestActivityDate) 
-          : 'No activity',
+        contactPerson: primaryContact
+          ? `${primaryContact.firstName} ${primaryContact.lastName}`
+          : "N/A",
+        email: primaryContact?.email ?? "N/A",
+        lastActivity: latestActivityDate ? this.formatDate(latestActivityDate) : "No activity",
       };
     });
   }
@@ -99,9 +101,9 @@ export class CrmOrganizationService {
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInDays > 0) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-    if (diffInHours > 0) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-    return 'Just now';
+    if (diffInDays > 0) return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+    if (diffInHours > 0) return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+    return "Just now";
   }
 
   async searchOrganizations(organizationId: string, query: string) {

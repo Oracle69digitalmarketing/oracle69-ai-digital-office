@@ -1,10 +1,10 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
-import { EventLogSink } from './event-bus.js';
-import { RuntimeEvent } from './runtime.events.js';
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
+import { EventLogSink } from "./event-bus.js";
+import { RuntimeEvent } from "./runtime.events.js";
 
 /** Nest DI token for the {@link EventLog} contract. */
-export const EVENT_LOG = 'EVENT_LOG';
+export const EVENT_LOG = "EVENT_LOG";
 
 /**
  * Query options used to page through the persistent event log.
@@ -128,7 +128,8 @@ export class InMemoryEventLog implements EventLog {
       records = records.filter((r) => r.tenantId === tenantId);
     }
     if (query.type) records = records.filter((r) => r.type === query.type);
-    if (query.correlationId) records = records.filter((r) => r.correlationId === query.correlationId);
+    if (query.correlationId)
+      records = records.filter((r) => r.correlationId === query.correlationId);
     if (query.missionId) records = records.filter((r) => r.missionId === query.missionId);
     if (query.executionId) records = records.filter((r) => r.executionId === query.executionId);
 
@@ -148,11 +149,11 @@ export class InMemoryEventLog implements EventLog {
  */
 @Injectable()
 export class PrismaEventLog implements EventLog {
-  constructor(@Optional() @Inject('PrismaService') private readonly prisma?: PrismaClient) {}
+  constructor(@Optional() @Inject("PrismaService") private readonly prisma?: PrismaClient) {}
 
   private get db(): PrismaClient {
     if (!this.prisma) {
-      throw new Error('PrismaService is not available for the persistent EventLog.');
+      throw new Error("PrismaService is not available for the persistent EventLog.");
     }
     return this.prisma;
   }
@@ -199,7 +200,7 @@ export class PrismaEventLog implements EventLog {
         ...(query.missionId ? { missionId: query.missionId } : {}),
         ...(query.executionId ? { executionId: query.executionId } : {}),
       },
-      orderBy: { timestamp: 'asc' },
+      orderBy: { timestamp: "asc" },
       skip: query.offset ?? 0,
       take: query.limit,
     });

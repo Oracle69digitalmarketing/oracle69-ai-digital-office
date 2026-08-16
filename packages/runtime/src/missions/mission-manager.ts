@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Mission, MissionStatus, IMissionManager } from './mission.types.js';
-import { MissionRegistry } from './mission-registry.js';
-import { RuntimeEventType } from '../events/runtime.events.js';
-import { EventBus } from '../events/event-bus.js';
-import { TenantContextService } from '../tenancy/tenant-context.js';
-import { MissionConflictError } from '../persistence/mission.repository.js';
-import { RuntimeError } from '../errors/runtime.errors.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { Mission, MissionStatus, IMissionManager } from "./mission.types.js";
+import { MissionRegistry } from "./mission-registry.js";
+import { RuntimeEventType } from "../events/runtime.events.js";
+import { EventBus } from "../events/event-bus.js";
+import { TenantContextService } from "../tenancy/tenant-context.js";
+import { MissionConflictError } from "../persistence/mission.repository.js";
+import { RuntimeError } from "../errors/runtime.errors.js";
 
 /**
  * Mission orchestration on top of the durable {@link MissionRegistry}.
@@ -27,12 +27,12 @@ export class MissionManager implements IMissionManager {
   constructor(
     private readonly registry: MissionRegistry,
     private readonly eventBus: EventBus,
-    private readonly tenantContext?: TenantContextService
+    private readonly tenantContext?: TenantContextService,
   ) {}
 
   async createMission(
     mission: Mission,
-    options: { tenantId?: string; idempotencyKey?: string } = {}
+    options: { tenantId?: string; idempotencyKey?: string } = {},
   ): Promise<Mission> {
     const tenantId = this.resolveTenant(mission.tenantId ?? options.tenantId);
     const missionKey = mission.missionKey ?? mission.id;
@@ -53,13 +53,17 @@ export class MissionManager implements IMissionManager {
       status: mission.status ?? MissionStatus.DRAFT,
     });
 
-    this.emit(RuntimeEventType.MISSION_CREATED, { missionId: created.id, tenantId, missionKey }, {
-      tenantId,
-      missionId: created.id,
-      executionId: created.executionId,
-      correlationId: created.correlationId,
-      idempotencyKey: options.idempotencyKey ?? `mission.created:${missionKey}:${tenantId}`,
-    });
+    this.emit(
+      RuntimeEventType.MISSION_CREATED,
+      { missionId: created.id, tenantId, missionKey },
+      {
+        tenantId,
+        missionId: created.id,
+        executionId: created.executionId,
+        correlationId: created.correlationId,
+        idempotencyKey: options.idempotencyKey ?? `mission.created:${missionKey}:${tenantId}`,
+      },
+    );
 
     return created;
   }
@@ -77,12 +81,16 @@ export class MissionManager implements IMissionManager {
       startedAt: mission.startedAt ?? new Date().toISOString(),
     });
 
-    this.emit(RuntimeEventType.MISSION_STARTED, { missionId, tenantId }, {
-      tenantId,
-      missionId,
-      executionId: started.executionId,
-      correlationId: started.correlationId,
-    });
+    this.emit(
+      RuntimeEventType.MISSION_STARTED,
+      { missionId, tenantId },
+      {
+        tenantId,
+        missionId,
+        executionId: started.executionId,
+        correlationId: started.correlationId,
+      },
+    );
 
     return started;
   }
@@ -92,27 +100,39 @@ export class MissionManager implements IMissionManager {
     const tenantId = mission.tenantId;
     const cancelled = await this.registry.update({ ...mission, status: MissionStatus.CANCELLED });
 
-    this.emit(RuntimeEventType.MISSION_CANCELLED, { missionId, tenantId }, {
-      tenantId,
-      missionId,
-      executionId: cancelled.executionId,
-      correlationId: cancelled.correlationId,
-    });
+    this.emit(
+      RuntimeEventType.MISSION_CANCELLED,
+      { missionId, tenantId },
+      {
+        tenantId,
+        missionId,
+        executionId: cancelled.executionId,
+        correlationId: cancelled.correlationId,
+      },
+    );
 
     return cancelled;
   }
 
-  async failMission(missionId: string, error: string, options: { tenantId?: string } = {}): Promise<Mission> {
+  async failMission(
+    missionId: string,
+    error: string,
+    options: { tenantId?: string } = {},
+  ): Promise<Mission> {
     const mission = await this.resolveMission(missionId, options.tenantId);
     const tenantId = mission.tenantId;
     const failed = await this.registry.update({ ...mission, status: MissionStatus.FAILED, error });
 
-    this.emit(RuntimeEventType.MISSION_FAILED, { missionId, tenantId, error }, {
-      tenantId,
-      missionId,
-      executionId: failed.executionId,
-      correlationId: failed.correlationId,
-    });
+    this.emit(
+      RuntimeEventType.MISSION_FAILED,
+      { missionId, tenantId, error },
+      {
+        tenantId,
+        missionId,
+        executionId: failed.executionId,
+        correlationId: failed.correlationId,
+      },
+    );
 
     return failed;
   }
@@ -126,18 +146,24 @@ export class MissionManager implements IMissionManager {
       completedAt: new Date().toISOString(),
     });
 
-    this.emit(RuntimeEventType.MISSION_COMPLETED, { missionId, tenantId }, {
-      tenantId,
-      missionId,
-      executionId: completed.executionId,
-      correlationId: completed.correlationId,
-    });
+    this.emit(
+      RuntimeEventType.MISSION_COMPLETED,
+      { missionId, tenantId },
+      {
+        tenantId,
+        missionId,
+        executionId: completed.executionId,
+        correlationId: completed.correlationId,
+      },
+    );
 
     return completed;
   }
 
   async getMission(missionId: string, tenantId?: string): Promise<Mission | null> {
-    const resolvedTenant = this.tenantContext ? this.tenantContext.resolveTenantId(tenantId) : (tenantId ?? undefined);
+    const resolvedTenant = this.tenantContext
+      ? this.tenantContext.resolveTenantId(tenantId)
+      : (tenantId ?? undefined);
     return this.registry.getMission(missionId, resolvedTenant ?? undefined);
   }
 
@@ -166,12 +192,16 @@ export class MissionManager implements IMissionManager {
     const recovered: Mission[] = [];
     for (const mission of interrupted) {
       const updated = await this.registry.update({ ...mission, status: MissionStatus.RECOVERED });
-      this.emit(RuntimeEventType.MISSION_RECOVERED, { missionId: updated.id, tenantId: updated.tenantId }, {
-        tenantId: updated.tenantId,
-        missionId: updated.id,
-        executionId: updated.executionId,
-        correlationId: updated.correlationId,
-      });
+      this.emit(
+        RuntimeEventType.MISSION_RECOVERED,
+        { missionId: updated.id, tenantId: updated.tenantId },
+        {
+          tenantId: updated.tenantId,
+          missionId: updated.id,
+          executionId: updated.executionId,
+          correlationId: updated.correlationId,
+        },
+      );
       recovered.push(updated);
     }
 
@@ -185,7 +215,7 @@ export class MissionManager implements IMissionManager {
     if (this.tenantContext) {
       return this.tenantContext.resolveTenantId(explicit);
     }
-    return explicit ?? 'system';
+    return explicit ?? "system";
   }
 
   /**
@@ -211,7 +241,10 @@ export class MissionManager implements IMissionManager {
       const tenantId = this.tenantContext.resolveTenantId();
       const scoped = await this.registry.getMission(missionId, tenantId);
       if (!scoped) {
-        throw new RuntimeError(`Mission not found: '${missionId}' in tenant '${tenantId}'.`, { missionId, tenantId });
+        throw new RuntimeError(`Mission not found: '${missionId}' in tenant '${tenantId}'.`, {
+          missionId,
+          tenantId,
+        });
       }
       return scoped;
     }
@@ -225,10 +258,16 @@ export class MissionManager implements IMissionManager {
   private emit(
     type: RuntimeEventType,
     payload: Record<string, unknown>,
-    options: { tenantId?: string; missionId?: string; executionId?: string; correlationId?: string; idempotencyKey?: string }
+    options: {
+      tenantId?: string;
+      missionId?: string;
+      executionId?: string;
+      correlationId?: string;
+      idempotencyKey?: string;
+    },
   ): void {
     this.eventBus.publish(type, payload, {
-      source: 'MissionManager',
+      source: "MissionManager",
       ...options,
     });
   }

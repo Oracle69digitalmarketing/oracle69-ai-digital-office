@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { HrKpiService } from './hr-kpi.service.js';
-import { HrHealth } from '../types.js';
+import { Injectable } from "@nestjs/common";
+import { HrKpiService } from "./hr-kpi.service.js";
+import { HrHealth } from "../types.js";
 
-const HEALTH_FACTORS: Record<'healthy' | 'at_risk' | 'critical', number> = {
+const HEALTH_FACTORS: Record<"healthy" | "at_risk" | "critical", number> = {
   healthy: 80,
   at_risk: 55,
   critical: 30,
@@ -26,7 +26,7 @@ export class HrHealthService {
 
     if (kpis.headcount === 0) {
       score = HEALTH_FACTORS.critical - 10;
-      reasoning.push('The organization has no active employees; the workforce is empty.');
+      reasoning.push("The organization has no active employees; the workforce is empty.");
     } else {
       reasoning.push(
         `The organization has ${kpis.headcount} employee(s) (${kpis.onboardingCount} onboarding, ${kpis.activeHeadcount} active).`,
@@ -35,7 +35,9 @@ export class HrHealthService {
 
     if (kpis.turnoverRate > 0.25) {
       score -= 20;
-      reasoning.push(`Turnover is high: ${(kpis.turnoverRate * 100).toFixed(0)}% of the workforce has left.`);
+      reasoning.push(
+        `Turnover is high: ${(kpis.turnoverRate * 100).toFixed(0)}% of the workforce has left.`,
+      );
     } else if (kpis.turnoverRate > 0.1) {
       score -= 10;
       reasoning.push(`Turnover is elevated at ${(kpis.turnoverRate * 100).toFixed(0)}%.`);
@@ -48,20 +50,29 @@ export class HrHealthService {
 
     if (kpis.openPositions > 0 && kpis.candidatesInPipeline < kpis.openPositions) {
       score -= 15;
-      reasoning.push('The candidate pipeline cannot cover the open positions; hiring is at risk.');
+      reasoning.push("The candidate pipeline cannot cover the open positions; hiring is at risk.");
     }
 
     if (kpis.averageTimeToHireDays > 45) {
       score -= 10;
-      reasoning.push(`Average time to hire is ${kpis.averageTimeToHireDays} day(s), above the 45-day target.`);
+      reasoning.push(
+        `Average time to hire is ${kpis.averageTimeToHireDays} day(s), above the 45-day target.`,
+      );
     }
 
     if (kpis.offerAcceptanceRate >= 0.5 && kpis.turnoverRate <= 0.1) {
       score += 5;
-      reasoning.push('Offer acceptance is strong and turnover is controlled; the workforce is stable.');
+      reasoning.push(
+        "Offer acceptance is strong and turnover is controlled; the workforce is stable.",
+      );
     }
 
-    const status: HrHealth['status'] = score >= HEALTH_FACTORS.healthy ? 'healthy' : score >= HEALTH_FACTORS.at_risk ? 'at_risk' : 'critical';
+    const status: HrHealth["status"] =
+      score >= HEALTH_FACTORS.healthy
+        ? "healthy"
+        : score >= HEALTH_FACTORS.at_risk
+          ? "at_risk"
+          : "critical";
 
     return {
       score: Math.max(0, Math.min(100, score)),

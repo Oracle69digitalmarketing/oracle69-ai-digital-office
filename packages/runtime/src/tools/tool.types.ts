@@ -1,4 +1,4 @@
-import { IRuntimeContext } from '../runtime.types.js';
+import { IRuntimeContext } from "../runtime.types.js";
 
 export interface ToolRequest {
   toolId: string;

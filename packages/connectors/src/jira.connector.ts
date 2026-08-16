@@ -1,6 +1,6 @@
-import { AbstractConnector } from './abstract-connector.js';
-import { ConnectorActionRequest, ConnectorResult, ConnectorMetadata } from './types.js';
-import JiraClient from 'jira-client';
+import { AbstractConnector } from "./abstract-connector.js";
+import { ConnectorActionRequest, ConnectorResult, ConnectorMetadata } from "./types.js";
+import JiraClient from "jira-client";
 
 interface ExtendedJiraClient extends JiraClient {
   assignIssue(issueKey: string, accountId: string): Promise<any>;
@@ -13,18 +13,18 @@ export class JiraConnector extends AbstractConnector {
 
   constructor() {
     const metadata: ConnectorMetadata = {
-      id: 'jira-01',
-      name: 'Jira Connector',
-      type: 'jira',
-      version: '1.0.0',
+      id: "jira-01",
+      name: "Jira Connector",
+      type: "jira",
+      version: "1.0.0",
       capabilities: [
-        'create_issue',
-        'update_issue',
-        'search_issues',
-        'assign_issue',
-        'transition_issue',
-        'add_comment',
-        'health_check'
+        "create_issue",
+        "update_issue",
+        "search_issues",
+        "assign_issue",
+        "transition_issue",
+        "add_comment",
+        "health_check",
       ],
     };
     super(metadata);
@@ -33,41 +33,41 @@ export class JiraConnector extends AbstractConnector {
   async connect(credentials: any): Promise<void> {
     await super.connect(credentials);
     this.jiraClient = new JiraClient({
-      protocol: 'https',
+      protocol: "https",
       host: credentials.host,
       username: credentials.username,
       password: credentials.password,
-      apiVersion: '2',
-      strictSSL: true
+      apiVersion: "2",
+      strictSSL: true,
     }) as unknown as ExtendedJiraClient;
   }
 
   async execute(request: ConnectorActionRequest): Promise<ConnectorResult> {
     if (!this.jiraClient) {
-      return this.handleError(new Error('Jira client not initialized. Call connect() first.'));
+      return this.handleError(new Error("Jira client not initialized. Call connect() first."));
     }
 
     return this.withRetry(async () => {
       switch (request.action) {
-        case 'create_issue':
+        case "create_issue":
           return this.createIssue(request.params);
-        case 'update_issue':
+        case "update_issue":
           return this.updateIssue(request.params);
-        case 'search_issues':
+        case "search_issues":
           return this.searchIssues(request.params);
-        case 'assign_issue':
+        case "assign_issue":
           return this.assignIssue(request.params);
-        case 'transition_issue':
+        case "transition_issue":
           return this.transitionIssue(request.params);
-        case 'add_comment':
+        case "add_comment":
           return this.addComment(request.params);
-        case 'health_check':
+        case "health_check":
           const health = await this.health();
           return { success: true, data: health };
         default:
           throw new Error(`Unsupported action: ${request.action}`);
       }
-    }).catch(err => this.handleError(err));
+    }).catch((err) => this.handleError(err));
   }
 
   private async createIssue(params: any): Promise<ConnectorResult> {
@@ -90,13 +90,13 @@ export class JiraConnector extends AbstractConnector {
   private async assignIssue(params: any): Promise<ConnectorResult> {
     const { issueKey, accountId } = params;
     await this.jiraClient!.assignIssue(issueKey, accountId);
-    return { success: true, data: { issueKey, status: 'assigned' } };
+    return { success: true, data: { issueKey, status: "assigned" } };
   }
 
   private async transitionIssue(params: any): Promise<ConnectorResult> {
     const { issueKey, transitionId } = params;
     await this.jiraClient!.transitionIssue(issueKey, { transition: { id: transitionId } });
-    return { success: true, data: { issueKey, status: 'transitioned' } };
+    return { success: true, data: { issueKey, status: "transitioned" } };
   }
 
   private async addComment(params: any): Promise<ConnectorResult> {
@@ -107,11 +107,11 @@ export class JiraConnector extends AbstractConnector {
 
   async health(): Promise<any> {
     try {
-      if (!this.jiraClient) return { status: 'disconnected' };
+      if (!this.jiraClient) return { status: "disconnected" };
       await this.jiraClient.getServerInfo();
-      return { status: 'connected', lastCheck: new Date() };
+      return { status: "connected", lastCheck: new Date() };
     } catch (error: any) {
-      return { status: 'error', lastCheck: new Date(), error: error.message };
+      return { status: "error", lastCheck: new Date(), error: error.message };
     }
   }
 }

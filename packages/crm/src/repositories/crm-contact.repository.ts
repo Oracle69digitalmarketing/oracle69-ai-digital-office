@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { CreateCrmContactDto, UpdateCrmContactDto } from '../dto/crm.dto.js';
+import { Injectable } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
+import { CreateCrmContactDto, UpdateCrmContactDto } from "../dto/crm.dto.js";
 
 @Injectable()
 export class CrmContactRepository {
@@ -14,7 +14,7 @@ export class CrmContactRepository {
 
   async update(id: string, organizationId: string, data: UpdateCrmContactDto) {
     const record = await this.prisma.crmContact.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmContact.update({
       where: { id },
       data,
@@ -23,7 +23,7 @@ export class CrmContactRepository {
 
   async delete(id: string, organizationId: string) {
     const record = await this.prisma.crmContact.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmContact.delete({
       where: { id },
     });
@@ -56,9 +56,9 @@ export class CrmContactRepository {
       where: {
         organizationId,
         OR: [
-          { firstName: { contains: query, mode: 'insensitive' } },
-          { lastName: { contains: query, mode: 'insensitive' } },
-          { email: { contains: query, mode: 'insensitive' } },
+          { firstName: { contains: query, mode: "insensitive" } },
+          { lastName: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
         ],
       },
     });

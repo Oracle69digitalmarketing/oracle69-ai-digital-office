@@ -1,11 +1,11 @@
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
-import { ProcurementService } from '../services/procurement.service.js';
-import { SUPPLIER_REPOSITORY } from '../repositories/supplier.repository.js';
-import { PURCHASE_ORDER_REPOSITORY } from '../repositories/purchase-order.repository.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+import { Test, TestingModule } from "@nestjs/testing";
+import { ProcurementService } from "../services/procurement.service.js";
+import { SUPPLIER_REPOSITORY } from "../repositories/supplier.repository.js";
+import { PURCHASE_ORDER_REPOSITORY } from "../repositories/purchase-order.repository.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
 
-describe('ProcurementService', () => {
+describe("ProcurementService", () => {
   let service: ProcurementService;
   let mockSupplierRepo: any;
   let mockPoRepo: any;
@@ -14,9 +14,14 @@ describe('ProcurementService', () => {
 
   beforeEach(async () => {
     mockSupplierRepo = { create: jest.fn(), findById: jest.fn(), findByOrganization: jest.fn() };
-    mockPoRepo = { create: jest.fn(), findById: jest.fn(), findByOrganization: jest.fn(), update: jest.fn() };
+    mockPoRepo = {
+      create: jest.fn(),
+      findById: jest.fn(),
+      findByOrganization: jest.fn(),
+      update: jest.fn(),
+    };
     mockEventBus = { publish: jest.fn() };
-    mockTenantContext = { resolveTenantId: jest.fn((id) => id || 'test-org') };
+    mockTenantContext = { resolveTenantId: jest.fn((id) => id || "test-org") };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -31,15 +36,21 @@ describe('ProcurementService', () => {
     service = module.get<ProcurementService>(ProcurementService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a supplier', async () => {
-    const supplier = { name: 'Test Supplier', category: 'IT', contactEmail: 'test@supplier.com', status: 'active', organizationId: 'test-org' };
-    mockSupplierRepo.create.mockResolvedValue({ id: 's1', ...supplier });
+  it("should create a supplier", async () => {
+    const supplier = {
+      name: "Test Supplier",
+      category: "IT",
+      contactEmail: "test@supplier.com",
+      status: "active",
+      organizationId: "test-org",
+    };
+    mockSupplierRepo.create.mockResolvedValue({ id: "s1", ...supplier });
     const result = await service.createSupplier(supplier);
-    expect(result.id).toBe('s1');
+    expect(result.id).toBe("s1");
     expect(mockEventBus.publish).toHaveBeenCalled();
   });
 });

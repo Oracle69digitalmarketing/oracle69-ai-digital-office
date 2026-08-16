@@ -21,11 +21,13 @@ Its purpose is to ensure every AI employee can retrieve relevant information, le
 # 2. Ownership Boundaries
 
 ### [Digital Office Only: Operate]
+
 - **Operational Memory:** Session memory, working memory, and long-term storage of project/task execution records.
 - **Durable Persistence:** Implementation of `IMemoryPersistence` via `PrismaMemoryPersistence` for `LongTermMemoryRecord`.
 - **Retrieval:** Search and context building for Digital Office agents.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Discover (Architect):** Market research data, strategic discovery session logs.
 - **Build (Launch):** Infrastructure configuration history, initial provisioning logs.
 - **Optimize (Growth):** High-level marketing performance trends, competitive intelligence archives.
@@ -36,6 +38,7 @@ Its purpose is to ensure every AI employee can retrieve relevant information, le
 # 3. Platform Integration Seams
 
 Digital Office provides a read-only memory query API for platform sibling products:
+
 - **`POST /api/v1/platform/memory/query`**: Allows Growth Intelligence or Executive Intelligence to perform tenant-scoped lookups of operational memory.
 
 ---

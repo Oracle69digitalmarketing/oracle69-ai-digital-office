@@ -28,10 +28,7 @@ export function NotificationCenter() {
         <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
-            <button 
-              onClick={() => setIsOpen(false)}
-              aria-label="Close notifications"
-            >
+            <button onClick={() => setIsOpen(false)} aria-label="Close notifications">
               <X className="h-4 w-4 text-gray-400" />
             </button>
           </div>
@@ -51,7 +48,7 @@ export function NotificationCenter() {
             ))}
           </div>
           <div className="border-t px-4 py-2 text-center">
-            <Link 
+            <Link
               href="/dashboard/notifications"
               onClick={() => setIsOpen(false)}
               className="text-xs font-medium text-indigo-600 hover:text-indigo-500"

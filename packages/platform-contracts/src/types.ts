@@ -1,21 +1,22 @@
 export type EventCatalog =
-  | 'task.delegated'
-  | 'task.escalated'
-  | 'task.completed'
-  | 'task.created'
-  | 'task.started'
-  | 'task.failed'
-  | 'task.status_changed'
-  | 'department.handoff'
-  | 'agent.registered'
-  | 'agent.status_changed'
-  | 'connector.action.started'
-  | 'connector.action.completed'
-  | 'connector.action.failed'
-  | 'workflow.step.started'
-  | 'workflow.step.completed'
-  | 'workflow.step.failed'
-  | 'audit.action.executed';
+  | "task.delegated"
+  | "task.escalated"
+  | "task.completed"
+  | "task.created"
+  | "task.started"
+  | "task.failed"
+  | "task.status_changed"
+  | "project.created"
+  | "department.handoff"
+  | "agent.registered"
+  | "agent.status_changed"
+  | "connector.action.started"
+  | "connector.action.completed"
+  | "connector.action.failed"
+  | "workflow.step.started"
+  | "workflow.step.completed"
+  | "workflow.step.failed"
+  | "audit.action.executed";
 
 export interface ProvisioningRequest {
   organizationId: string;
@@ -28,7 +29,7 @@ export interface ProvisioningRequest {
 
 export interface ProvisioningResult {
   organizationId: string;
-  status: 'success' | 'failed';
+  status: "success" | "failed";
   apiKey: string;
   receptionistAgentId: string;
 }

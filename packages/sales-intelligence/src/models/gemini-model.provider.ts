@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { AiModelProvider, ModelResponse } from './ai-model.interface.js';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { AiModelProvider, ModelResponse } from "./ai-model.interface.js";
 
 export class GeminiModelProvider implements AiModelProvider {
-  public readonly name = 'gemini';
+  public readonly name = "gemini";
   private genAI: GoogleGenerativeAI;
 
   constructor(apiKey: string) {
@@ -10,7 +10,7 @@ export class GeminiModelProvider implements AiModelProvider {
   }
 
   async generate(prompt: string): Promise<ModelResponse> {
-    const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return {

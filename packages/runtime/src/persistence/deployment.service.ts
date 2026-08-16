@@ -1,7 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { TenantContextService, TenantContextError } from '../tenancy/tenant-context.js';
-import type { Deployment, DeploymentInput, DeploymentRepository } from './deployment.repository.js';
-import { DEPLOYMENT_REPOSITORY } from './deployment.repository.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { TenantContextService, TenantContextError } from "../tenancy/tenant-context.js";
+import type { Deployment, DeploymentInput, DeploymentRepository } from "./deployment.repository.js";
+import { DEPLOYMENT_REPOSITORY } from "./deployment.repository.js";
 
 /**
  * Tenant-scoped deployment retrieval and registration.
@@ -15,7 +15,7 @@ import { DEPLOYMENT_REPOSITORY } from './deployment.repository.js';
 export class DeploymentService {
   constructor(
     @Inject(DEPLOYMENT_REPOSITORY) private readonly repository: DeploymentRepository,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   /**

@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { OperationsIntelligenceEventType, OperationsIntelligenceEvent } from '../events/oi.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  OperationsIntelligenceEventType,
+  OperationsIntelligenceEvent,
+} from "../events/oi.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface AgentUtilizationRow {
   agentId: string;
@@ -29,9 +32,9 @@ export interface AgentUtilizationMetrics {
   };
 }
 
-const COMPLETED_STATUSES = ['completed', 'done'];
-const IN_PROGRESS_STATUSES = ['in_progress', 'running', 'working'];
-const BUSY_STATUSES = ['busy', 'active'];
+const COMPLETED_STATUSES = ["completed", "done"];
+const IN_PROGRESS_STATUSES = ["in_progress", "running", "working"];
+const BUSY_STATUSES = ["busy", "active"];
 
 /**
  * Computes deterministic agent utilization for the organization: assigned and
@@ -50,12 +53,15 @@ export class OiAgentEngine {
   /**
    * Deterministically computes the agent utilization metrics without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<AgentUtilizationMetrics> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<AgentUtilizationMetrics> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const agents = await this.prisma.agent.findMany({
       where: { organizationId },
@@ -65,10 +71,10 @@ export class OiAgentEngine {
     const rows: AgentUtilizationRow[] = agents.map((agent) => {
       const tasksAssigned = agent.tasks.length;
       const tasksCompleted = agent.tasks.filter((task) =>
-        COMPLETED_STATUSES.includes(task.status)
+        COMPLETED_STATUSES.includes(task.status),
       ).length;
       const tasksInProgress = agent.tasks.filter((task) =>
-        IN_PROGRESS_STATUSES.includes(task.status)
+        IN_PROGRESS_STATUSES.includes(task.status),
       ).length;
       const completionRate = tasksAssigned > 0 ? tasksCompleted / tasksAssigned : 0;
       const utilizationRate =
@@ -76,7 +82,7 @@ export class OiAgentEngine {
 
       const executionTimes = agent.tasks
         .map((task) => task.executionTime)
-        .filter((value): value is number => typeof value === 'number');
+        .filter((value): value is number => typeof value === "number");
 
       return {
         agentId: agent.id,
@@ -85,16 +91,13 @@ export class OiAgentEngine {
         tasksCompleted,
         completionRate: round(completionRate, 4),
         utilizationRate: round(utilizationRate, 4),
-        avgExecutionTime:
-          executionTimes.length > 0 ? round(average(executionTimes), 2) : null,
+        avgExecutionTime: executionTimes.length > 0 ? round(average(executionTimes), 2) : null,
         status: agent.status,
       };
     });
 
-    const utilizationAvg =
-      rows.length > 0 ? average(rows.map((row) => row.utilizationRate)) : 0;
-    const completionAvg =
-      rows.length > 0 ? average(rows.map((row) => row.completionRate)) : 0;
+    const utilizationAvg = rows.length > 0 ? average(rows.map((row) => row.utilizationRate)) : 0;
+    const completionAvg = rows.length > 0 ? average(rows.map((row) => row.completionRate)) : 0;
 
     return {
       period,
@@ -105,8 +108,8 @@ export class OiAgentEngine {
       metrics: {
         totalAgents: agents.length,
         busyAgents: agents.filter((agent) => BUSY_STATUSES.includes(agent.status)).length,
-        healthyAgents: agents.filter((agent) => agent.health === 'healthy').length,
-        unhealthyAgents: agents.filter((agent) => agent.health !== 'healthy').length,
+        healthyAgents: agents.filter((agent) => agent.health === "healthy").length,
+        unhealthyAgents: agents.filter((agent) => agent.health !== "healthy").length,
       },
     };
   }
@@ -114,8 +117,13 @@ export class OiAgentEngine {
   /**
    * Computes, persists and publishes the agent utilization snapshot.
    */
-  async generateUtilization(organizationId: string, period: string = currentPeriod()): Promise<AgentUtilizationMetrics> {
-    this.logger.log(`Generating agent utilization for organization ${organizationId}, period ${period}`);
+  async generateUtilization(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<AgentUtilizationMetrics> {
+    this.logger.log(
+      `Generating agent utilization for organization ${organizationId}, period ${period}`,
+    );
 
     const metrics = await this.compute(organizationId, period);
 
@@ -143,7 +151,7 @@ export class OiAgentEngine {
         organizationId,
         period,
         metrics,
-      })
+      }),
     );
 
     return metrics;
@@ -155,7 +163,7 @@ export class OiAgentEngine {
   async listUtilization(organizationId: string, take = 50) {
     return this.prisma.oiAgentUtilization.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }

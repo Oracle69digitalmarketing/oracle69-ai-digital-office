@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { EventBus } from './event-bus.js';
-import type { EventLog } from './event-log.js';
-import { EVENT_LOG } from './event-log.js';
+import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { EventBus } from "./event-bus.js";
+import type { EventLog } from "./event-log.js";
+import { EVENT_LOG } from "./event-log.js";
 
 /**
  * Wires a persistent {@link EventLog} into the canonical {@link EventBus} as
@@ -16,7 +16,7 @@ export class EventLogWriter implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly eventBus: EventBus,
-    @Inject(EVENT_LOG) private readonly eventLog: EventLog
+    @Inject(EVENT_LOG) private readonly eventLog: EventLog,
   ) {}
 
   onModuleInit(): void {

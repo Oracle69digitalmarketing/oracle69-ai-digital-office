@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { CredentialManager } from './credential-manager.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { CredentialManager } from "./credential-manager.js";
 
 @Injectable()
 export class OAuthManager {
@@ -14,7 +14,7 @@ export class OAuthManager {
     }
 
     this.logger.log(`Refreshing token for ${provider} in org ${organizationId}`);
-    
+
     // In a real implementation, this would call the provider's OAuth endpoint
     // For now, we simulate success if we have a refresh token
     const newAccessToken = `refreshed-${Math.random().toString(36).substring(7)}`;

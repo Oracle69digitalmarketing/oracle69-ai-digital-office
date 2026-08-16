@@ -1,17 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from "@nestjs/common";
 import {
   KNOWLEDGE_REPORT_REPOSITORY,
   type ReportRepository,
-} from '../repositories/report.repository.js';
-import { KnowledgeReport } from '../types.js';
-import { KnowledgeKpiService } from './knowledge-kpi.service.js';
-import { KnowledgeHealthService } from './knowledge-health.service.js';
-import { KnowledgeAiService } from './knowledge-ai.service.js';
-import { RecommendationService } from './recommendation.service.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
-import { KnowledgeEventType } from '../events/knowledge.events.js';
+} from "../repositories/report.repository.js";
+import { KnowledgeReport } from "../types.js";
+import { KnowledgeKpiService } from "./knowledge-kpi.service.js";
+import { KnowledgeHealthService } from "./knowledge-health.service.js";
+import { KnowledgeAiService } from "./knowledge-ai.service.js";
+import { RecommendationService } from "./recommendation.service.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
+import { KnowledgeEventType } from "../events/knowledge.events.js";
 
-const EVENT_SOURCE = 'knowledge-intelligence';
+const EVENT_SOURCE = "knowledge-intelligence";
 
 export function currentPeriod(date: Date = new Date()): string {
   return date.toISOString().slice(0, 7);
@@ -34,7 +34,10 @@ export class KnowledgeReportService {
     private readonly tenantContext: TenantContextService,
   ) {}
 
-  async generateReport(organizationId?: string, period: string = currentPeriod()): Promise<KnowledgeReport> {
+  async generateReport(
+    organizationId?: string,
+    period: string = currentPeriod(),
+  ): Promise<KnowledgeReport> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const health = await this.healthService.assess(tenantId);
     const [insights, recommendations] = await Promise.all([

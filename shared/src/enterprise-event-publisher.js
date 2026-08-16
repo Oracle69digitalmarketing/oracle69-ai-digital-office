@@ -77,4 +77,3 @@ EnterpriseEventPublisher = EnterpriseEventPublisher_1 = __decorate([
     __metadata("design:paramtypes", [EventBus, Object])
 ], EnterpriseEventPublisher);
 export { EnterpriseEventPublisher };
-//# sourceMappingURL=enterprise-event-publisher.js.map

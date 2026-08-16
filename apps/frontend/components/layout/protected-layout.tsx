@@ -6,11 +6,7 @@ import { useAuthStore } from "@/store/auth-store";
 
 import { DashboardShell } from "./dashboard-shell";
 
-export default function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, token } = useAuthStore();
   const router = useRouter();
 

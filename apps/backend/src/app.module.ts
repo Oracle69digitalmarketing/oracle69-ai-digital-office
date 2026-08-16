@@ -22,6 +22,14 @@ import { AgentsModule } from "./agents/agents.module.js";
 import { WorkflowsModule } from "./workflows/workflows.module.js";
 import { PlatformModule } from "./platform/platform.module.js";
 import { EiModule } from "./ei/ei.module.js";
+import { ProjectsModule } from "./projects/projects.module.js";
+import { DepartmentsModule } from "./departments/departments.module.js";
+import { DocumentsModule } from "./documents/documents.module.js";
+import { AnalyticsModule } from "./analytics/analytics.module.js";
+import { CrmModule } from "@oracle69/crm";
+import { CalendarModule } from "./calendar/calendar.module.js";
+import { DashboardModule } from "./dashboard/dashboard.module.js";
+import { SettingsModule } from "./settings/settings.module.js";
 
 @Module({
   imports: [
@@ -46,6 +54,14 @@ import { EiModule } from "./ei/ei.module.js";
     WorkflowsModule,
     PlatformModule,
     EiModule,
+    ProjectsModule,
+    DepartmentsModule,
+    DocumentsModule,
+    AnalyticsModule,
+    CrmModule,
+    CalendarModule,
+    DashboardModule,
+    SettingsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

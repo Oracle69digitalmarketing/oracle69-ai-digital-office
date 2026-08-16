@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { IToolRegistry } from './tool.types.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { IToolRegistry } from "./tool.types.js";
 
 @Injectable()
 export class ToolRegistry implements IToolRegistry {
@@ -9,7 +9,7 @@ export class ToolRegistry implements IToolRegistry {
   constructor() {
     // In a real scenario, this would dynamically load connectors from Phase 5.
     // For now, we stub them.
-    this.connectors.set('google-drive', { name: 'GoogleDriveConnector' });
+    this.connectors.set("google-drive", { name: "GoogleDriveConnector" });
   }
 
   resolveConnector(connectorId: string): any {

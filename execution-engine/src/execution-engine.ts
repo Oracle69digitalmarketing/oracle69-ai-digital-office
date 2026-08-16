@@ -1,8 +1,8 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { TaskContext, WorkflowTrace, WorkflowStep, EventBus } from '@oracle69/shared';
-import { BaseAgent } from '@oracle69/agent-engine';
-import { TenantContext } from '@oracle69/platform-contracts';
-import { MemoryManager } from '@oracle69/memory';
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import { TaskContext, WorkflowTrace, WorkflowStep, EventBus } from "@oracle69/shared";
+import { BaseAgent } from "@oracle69/agent-engine";
+import { TenantContext } from "@oracle69/platform-contracts";
+import { MemoryManager } from "@oracle69/memory";
 
 export interface WorkflowTraceRepository {
   saveStep(step: WorkflowStep, organizationId?: string): Promise<void>;
@@ -17,42 +17,38 @@ export class ExecutionEngine {
   constructor(
     private readonly eventBus: EventBus,
     private readonly memory: MemoryManager,
-    @Optional() private readonly repository?: WorkflowTraceRepository
+    @Optional() private readonly repository?: WorkflowTraceRepository,
   ) {}
 
   async executeTask(
     task: TaskContext,
     agent: BaseAgent,
     retries = 3,
-    tenantContext?: TenantContext
+    tenantContext?: TenantContext,
   ): Promise<any> {
     const trace = this.getOrCreateTrace(task.sessionId);
     const step: WorkflowStep = {
       stepId: Math.random().toString(36).substring(7),
       taskId: task.taskId,
       agentId: agent.metadata.id,
-      status: 'executing',
+      status: "executing",
       startTime: new Date(),
     };
     trace.steps.push(step);
     await this.persistStep(step, tenantContext?.organizationId);
 
     this.eventBus.publish({
-      type: 'task.delegated',
-      source: 'execution-engine',
+      type: "task.delegated",
+      source: "execution-engine",
       payload: { taskId: task.taskId, agentId: agent.metadata.id, sessionId: task.sessionId },
     });
 
     try {
       await agent.onTaskReceived(task);
-      
-      const result = await this.executeWithRetry(
-        () => agent.execute(task),
-        retries,
-        task.taskId
-      );
 
-      step.status = 'completed';
+      const result = await this.executeWithRetry(() => agent.execute(task), retries, task.taskId);
+
+      step.status = "completed";
       step.endTime = new Date();
       step.result = result;
 
@@ -63,21 +59,21 @@ export class ExecutionEngine {
         agentId: agent.metadata.id,
         role: agent.metadata.role,
         content: result,
-        reasoning: result?.reasoning || 'Automated execution',
+        reasoning: result?.reasoning || "Automated execution",
         decisions: result?.decisions || [],
         organizationId: tenantContext?.organizationId,
         metadata: {
           objective: task.objective,
           workflowId: task.sessionId,
-          status: 'completed'
-        }
+          status: "completed",
+        },
       });
 
       await agent.onTaskCompleted(task, result);
       await this.persistStep(step, tenantContext?.organizationId);
 
       this.eventBus.publish({
-        type: 'task.completed',
+        type: "task.completed",
         source: `execution-engine:${agent.metadata.id}`,
         payload: { taskId: task.taskId, result },
       });
@@ -85,7 +81,7 @@ export class ExecutionEngine {
       return result;
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      step.status = 'failed';
+      step.status = "failed";
       step.endTime = new Date();
       step.error = err.message;
 
@@ -107,7 +103,11 @@ export class ExecutionEngine {
     }
   }
 
-  private async executeWithRetry<T>(fn: () => Promise<T>, retries: number, taskId: string): Promise<T> {
+  private async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    retries: number,
+    taskId: string,
+  ): Promise<T> {
     let lastError: any;
     for (let i = 0; i < retries; i++) {
       try {
@@ -116,15 +116,20 @@ export class ExecutionEngine {
       } catch (error) {
         lastError = error;
         const delay = Math.pow(2, i) * 1000;
-        this.logger.warn(`Task ${taskId} failed (attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        this.logger.warn(
+          `Task ${taskId} failed (attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
     throw lastError;
   }
 
   private handleTaskFailure(task: TaskContext, error: any) {
-    this.logger.error(`Critical failure in task ${task.taskId}. Moving to dead-letter queue.`, error.stack);
+    this.logger.error(
+      `Critical failure in task ${task.taskId}. Moving to dead-letter queue.`,
+      error.stack,
+    );
     // Placeholder for dead-letter queue implementation
   }
 
@@ -134,7 +139,7 @@ export class ExecutionEngine {
         workflowId,
         steps: [],
         startTime: new Date(),
-        status: 'executing',
+        status: "executing",
       });
     }
     return this.traces.get(workflowId)!;

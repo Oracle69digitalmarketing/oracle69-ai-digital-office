@@ -1,12 +1,12 @@
 export enum TransactionType {
-  INCOME = 'income',
-  EXPENSE = 'expense',
+  INCOME = "income",
+  EXPENSE = "expense",
 }
 
 export enum TransactionStatus {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
 }
 
 export interface FinTransaction {
@@ -25,14 +25,14 @@ export interface FinTransaction {
 }
 
 export enum BudgetPeriod {
-  MONTHLY = 'monthly',
-  QUARTERLY = 'quarterly',
-  YEARLY = 'yearly',
+  MONTHLY = "monthly",
+  QUARTERLY = "quarterly",
+  YEARLY = "yearly",
 }
 
 export enum BudgetStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
 }
 
 export interface FinBudget {
@@ -50,11 +50,11 @@ export interface FinBudget {
 }
 
 export enum InvoiceStatus {
-  DRAFT = 'draft',
-  SENT = 'sent',
-  PAID = 'paid',
-  OVERDUE = 'overdue',
-  CANCELLED = 'cancelled',
+  DRAFT = "draft",
+  SENT = "sent",
+  PAID = "paid",
+  OVERDUE = "overdue",
+  CANCELLED = "cancelled",
 }
 
 export interface FinInvoice {
@@ -96,7 +96,7 @@ export interface BudgetSummary extends FinBudget {
 /** Financial health snapshot combining KPIs, budgets and invoice exposure. */
 export interface FinancialHealth {
   score: number;
-  status: 'healthy' | 'at_risk' | 'critical';
+  status: "healthy" | "at_risk" | "critical";
   kpis: FinancialKpis;
   budgetSummaries: BudgetSummary[];
   outstandingInvoices: number;
@@ -105,9 +105,9 @@ export interface FinancialHealth {
 }
 
 export interface FinancialAiInsight {
-  type: 'forecast' | 'recommendation' | 'alert';
+  type: "forecast" | "recommendation" | "alert";
   title: string;
   content: string;
-  priority: 'low' | 'normal' | 'high';
+  priority: "low" | "normal" | "high";
   impact?: string;
 }

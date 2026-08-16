@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from '../events/mi.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from "../events/mi.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface CampaignCreateInput {
   name: string;
@@ -38,31 +38,40 @@ export interface CampaignMetrics {
   };
 }
 
-const CANONICAL_CHANNELS = ['seo', 'paid', 'social', 'email', 'referral', 'webinar', 'event', 'other'];
+const CANONICAL_CHANNELS = [
+  "seo",
+  "paid",
+  "social",
+  "email",
+  "referral",
+  "webinar",
+  "event",
+  "other",
+];
 
 const SOURCE_ALIASES: Record<string, string> = {
-  organic: 'seo',
-  google: 'seo',
-  search: 'seo',
-  ads: 'paid',
-  'google-ads': 'paid',
-  paid: 'paid',
-  linkedin: 'social',
-  facebook: 'social',
-  instagram: 'social',
-  twitter: 'social',
-  x: 'social',
-  tiktok: 'social',
-  newsletter: 'email',
-  mail: 'email',
-  email: 'email',
-  'word-of-mouth': 'referral',
-  friend: 'referral',
-  conference: 'event',
-  trade_show: 'event',
-  webinar: 'webinar',
-  direct: 'direct',
-  other: 'other',
+  organic: "seo",
+  google: "seo",
+  search: "seo",
+  ads: "paid",
+  "google-ads": "paid",
+  paid: "paid",
+  linkedin: "social",
+  facebook: "social",
+  instagram: "social",
+  twitter: "social",
+  x: "social",
+  tiktok: "social",
+  newsletter: "email",
+  mail: "email",
+  email: "email",
+  "word-of-mouth": "referral",
+  friend: "referral",
+  conference: "event",
+  trade_show: "event",
+  webinar: "webinar",
+  direct: "direct",
+  other: "other",
 };
 
 /**
@@ -78,9 +87,7 @@ export class MiCampaignEngine {
   private readonly logger = new Logger(MiCampaignEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+  constructor(private readonly messageBus: MessageBus) {}
 
   /**
    * Registers a new campaign for the organization, persisting it and publishing
@@ -90,10 +97,10 @@ export class MiCampaignEngine {
     this.logger.log(`Creating campaign '${input.name}' for organization ${organizationId}`);
 
     if (!input.name || input.name.trim().length === 0) {
-      throw new Error('Invalid campaign: name is required');
+      throw new Error("Invalid campaign: name is required");
     }
     if (!input.channel || input.channel.trim().length === 0) {
-      throw new Error('Invalid campaign: channel is required');
+      throw new Error("Invalid campaign: channel is required");
     }
     const channel = normalizeChannel(input.channel);
     validateBudget(input.budget);
@@ -102,7 +109,7 @@ export class MiCampaignEngine {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
     });
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const campaign = await this.prisma.miCampaign.create({
       data: {
@@ -122,7 +129,7 @@ export class MiCampaignEngine {
       new MarketingIntelligenceEvent(MarketingIntelligenceEventType.CAMPAIGN_CREATED, {
         organizationId,
         campaign,
-      })
+      }),
     );
 
     return campaign;
@@ -134,7 +141,7 @@ export class MiCampaignEngine {
   async listCampaigns(organizationId: string, take = 100) {
     return this.prisma.miCampaign.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }
@@ -142,7 +149,10 @@ export class MiCampaignEngine {
   /**
    * Deterministically computes per-channel growth metrics without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<CampaignMetrics> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<CampaignMetrics> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       include: {
@@ -152,14 +162,14 @@ export class MiCampaignEngine {
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const leads = organization.crmLeads;
     const opportunities = organization.crmOpportunities;
     const campaigns = organization.miCampaigns;
 
     const channels = CANONICAL_CHANNELS.map((channel) =>
-      this.computeChannel(channel, leads, opportunities, campaigns)
+      this.computeChannel(channel, leads, opportunities, campaigns),
     );
 
     const totals = channels.reduce(
@@ -169,7 +179,7 @@ export class MiCampaignEngine {
         spend: round(acc.spend + channel.spend),
         revenueAttributed: round(acc.revenueAttributed + channel.revenueAttributed),
       }),
-      { leads: 0, conversions: 0, spend: 0, revenueAttributed: 0 }
+      { leads: 0, conversions: 0, spend: 0, revenueAttributed: 0 },
     );
 
     return { period, channels, totals };
@@ -179,16 +189,19 @@ export class MiCampaignEngine {
     channel: string,
     leads: any[],
     opportunities: any[],
-    campaigns: any[]
+    campaigns: any[],
   ): CampaignMetricResult {
     const channelLeads = leads.filter((lead) => normalizeChannel(lead.source) === channel);
     const qualifiedLeads = channelLeads.filter(
-      (lead) => lead.status === 'qualified' || lead.status === 'converted'
+      (lead) => lead.status === "qualified" || lead.status === "converted",
     ).length;
     const conversions = qualifiedLeads;
 
     const revenueAttributed = opportunities
-      .filter((o) => o.stage === 'won' && o.contacts.some((c: any) => normalizeChannel(c.source) === channel))
+      .filter(
+        (o) =>
+          o.stage === "won" && o.contacts.some((c: any) => normalizeChannel(c.source) === channel),
+      )
       .reduce((sum, o) => sum + o.value, 0);
 
     const spend = campaigns
@@ -218,8 +231,13 @@ export class MiCampaignEngine {
   /**
    * Computes, persists and publishes the campaign metrics snapshot for the period.
    */
-  async generateMetrics(organizationId: string, period: string = currentPeriod()): Promise<CampaignMetrics> {
-    this.logger.log(`Generating campaign metrics for organization ${organizationId}, period ${period}`);
+  async generateMetrics(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<CampaignMetrics> {
+    this.logger.log(
+      `Generating campaign metrics for organization ${organizationId}, period ${period}`,
+    );
 
     const metrics = await this.compute(organizationId, period);
 
@@ -250,7 +268,7 @@ export class MiCampaignEngine {
         organizationId,
         period,
         metrics,
-      })
+      }),
     );
 
     return metrics;
@@ -262,7 +280,7 @@ export class MiCampaignEngine {
   async listMetrics(organizationId: string, take = 50) {
     return this.prisma.miCampaignMetric.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }
@@ -280,16 +298,16 @@ function buildSourceBreakdown(channel: string, metrics: CampaignMetrics): Record
 }
 
 function normalizeChannel(source: string | null | undefined): string {
-  if (source === null || source === undefined) return 'other';
+  if (source === null || source === undefined) return "other";
   const normalized = String(source).toLowerCase().trim();
-  if (normalized.length === 0) return 'other';
+  if (normalized.length === 0) return "other";
   if (CANONICAL_CHANNELS.includes(normalized)) return normalized;
-  return SOURCE_ALIASES[normalized] ?? 'other';
+  return SOURCE_ALIASES[normalized] ?? "other";
 }
 
 function validateBudget(value: number | undefined): void {
-  if (value !== undefined && (typeof value !== 'number' || value < 0)) {
-    throw new Error('Invalid campaign: budget and spent must be non-negative numbers');
+  if (value !== undefined && (typeof value !== "number" || value < 0)) {
+    throw new Error("Invalid campaign: budget and spent must be non-negative numbers");
   }
 }
 

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { KnowledgeKpiService } from './knowledge-kpi.service.js';
-import { KnowledgeHealth } from '../types.js';
+import { Injectable } from "@nestjs/common";
+import { KnowledgeKpiService } from "./knowledge-kpi.service.js";
+import { KnowledgeHealth } from "../types.js";
 
-const HEALTH_FACTORS: Record<'healthy' | 'at_risk' | 'critical', number> = {
+const HEALTH_FACTORS: Record<"healthy" | "at_risk" | "critical", number> = {
   healthy: 80,
   at_risk: 55,
   critical: 30,
@@ -26,7 +26,7 @@ export class KnowledgeHealthService {
 
     if (kpis.totalArticles === 0) {
       score = HEALTH_FACTORS.critical - 10;
-      reasoning.push('No knowledge articles are on record; the knowledge base is empty.');
+      reasoning.push("No knowledge articles are on record; the knowledge base is empty.");
     } else {
       reasoning.push(
         `The knowledge base holds ${kpis.totalArticles} article(s) across ${kpis.categories.length} categor(ies) ` +
@@ -41,7 +41,9 @@ export class KnowledgeHealthService {
       );
     } else if (kpis.indexCoverage < 0.8) {
       score -= 10;
-      reasoning.push(`${(kpis.indexCoverage * 100).toFixed(0)}% of articles are indexed for search.`);
+      reasoning.push(
+        `${(kpis.indexCoverage * 100).toFixed(0)}% of articles are indexed for search.`,
+      );
     }
 
     if (kpis.staleArticles > 0) {
@@ -51,15 +53,23 @@ export class KnowledgeHealthService {
 
     if (kpis.draftBacklog > kpis.publishedCount && kpis.publishedCount > 0) {
       score -= 10;
-      reasoning.push('Draft articles outnumber published content; the review pipeline is backed up.');
+      reasoning.push(
+        "Draft articles outnumber published content; the review pipeline is backed up.",
+      );
     }
 
     if (kpis.averageVersionCount >= 3) {
-      reasoning.push('Articles have healthy version histories, indicating active content stewardship.');
+      reasoning.push(
+        "Articles have healthy version histories, indicating active content stewardship.",
+      );
     }
 
-    const status: KnowledgeHealth['status'] =
-      score >= HEALTH_FACTORS.healthy ? 'healthy' : score >= HEALTH_FACTORS.at_risk ? 'at_risk' : 'critical';
+    const status: KnowledgeHealth["status"] =
+      score >= HEALTH_FACTORS.healthy
+        ? "healthy"
+        : score >= HEALTH_FACTORS.at_risk
+          ? "at_risk"
+          : "critical";
 
     return {
       score: Math.max(0, Math.min(100, score)),

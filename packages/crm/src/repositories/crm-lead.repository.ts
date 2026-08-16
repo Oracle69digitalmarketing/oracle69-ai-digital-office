@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { CreateCrmLeadDto, UpdateCrmLeadDto } from '../dto/crm.dto.js';
+import { Injectable } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
+import { CreateCrmLeadDto, UpdateCrmLeadDto } from "../dto/crm.dto.js";
 
 @Injectable()
 export class CrmLeadRepository {
@@ -14,7 +14,7 @@ export class CrmLeadRepository {
 
   async update(id: string, organizationId: string, data: UpdateCrmLeadDto) {
     const record = await this.prisma.crmLead.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmLead.update({
       where: { id },
       data,
@@ -23,7 +23,7 @@ export class CrmLeadRepository {
 
   async delete(id: string, organizationId: string) {
     const record = await this.prisma.crmLead.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmLead.delete({
       where: { id },
     });

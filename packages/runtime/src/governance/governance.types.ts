@@ -9,7 +9,7 @@ export interface ApprovalRequest {
   id: string;
   workflowId: string;
   approverRole: string;
-  status: 'pending' | 'granted' | 'denied';
+  status: "pending" | "granted" | "denied";
 }
 
 export interface AuditRecord {

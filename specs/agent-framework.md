@@ -23,6 +23,7 @@ As the **Operate** product in the Oracle69 Enterprise AI Platform, Digital Offic
 Oracle69 AI Digital Office operates within a five-product ecosystem. The following boundaries define its scope:
 
 ### [Digital Office Only] - Core Ownership
+
 - **Agent Framework (Operate):** Runtime lifecycle management of AI employees.
 - **Execution Engine:** Operational workflow and task execution logic.
 - **Operational Memory:** Short-term and mid-term context management for active tasks.
@@ -30,6 +31,7 @@ Oracle69 AI Digital Office operates within a five-product ecosystem. The followi
 - **Departmental Execution:** Day-to-day operations for Finance, Marketing, Sales, etc.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Discover (Architect):** Strategic discovery, business case generation, and organizational mapping.
 - **Build (Launch):** Initial workspace/tenant provisioning and infrastructure bootstrap.
 - **Optimize (Growth):** Advanced market growth analysis and cross-product marketing optimization.

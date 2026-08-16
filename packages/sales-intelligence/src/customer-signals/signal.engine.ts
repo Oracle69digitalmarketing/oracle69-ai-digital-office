@@ -1,13 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface SalesSignal {
   type: string;
-  entityType: 'lead' | 'opportunity' | 'account' | 'activity';
+  entityType: "lead" | "opportunity" | "account" | "activity";
   entityId: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
   description: string;
   timestamp: Date;
 }
@@ -19,14 +22,14 @@ export class CustomerSignalEngine {
 
   constructor(
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async detectSignalsFromActivity(activityId: string): Promise<SalesSignal | null> {
     const activity = await this.prisma.crmActivity.findUnique({
       where: {
         id: activityId,
-        organizationId: this.tenantContext.resolveTenantId()
+        organizationId: this.tenantContext.resolveTenantId(),
       },
       include: { crmContact: true, crmOpportunity: true, crmLead: true },
     });
@@ -35,21 +38,21 @@ export class CustomerSignalEngine {
 
     let signal: SalesSignal | null = null;
 
-    if (activity.type === 'email' && activity.subject.toLowerCase().includes('complaint')) {
+    if (activity.type === "email" && activity.subject.toLowerCase().includes("complaint")) {
       signal = {
-        type: 'customer_complaint',
-        entityType: 'activity',
+        type: "customer_complaint",
+        entityType: "activity",
         entityId: activityId,
-        severity: 'high',
+        severity: "high",
         description: `Customer complaint detected in activity: ${activity.subject}`,
         timestamp: new Date(),
       };
     } else if (activity.crmOpportunity && activity.crmOpportunity.value > 100000) {
-       signal = {
-        type: 'high_value_deal_activity',
-        entityType: 'opportunity',
+      signal = {
+        type: "high_value_deal_activity",
+        entityType: "opportunity",
         entityId: activity.crmOpportunityId!,
-        severity: 'medium',
+        severity: "medium",
         description: `Activity on high-value deal: ${activity.crmOpportunity.name}`,
         timestamp: new Date(),
       };
@@ -60,8 +63,8 @@ export class CustomerSignalEngine {
         SalesIntelligenceEventType.SALES_SIGNAL_DETECTED,
         new SalesIntelligenceEvent(SalesIntelligenceEventType.SALES_SIGNAL_DETECTED, {
           signal,
-          tenantId: this.tenantContext.resolveTenantId()
-        })
+          tenantId: this.tenantContext.resolveTenantId(),
+        }),
       );
     }
 

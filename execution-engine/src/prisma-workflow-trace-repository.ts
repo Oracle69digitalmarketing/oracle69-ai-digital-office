@@ -1,11 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { WorkflowStep, WorkflowTrace } from '@oracle69/shared';
-import { WorkflowTraceRepository } from './execution-engine.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
+import { WorkflowStep, WorkflowTrace } from "@oracle69/shared";
+import { WorkflowTraceRepository } from "./execution-engine.js";
 
 @Injectable()
 export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
-  constructor(@Inject('PrismaService') private readonly prisma: PrismaClient) {}
+  constructor(@Inject("PrismaService") private readonly prisma: PrismaClient) {}
 
   async saveStep(step: WorkflowStep, organizationId?: string): Promise<void> {
     await this.prisma.workflowStepRecord.upsert({
@@ -19,7 +19,7 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
       create: {
         id: step.stepId,
         stepId: step.stepId,
-        workflowId: 'default-workflow',
+        workflowId: "default-workflow",
         taskId: step.taskId,
         agentId: step.agentId,
         status: step.status,
@@ -27,7 +27,7 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
         endTime: step.endTime,
         result: step.result,
         error: step.error,
-        organizationId: organizationId || 'system',
+        organizationId: organizationId || "system",
       },
     });
   }
@@ -35,7 +35,7 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
   async getTrace(workflowId: string): Promise<WorkflowTrace | null> {
     const records = await this.prisma.workflowStepRecord.findMany({
       where: { workflowId },
-      orderBy: { startTime: 'asc' },
+      orderBy: { startTime: "asc" },
     });
 
     if (records.length === 0) return null;
@@ -53,7 +53,7 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
         error: r.error || undefined,
       })),
       startTime: records[0].startTime,
-      status: 'executing',
+      status: "executing",
     };
   }
 }

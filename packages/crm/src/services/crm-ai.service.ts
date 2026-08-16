@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { CrmEventType, CrmEvent } from '../events/crm.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { CrmEventType, CrmEvent } from "../events/crm.events.js";
 
 @Injectable()
 export class CrmAiService {
@@ -13,26 +13,26 @@ export class CrmAiService {
 
   constructor(
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {
     this.groqApiKey = process.env.GROQ_API_KEY;
     if (!this.groqApiKey) {
-      const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || '';
+      const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
       this.genAI = new GoogleGenerativeAI(apiKey);
     }
   }
 
   private async generate(prompt: string): Promise<string> {
     if (this.groqApiKey) {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.groqApiKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.groqApiKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: prompt }],
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
         }),
       });
@@ -42,18 +42,18 @@ export class CrmAiService {
         throw new Error(`Groq API error (${response.status}): ${errorText}`);
       }
 
-      const data = await response.json() as any;
-      return data.choices[0]?.message?.content || '';
+      const data = (await response.json()) as any;
+      return data.choices[0]?.message?.content || "";
     }
 
     if (this.genAI) {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text();
     }
 
-    throw new Error('No AI provider configured');
+    throw new Error("No AI provider configured");
   }
 
   async scoreLead(leadId: string) {
@@ -75,14 +75,14 @@ export class CrmAiService {
       Source: ${lead.source}
       Organization: ${lead.crmOrganization?.name}
       Industry: ${lead.crmOrganization?.industry}
-      Notes: ${lead.notes.map(n => n.content).join('; ')}
-      Activities: ${lead.activities.map(a => a.subject).join('; ')}
+      Notes: ${lead.notes.map((n) => n.content).join("; ")}
+      Activities: ${lead.activities.map((a) => a.subject).join("; ")}
       
       Respond only with a JSON object: { "score": number, "rationale": "string" }
     `;
 
     try {
-      const text = (await this.generate(prompt)).replace(/```json/g, '').replace(/```/g, '');
+      const text = (await this.generate(prompt)).replace(/```json/g, "").replace(/```/g, "");
       const data = JSON.parse(text);
 
       await this.prisma.crmLead.update({
@@ -92,8 +92,12 @@ export class CrmAiService {
 
       this.messageBus.publish(
         CrmEventType.LEAD_SCORED,
-        new CrmEvent(CrmEventType.LEAD_SCORED, { leadId, score: data.score, rationale: data.rationale }),
-        { tenantId }
+        new CrmEvent(CrmEventType.LEAD_SCORED, {
+          leadId,
+          score: data.score,
+          rationale: data.rationale,
+        }),
+        { tenantId },
       );
 
       return data;
@@ -122,13 +126,13 @@ export class CrmAiService {
       Value: ${opportunity.value}
       Current Stage: ${opportunity.stage}
       Organization: ${opportunity.crmOrganization?.name}
-      Activities: ${opportunity.activities.map(a => a.subject).join('; ')}
+      Activities: ${opportunity.activities.map((a) => a.subject).join("; ")}
       
       Respond only with a JSON object: { "probability": number, "rationale": "string" }
     `;
 
     try {
-      const text = (await this.generate(prompt)).replace(/```json/g, '').replace(/```/g, '');
+      const text = (await this.generate(prompt)).replace(/```json/g, "").replace(/```/g, "");
       const data = JSON.parse(text);
 
       await this.prisma.crmOpportunity.update({
@@ -138,8 +142,12 @@ export class CrmAiService {
 
       this.messageBus.publish(
         CrmEventType.OPPORTUNITY_PREDICTED,
-        new CrmEvent(CrmEventType.OPPORTUNITY_PREDICTED, { opportunityId, probability: data.probability, rationale: data.rationale }),
-        { tenantId }
+        new CrmEvent(CrmEventType.OPPORTUNITY_PREDICTED, {
+          opportunityId,
+          probability: data.probability,
+          rationale: data.rationale,
+        }),
+        { tenantId },
       );
 
       return data;
@@ -162,19 +170,19 @@ export class CrmAiService {
       Summarize this sales activity and suggest next steps:
       Subject: ${activity.subject}
       Description: ${activity.description}
-      Notes: ${activity.notes.map(n => n.content).join('; ')}
+      Notes: ${activity.notes.map((n) => n.content).join("; ")}
       
       Respond only with a JSON object: { "summary": "string", "nextSteps": ["string"] }
     `;
 
     try {
-      const text = (await this.generate(prompt)).replace(/```json/g, '').replace(/```/g, '');
+      const text = (await this.generate(prompt)).replace(/```json/g, "").replace(/```/g, "");
       const data = JSON.parse(text);
 
       this.messageBus.publish(
         CrmEventType.ACTIVITY_SUMMARIZED,
         new CrmEvent(CrmEventType.ACTIVITY_SUMMARIZED, { activityId, ...data }),
-        { tenantId }
+        { tenantId },
       );
 
       return data;

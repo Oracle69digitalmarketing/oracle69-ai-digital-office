@@ -1,25 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { CrmContactRepository } from '../repositories/crm-contact.repository.js';
-import { CreateCrmContactDto, UpdateCrmContactDto } from '../dto/crm.dto.js';
-import { CrmEventType, CrmEvent } from '../events/crm.events.js';
+import { Injectable } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { CrmContactRepository } from "../repositories/crm-contact.repository.js";
+import { CreateCrmContactDto, UpdateCrmContactDto } from "../dto/crm.dto.js";
+import { CrmEventType, CrmEvent } from "../events/crm.events.js";
 
 @Injectable()
 export class CrmContactService {
   constructor(
     private readonly repository: CrmContactRepository,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async createContact(data: CreateCrmContactDto) {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     const contact = await this.repository.create({ ...data, organizationId: tenantId });
-    
+
     this.messageBus.publish(
       CrmEventType.CONTACT_CREATED,
       new CrmEvent(CrmEventType.CONTACT_CREATED, { contact }),
-      { tenantId }
+      { tenantId },
     );
 
     return contact;
@@ -32,7 +32,7 @@ export class CrmContactService {
     this.messageBus.publish(
       CrmEventType.CONTACT_UPDATED,
       new CrmEvent(CrmEventType.CONTACT_UPDATED, { contact }),
-      { tenantId }
+      { tenantId },
     );
 
     return contact;
@@ -45,7 +45,7 @@ export class CrmContactService {
     this.messageBus.publish(
       CrmEventType.CONTACT_DELETED,
       new CrmEvent(CrmEventType.CONTACT_DELETED, { contactId: id }),
-      { tenantId }
+      { tenantId },
     );
 
     return contact;

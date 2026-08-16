@@ -1,12 +1,15 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { MessageBus, MissionManager, MissionStatus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
-import { EiKpiEngine } from './ei-kpi.engine.js';
-import { EiBusinessHealthEngine } from './ei-business-health.engine.js';
-import { EiForecastEngine } from './ei-forecast.engine.js';
-import { currentPeriod } from '../utils/period.js';
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
+import { MessageBus, MissionManager, MissionStatus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  EnterpriseIntelligenceEventType,
+  EnterpriseIntelligenceEvent,
+} from "../events/ei.events.js";
+import { EiKpiEngine } from "./ei-kpi.engine.js";
+import { EiBusinessHealthEngine } from "./ei-business-health.engine.js";
+import { EiForecastEngine } from "./ei-forecast.engine.js";
+import { currentPeriod } from "../utils/period.js";
 
 /**
  * Composes the enterprise intelligence engines into an executive report,
@@ -24,13 +27,15 @@ export class EiReportService {
     private readonly forecastEngine: EiForecastEngine,
     private readonly missionManager: MissionManager,
     private readonly messageBus: MessageBus,
-    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+    @Optional() @Inject("PrismaService") prismaService?: PrismaClient,
   ) {
     this.prisma = prismaService ?? new PrismaClient();
   }
 
   async generateReport(organizationId: string, period: string = currentPeriod()) {
-    this.logger.log(`Generating enterprise intelligence report for organization ${organizationId}, period ${period}`);
+    this.logger.log(
+      `Generating enterprise intelligence report for organization ${organizationId}, period ${period}`,
+    );
 
     const kpis = await this.kpiEngine.compute(organizationId);
     const health = await this.healthEngine.compute(organizationId);
@@ -67,19 +72,19 @@ export class EiReportService {
         reportId: report.id,
         period,
         healthScore: health.score,
-      })
+      }),
     );
 
-    if (health.status === 'critical') {
+    if (health.status === "critical") {
       const missionId = uuidv4();
       await this.missionManager.createMission({
         id: missionId,
         goal:
           `Enterprise intelligence: business health is critical (score ${health.score}/100) for ` +
           `organization ${organizationId}. Execute the enterprise recovery plan.`,
-        priority: 'critical',
+        priority: "critical",
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
-        owner: 'enterprise-intelligence',
+        owner: "enterprise-intelligence",
         status: MissionStatus.DRAFT,
         tenantId: organizationId,
       });
@@ -90,7 +95,7 @@ export class EiReportService {
           organizationId,
           missionId,
           health,
-        })
+        }),
       );
     }
 
@@ -100,7 +105,7 @@ export class EiReportService {
   async listReports(organizationId: string, take = 20) {
     return this.prisma.eiEnterpriseReport.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }

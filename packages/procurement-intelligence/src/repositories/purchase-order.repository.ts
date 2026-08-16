@@ -1,11 +1,11 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
-import { PurchaseOrder } from '../types.js';
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
+import { PurchaseOrder } from "../types.js";
 
-export const PURCHASE_ORDER_REPOSITORY = 'PURCHASE_ORDER_REPOSITORY';
+export const PURCHASE_ORDER_REPOSITORY = "PURCHASE_ORDER_REPOSITORY";
 
 export interface PurchaseOrderRepository {
-  create(po: Omit<PurchaseOrder, 'id'>): Promise<PurchaseOrder>;
+  create(po: Omit<PurchaseOrder, "id">): Promise<PurchaseOrder>;
   findById(id: string, organizationId: string): Promise<PurchaseOrder | null>;
   findByOrganization(organizationId: string): Promise<PurchaseOrder[]>;
   update(id: string, data: Partial<PurchaseOrder>): Promise<PurchaseOrder>;
@@ -13,14 +13,14 @@ export interface PurchaseOrderRepository {
 
 @Injectable()
 export class PrismaPurchaseOrderRepository implements PurchaseOrderRepository {
-  constructor(@Optional() @Inject('PrismaService') private readonly prisma?: PrismaClient) {}
+  constructor(@Optional() @Inject("PrismaService") private readonly prisma?: PrismaClient) {}
 
   private get db(): PrismaClient {
-    if (!this.prisma) throw new Error('PrismaService is not available');
+    if (!this.prisma) throw new Error("PrismaService is not available");
     return this.prisma;
   }
 
-  async create(po: Omit<PurchaseOrder, 'id'>): Promise<PurchaseOrder> {
+  async create(po: Omit<PurchaseOrder, "id">): Promise<PurchaseOrder> {
     return this.db.procurementPurchaseOrder.create({ data: po });
   }
 

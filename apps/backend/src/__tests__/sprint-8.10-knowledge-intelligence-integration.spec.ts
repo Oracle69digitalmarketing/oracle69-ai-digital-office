@@ -191,7 +191,11 @@ describe("Knowledge Intelligence backend integration (Sprint 8.10)", () => {
     const archived = await controller.archiveArticle("org-1", created.id);
     expect(archived.status).toBe(KnowledgeArticleStatus.ARCHIVED);
 
-    expect(published.some((e) => e.type === KnowledgeEventType.ARTICLE_CREATED && e.tenantId === "org-1")).toBe(true);
+    expect(
+      published.some(
+        (e) => e.type === KnowledgeEventType.ARTICLE_CREATED && e.tenantId === "org-1",
+      ),
+    ).toBe(true);
     expect(published.some((e) => e.type === KnowledgeEventType.ARTICLE_PUBLISHED)).toBe(true);
     expect(published.some((e) => e.type === KnowledgeEventType.ARTICLE_ARCHIVED)).toBe(true);
   });
@@ -237,7 +241,9 @@ describe("Knowledge Intelligence backend integration (Sprint 8.10)", () => {
       updatedAt: new Date(),
     });
 
-    const updated = await controller.updateArticle("org-1", "art-v", { content: "Updated content" });
+    const updated = await controller.updateArticle("org-1", "art-v", {
+      content: "Updated content",
+    });
     expect(updated.version).toBe(2);
     expect(prisma.knowledgeArticleVersion.create).toHaveBeenCalledTimes(1);
     expect(published.some((e) => e.type === KnowledgeEventType.ARTICLE_VERSION_CREATED)).toBe(true);
@@ -323,7 +329,9 @@ describe("Knowledge Intelligence backend integration (Sprint 8.10)", () => {
     expect(results[0].articleId).toBe("art-s");
     expect(results[0].score).toBeGreaterThan(0);
     expect(prisma.knowledgeIndexEntry.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ token: { in: expect.any(Array) } }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ token: { in: expect.any(Array) } }),
+      }),
     );
   });
 
@@ -388,12 +396,18 @@ describe("Knowledge Intelligence backend integration (Sprint 8.10)", () => {
     });
 
     expect(await controller.listArticles("org-attacker")).toEqual([]);
-    await expect(controller.getArticle("org-attacker", "art-owner")).rejects.toThrow("Article not found");
-    await expect(controller.publishArticle("org-attacker", "art-owner")).rejects.toThrow("Article not found");
-    await expect(controller.updateArticle("org-attacker", "art-owner", { title: "Hacked" })).rejects.toThrow(
+    await expect(controller.getArticle("org-attacker", "art-owner")).rejects.toThrow(
       "Article not found",
     );
-    await expect(controller.reindexArticle("org-attacker", "art-owner")).rejects.toThrow("Article not found");
+    await expect(controller.publishArticle("org-attacker", "art-owner")).rejects.toThrow(
+      "Article not found",
+    );
+    await expect(
+      controller.updateArticle("org-attacker", "art-owner", { title: "Hacked" }),
+    ).rejects.toThrow("Article not found");
+    await expect(controller.reindexArticle("org-attacker", "art-owner")).rejects.toThrow(
+      "Article not found",
+    );
   });
 
   it("should generate deterministic insights and recommendations without an AI provider", async () => {
@@ -417,7 +431,9 @@ describe("Knowledge Intelligence backend integration (Sprint 8.10)", () => {
 
     const insights = await controller.getInsights("org-1");
     expect(insights.length).toBeGreaterThanOrEqual(3);
-    expect(insights.every((i: any) => typeof i.content === "string" && i.content.length > 0)).toBe(true);
+    expect(insights.every((i: any) => typeof i.content === "string" && i.content.length > 0)).toBe(
+      true,
+    );
 
     const recommendations = await controller.getRecommendations("org-1");
     expect(recommendations.length).toBeGreaterThanOrEqual(1);

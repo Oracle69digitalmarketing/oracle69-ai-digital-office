@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Message } from './message.types.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { Message } from "./message.types.js";
 
 @Injectable()
 export class AgentMailbox {

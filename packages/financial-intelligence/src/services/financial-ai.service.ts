@@ -1,6 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { AiModelProvider } from '@oracle69/sales-intelligence';
-import { FinancialAiInsight, FinancialHealth } from '../types.js';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import type { AiModelProvider } from "@oracle69/sales-intelligence";
+import { FinancialAiInsight, FinancialHealth } from "../types.js";
 
 interface RawInsight {
   type?: string;
@@ -24,10 +24,14 @@ interface RawInsight {
 export class FinancialAiService {
   private readonly logger = new Logger(FinancialAiService.name);
 
-  constructor(@Inject('AiModelProvider') private readonly modelProvider?: AiModelProvider) {}
+  constructor(@Inject("AiModelProvider") private readonly modelProvider?: AiModelProvider) {}
 
   async generateInsights(health: FinancialHealth): Promise<FinancialAiInsight[]> {
-    if (!this.modelProvider || !process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY === 'your_api_key_here') {
+    if (
+      !this.modelProvider ||
+      !process.env.GOOGLE_AI_API_KEY ||
+      process.env.GOOGLE_AI_API_KEY === "your_api_key_here"
+    ) {
       return this.deterministicInsights(health);
     }
 
@@ -43,11 +47,13 @@ export class FinancialAiService {
       const insights = Array.isArray(parsed) ? parsed : parsed.insights;
       const normalized = normalizeInsights(insights);
       if (normalized.length === 0) {
-        throw new Error('AI returned no usable insights');
+        throw new Error("AI returned no usable insights");
       }
       return normalized;
     } catch (error) {
-      this.logger.warn(`Financial AI insight generation failed; using deterministic fallback: ${(error as Error).message}`);
+      this.logger.warn(
+        `Financial AI insight generation failed; using deterministic fallback: ${(error as Error).message}`,
+      );
       return this.deterministicInsights(health);
     }
   }
@@ -58,50 +64,51 @@ export class FinancialAiService {
 
     if (kpis.netProfit < 0) {
       insights.push({
-        type: 'alert',
-        title: 'Negative Profitability',
+        type: "alert",
+        title: "Negative Profitability",
         content: `Expenses exceed revenue by $${Math.abs(kpis.netProfit).toFixed(2)}. Review departmental budgets to identify optimization opportunities.`,
-        priority: 'high',
-        impact: 'Sustainability',
+        priority: "high",
+        impact: "Sustainability",
       });
     } else {
       insights.push({
-        type: 'forecast',
-        title: 'Growth Projection',
+        type: "forecast",
+        title: "Growth Projection",
         content: `At a ${kpis.profitMargin.toFixed(1)}% profit margin, revenue trends support continued profitable growth over the next quarter.`,
-        priority: 'normal',
-        impact: 'Expansion',
+        priority: "normal",
+        impact: "Expansion",
       });
     }
 
     const exceeded = health.budgetSummaries.filter((b) => b.exceeded);
     if (exceeded.length > 0) {
       insights.push({
-        type: 'alert',
-        title: 'Budget Overruns',
-        content: `${exceeded.length} departmental budget(s) exceeded their allocation (${exceeded.map((b) => b.name).join(', ')}). Rein in spending or reallocate funds.`,
-        priority: 'high',
-        impact: 'Cost Control',
+        type: "alert",
+        title: "Budget Overruns",
+        content: `${exceeded.length} departmental budget(s) exceeded their allocation (${exceeded.map((b) => b.name).join(", ")}). Rein in spending or reallocate funds.`,
+        priority: "high",
+        impact: "Cost Control",
       });
     } else {
       insights.push({
-        type: 'recommendation',
-        title: 'Budget Allocation',
-        content: 'All departmental budgets are within their allocated amounts. Consider reallocating under-utilized budgets toward high-return initiatives.',
-        priority: 'normal',
-        impact: 'Revenue',
+        type: "recommendation",
+        title: "Budget Allocation",
+        content:
+          "All departmental budgets are within their allocated amounts. Consider reallocating under-utilized budgets toward high-return initiatives.",
+        priority: "normal",
+        impact: "Revenue",
       });
     }
 
     insights.push({
-      type: 'forecast',
-      title: 'Runway Forecast',
+      type: "forecast",
+      title: "Runway Forecast",
       content:
         kpis.burnRate > 0
-          ? `With a monthly burn rate of $${kpis.burnRate.toFixed(2)}, the organization has approximately ${typeof kpis.runway === 'number' ? kpis.runway : '18'} month(s) of runway.`
-          : 'Positive cash flow sustained with no near-term runway pressure.',
-      priority: health.status === 'critical' ? 'high' : 'low',
-      impact: 'Financial Health',
+          ? `With a monthly burn rate of $${kpis.burnRate.toFixed(2)}, the organization has approximately ${typeof kpis.runway === "number" ? kpis.runway : "18"} month(s) of runway.`
+          : "Positive cash flow sustained with no near-term runway pressure.",
+      priority: health.status === "critical" ? "high" : "low",
+      impact: "Financial Health",
     });
 
     return insights;
@@ -109,18 +116,30 @@ export class FinancialAiService {
 }
 
 function sanitizeJson(content: string): string {
-  return content.replace(/```json/g, '').replace(/```/g, '').trim();
+  return content
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 }
 
 function normalizeInsights(raw: RawInsight[] | undefined): FinancialAiInsight[] {
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((item) => typeof item?.content === 'string' && item.content.trim().length > 0)
+    .filter((item) => typeof item?.content === "string" && item.content.trim().length > 0)
     .map((item) => ({
-      type: item.type === 'forecast' || item.type === 'recommendation' || item.type === 'alert' ? item.type : 'recommendation',
-      title: typeof item.title === 'string' && item.title.length > 0 ? item.title : 'Financial recommendation',
+      type:
+        item.type === "forecast" || item.type === "recommendation" || item.type === "alert"
+          ? item.type
+          : "recommendation",
+      title:
+        typeof item.title === "string" && item.title.length > 0
+          ? item.title
+          : "Financial recommendation",
       content: item.content as string,
-      priority: item.priority === 'low' || item.priority === 'high' ? item.priority : 'normal',
-      impact: typeof item.impact === 'string' && item.impact.length > 0 ? item.impact : 'Improved financial health',
+      priority: item.priority === "low" || item.priority === "high" ? item.priority : "normal",
+      impact:
+        typeof item.impact === "string" && item.impact.length > 0
+          ? item.impact
+          : "Improved financial health",
     }));
 }

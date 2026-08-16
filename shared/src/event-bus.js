@@ -31,4 +31,3 @@ EventBus = EventBus_1 = __decorate([
     Injectable()
 ], EventBus);
 export { EventBus };
-//# sourceMappingURL=event-bus.js.map

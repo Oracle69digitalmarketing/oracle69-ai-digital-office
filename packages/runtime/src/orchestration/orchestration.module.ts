@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AgentRegistry } from '../agent-registry.js';
-import { PlanningEngine } from '../planner/planning-engine.js';
-import { WorkflowEngine } from '../workflow/workflow-engine.js';
+import { Module } from "@nestjs/common";
+import { AgentRegistry } from "../agent-registry.js";
+import { PlanningEngine } from "../planner/planning-engine.js";
+import { WorkflowEngine } from "../workflow/workflow-engine.js";
 import {
   CheckpointManager,
   RetryManager,
   CompensationManager,
   ApprovalManager,
-} from '../workflow/workflow-managers.js';
+} from "../workflow/workflow-managers.js";
 
 /**
  * Provides the orchestration services (planning, workflow and their

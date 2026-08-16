@@ -21,12 +21,14 @@ As the **Operate** engine of the Oracle69 Enterprise AI Platform, it provides AP
 # 2. Capability Ownership Boundaries
 
 ### [Digital Office Only] - Core Ownership
+
 - **Execution Runtime:** Node.js/TypeScript environment for running the Agent Engine and Execution Engine.
 - **Service Layer (Operate):** Business logic for departmental operations (Finance, HR, etc.).
 - **Local Persistence:** Management of operational records and transient execution state.
 - **Workflow Orchestration:** Managing the state machine of active business processes.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Tenant Provisioning Engine:** Global infrastructure and project instantiation (Launch/Build).
 - **Global Event Bus:** Cross-product message routing and enterprise-wide eventing.
 - **Big Data / Data Lakehouse:** Long-term storage for enterprise-wide strategic analysis (Decide).

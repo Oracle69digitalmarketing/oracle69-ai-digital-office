@@ -159,22 +159,26 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MockPrismaModule, SharedModule, AgentEngineModule, MemoryModule, ExecutionEngineModule],
-      providers: [
-        ReceptionistService,
+      imports: [
+        MockPrismaModule,
+        SharedModule,
+        AgentEngineModule,
+        MemoryModule,
+        ExecutionEngineModule,
       ],
+      providers: [ReceptionistService],
     })
-    .overrideProvider(PrismaClient)
-    .useValue({
-      longTermMemoryRecord: {
-        create: (jest.fn() as any).mockResolvedValue({ id: "mock-id" }),
-        findMany: (jest.fn() as any).mockResolvedValue([]),
-      },
-      $executeRaw: (jest.fn() as any).mockResolvedValue(1),
-      $queryRaw: (jest.fn() as any).mockResolvedValue([]),
-      $connect: (jest.fn() as any).mockResolvedValue(undefined),
-    })
-    .compile();
+      .overrideProvider(PrismaClient)
+      .useValue({
+        longTermMemoryRecord: {
+          create: (jest.fn() as any).mockResolvedValue({ id: "mock-id" }),
+          findMany: (jest.fn() as any).mockResolvedValue([]),
+        },
+        $executeRaw: (jest.fn() as any).mockResolvedValue(1),
+        $queryRaw: (jest.fn() as any).mockResolvedValue([]),
+        $connect: (jest.fn() as any).mockResolvedValue(undefined),
+      })
+      .compile();
 
     receptionist = module.get<ReceptionistService>(ReceptionistService);
     registry = module.get<AgentRegistry>(AgentRegistry);
@@ -235,7 +239,12 @@ describe("AI Runtime Integration (Sprint 02.5)", () => {
       supportedModels: ["mini"] as any,
       healthStatus: "offline" as any,
     };
-    const marketingAgent = new DepartmentAgent(marketingMetadata, modelRouter, promptLoader, knowledgeService);
+    const marketingAgent = new DepartmentAgent(
+      marketingMetadata,
+      modelRouter,
+      promptLoader,
+      knowledgeService,
+    );
     await registry.register(marketingAgent);
   });
 

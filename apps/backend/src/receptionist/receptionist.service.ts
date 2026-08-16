@@ -49,7 +49,7 @@ export class ReceptionistService {
     this.eventBus.publish({
       type: "task.started",
       source: "ReceptionistService",
-      payload: { taskId: task.taskId, sessionId, organizationId: 'system' },
+      payload: { taskId: task.taskId, sessionId, organizationId: "system" },
     });
 
     // 5. Execute via Execution Engine
@@ -61,7 +61,7 @@ export class ReceptionistService {
       this.eventBus.publish({
         type: "task.completed",
         source: "ReceptionistService",
-        payload: { taskId: task.taskId, result, organizationId: 'system' },
+        payload: { taskId: task.taskId, result, organizationId: "system" },
       });
 
       return {
@@ -74,7 +74,7 @@ export class ReceptionistService {
       this.eventBus.publish({
         type: "task.failed",
         source: "ReceptionistService",
-        payload: { taskId: task.taskId, error: errorMessage, organizationId: 'system' },
+        payload: { taskId: task.taskId, error: errorMessage, organizationId: "system" },
       });
       throw error;
     }

@@ -1,18 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, MemoryManager } from '@oracle69/runtime';
-import type { AiModelProvider } from '@oracle69/sales-intelligence';
-import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { OperationsIntelligenceEventType, OperationsIntelligenceEvent } from '../events/oi.events.js';
-import { OiOperationsEngine, OperationsMetrics } from './oi-operations.engine.js';
-import { OiWorkflowEngine, WorkflowMetrics } from './oi-workflow.engine.js';
-import { OiAgentEngine, AgentUtilizationMetrics } from './oi-agent.engine.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, MemoryManager } from "@oracle69/runtime";
+import type { AiModelProvider } from "@oracle69/sales-intelligence";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  OperationsIntelligenceEventType,
+  OperationsIntelligenceEvent,
+} from "../events/oi.events.js";
+import { OiOperationsEngine, OperationsMetrics } from "./oi-operations.engine.js";
+import { OiWorkflowEngine, WorkflowMetrics } from "./oi-workflow.engine.js";
+import { OiAgentEngine, AgentUtilizationMetrics } from "./oi-agent.engine.js";
 
 export interface GeneratedOpsInsight {
   type: string;
   content: string;
   confidence: number;
-  source: 'ai' | 'deterministic';
+  source: "ai" | "deterministic";
 }
 
 export interface GeneratedOpsRecommendation {
@@ -20,13 +23,13 @@ export interface GeneratedOpsRecommendation {
   priority: string;
   action: string;
   expectedImpact: string;
-  source: 'ai' | 'deterministic';
+  source: "ai" | "deterministic";
 }
 
 export interface OpsInsightResult {
   insights: GeneratedOpsInsight[];
   recommendations: GeneratedOpsRecommendation[];
-  source: 'ai' | 'deterministic';
+  source: "ai" | "deterministic";
 }
 
 interface RawInsight {
@@ -66,7 +69,7 @@ export class OiInsightEngine {
     private readonly workflowEngine: OiWorkflowEngine,
     private readonly agentEngine: OiAgentEngine,
     private readonly messageBus: MessageBus,
-    private readonly memory: MemoryManager
+    private readonly memory: MemoryManager,
   ) {}
 
   async generateInsights(organizationId: string, period?: string): Promise<OpsInsightResult> {
@@ -84,7 +87,7 @@ export class OiInsightEngine {
       return aiResult;
     } catch (error) {
       this.logger.warn(
-        `AI operational insight generation failed for organization ${organizationId}; using deterministic fallback: ${(error as Error).message}`
+        `AI operational insight generation failed for organization ${organizationId}; using deterministic fallback: ${(error as Error).message}`,
       );
       const deterministic = this.buildDeterministicResult(context);
       await this.persistAndPublish(organizationId, deterministic);
@@ -95,7 +98,7 @@ export class OiInsightEngine {
   async listInsights(organizationId: string, take = 50) {
     return this.prisma.oiOpsInsight.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }
@@ -103,7 +106,7 @@ export class OiInsightEngine {
   async listRecommendations(organizationId: string, take = 50) {
     return this.prisma.oiOpsRecommendation.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }
@@ -121,14 +124,14 @@ export class OiInsightEngine {
     const response = await this.modelProvider.analyze(context, instruction);
     const parsed = JSON.parse(sanitizeJson(response.content));
 
-    const insights = normalizeInsights(parsed.insights, 'ai');
-    const recommendations = normalizeRecommendations(parsed.recommendations, 'ai');
+    const insights = normalizeInsights(parsed.insights, "ai");
+    const recommendations = normalizeRecommendations(parsed.recommendations, "ai");
 
     if (insights.length === 0 || recommendations.length === 0) {
-      throw new Error('AI returned no operational insights or recommendations');
+      throw new Error("AI returned no operational insights or recommendations");
     }
 
-    return { insights, recommendations, source: 'ai' };
+    return { insights, recommendations, source: "ai" };
   }
 
   private buildDeterministicResult(context: OpsContext): OpsInsightResult {
@@ -142,145 +145,152 @@ export class OiInsightEngine {
 
     if (tasksTotal > 0 && completionRate < LOW_COMPLETION_RATE) {
       insights.push({
-        type: 'tasks',
+        type: "tasks",
         content:
           `Task completion rate is ${(completionRate * 100).toFixed(1)}% across ${tasksTotal} task(s), ` +
           `below the ${LOW_COMPLETION_RATE * 100}% operational target, with ${operations.backlog} task(s) in the backlog.`,
         confidence: 0.8,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     if (tasksTotal > 0 && operations.backlog > operations.tasksCompleted) {
       insights.push({
-        type: 'capacity',
+        type: "capacity",
         content: `The task backlog (${operations.backlog}) exceeds completed work (${operations.tasksCompleted}), indicating a capacity constraint.`,
         confidence: 0.7,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     if (workflows.workflowsTotal > 0 && workflows.successRate < LOW_SUCCESS_RATE) {
       insights.push({
-        type: 'workflows',
+        type: "workflows",
         content:
           `Workflow success rate is ${(workflows.successRate * 100).toFixed(1)}% across ` +
           `${workflows.workflowsTotal} workflow(s), with ${workflows.stalledWorkflows} stalled workflow(s).`,
         confidence: 0.8,
-        source: 'deterministic',
+        source: "deterministic",
       });
     } else if (workflows.stalledWorkflows > 0) {
       insights.push({
-        type: 'workflows',
+        type: "workflows",
         content: `${workflows.stalledWorkflows} workflow(s) have started but not completed within the staleness window and may be blocked.`,
         confidence: 0.7,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     const underutilized = agents.agents.filter(
-      (agent) => agent.tasksAssigned > 0 && agent.utilizationRate === 0
+      (agent) => agent.tasksAssigned > 0 && agent.utilizationRate === 0,
     );
     if (underutilized.length > 0) {
       insights.push({
-        type: 'agents',
+        type: "agents",
         content: `${underutilized.length} agent(s) have assigned work that has not been actioned; review their task queues for blockage.`,
         confidence: 0.7,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     const underperforming = agents.agents.filter(
-      (agent) => agent.tasksAssigned > 0 && agent.completionRate < 0.5
+      (agent) => agent.tasksAssigned > 0 && agent.completionRate < 0.5,
     );
     if (underperforming.length > 0) {
       insights.push({
-        type: 'agents',
+        type: "agents",
         content: `${underperforming.length} agent(s) are completing less than half of their assigned work and may need reassignment or retry.`,
         confidence: 0.7,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     if (tasksTotal === 0 && workflows.workflowsTotal === 0) {
       insights.push({
-        type: 'operational',
-        content: 'No tasks or workflows are currently recorded for the organization; no operational baseline exists yet.',
+        type: "operational",
+        content:
+          "No tasks or workflows are currently recorded for the organization; no operational baseline exists yet.",
         confidence: 0.6,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     if (insights.length === 0) {
       insights.push({
-        type: 'efficiency',
-        content: 'Operational performance is on track with no material completion, workflow or utilization risks detected.',
+        type: "efficiency",
+        content:
+          "Operational performance is on track with no material completion, workflow or utilization risks detected.",
         confidence: 0.6,
-        source: 'deterministic',
+        source: "deterministic",
       });
     }
 
     if (tasksTotal > 0 && completionRate < LOW_COMPLETION_RATE) {
       recommendations.push({
-        title: 'Improve task completion',
-        priority: 'high',
-        action: 'Review the oldest backlog items, unblock dependencies and rebalance assignments toward available agents.',
-        expectedImpact: 'Raise the task completion rate toward 70%.',
-        source: 'deterministic',
+        title: "Improve task completion",
+        priority: "high",
+        action:
+          "Review the oldest backlog items, unblock dependencies and rebalance assignments toward available agents.",
+        expectedImpact: "Raise the task completion rate toward 70%.",
+        source: "deterministic",
       });
     }
 
     if (workflows.workflowsTotal > 0 && workflows.successRate < LOW_SUCCESS_RATE) {
       recommendations.push({
-        title: 'Recover failing workflows',
-        priority: 'high',
-        action: 'Inspect failed and stalled workflows, apply retry or checkpoint recovery, and correct their steps.',
-        expectedImpact: 'Improve workflow success rate and reduce wasted execution time.',
-        source: 'deterministic',
+        title: "Recover failing workflows",
+        priority: "high",
+        action:
+          "Inspect failed and stalled workflows, apply retry or checkpoint recovery, and correct their steps.",
+        expectedImpact: "Improve workflow success rate and reduce wasted execution time.",
+        source: "deterministic",
       });
     }
 
     if (underutilized.length > 0) {
       recommendations.push({
-        title: 'Unblock idle agents',
-        priority: 'normal',
-        action: 'Diagnose the agents with assigned but unstarted work and re-dispatch or reassign their queues.',
-        expectedImpact: 'Increase workforce utilization and throughput.',
-        source: 'deterministic',
+        title: "Unblock idle agents",
+        priority: "normal",
+        action:
+          "Diagnose the agents with assigned but unstarted work and re-dispatch or reassign their queues.",
+        expectedImpact: "Increase workforce utilization and throughput.",
+        source: "deterministic",
       });
     }
 
     if (underperforming.length > 0) {
       recommendations.push({
-        title: 'Reassign under-performing agents',
-        priority: 'normal',
-        action: 'Review agents completing less than half of their workload and reassign tasks to higher-performing employees.',
-        expectedImpact: 'Balance the workforce and protect completion rates.',
-        source: 'deterministic',
+        title: "Reassign under-performing agents",
+        priority: "normal",
+        action:
+          "Review agents completing less than half of their workload and reassign tasks to higher-performing employees.",
+        expectedImpact: "Balance the workforce and protect completion rates.",
+        source: "deterministic",
       });
     }
 
     if (tasksTotal === 0 && workflows.workflowsTotal === 0) {
       recommendations.push({
-        title: 'Establish an operational baseline',
-        priority: 'critical',
-        action: 'Create and dispatch the first projects, tasks and workflows so operational performance can be measured.',
-        expectedImpact: 'Enable Operational Optimization to act on real data.',
-        source: 'deterministic',
+        title: "Establish an operational baseline",
+        priority: "critical",
+        action:
+          "Create and dispatch the first projects, tasks and workflows so operational performance can be measured.",
+        expectedImpact: "Enable Operational Optimization to act on real data.",
+        source: "deterministic",
       });
     }
 
     if (recommendations.length === 0) {
       recommendations.push({
-        title: 'Maintain operational cadence',
-        priority: 'normal',
-        action: 'Continue the current workforce plan and review operational KPIs next period.',
-        expectedImpact: 'Sustain current operational performance.',
-        source: 'deterministic',
+        title: "Maintain operational cadence",
+        priority: "normal",
+        action: "Continue the current workforce plan and review operational KPIs next period.",
+        expectedImpact: "Sustain current operational performance.",
+        source: "deterministic",
       });
     }
 
-    return { insights, recommendations, source: 'deterministic' };
+    return { insights, recommendations, source: "deterministic" };
   }
 
   private async persistAndPublish(organizationId: string, result: OpsInsightResult): Promise<void> {
@@ -307,7 +317,7 @@ export class OiInsightEngine {
 
     await this.memory.save({
       id: uuidv4(),
-      type: 'business',
+      type: "business",
       content:
         `Operations intelligence for ${organizationId}: ${result.insights.length} insight(s) and ` +
         `${result.recommendations.length} recommendation(s) generated via ${result.source}.`,
@@ -326,7 +336,7 @@ export class OiInsightEngine {
         organizationId,
         insights: result.insights,
         source: result.source,
-      })
+      }),
     );
 
     this.messageBus.publish(
@@ -335,7 +345,7 @@ export class OiInsightEngine {
         organizationId,
         recommendations: result.recommendations,
         source: result.source,
-      })
+      }),
     );
   }
 }
@@ -347,20 +357,26 @@ interface OpsContext {
 }
 
 function sanitizeJson(content: string): string {
-  return content.replace(/```json/g, '').replace(/```/g, '').trim();
+  return content
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 }
 
-function normalizeInsights(raw: RawInsight[] | undefined, source: 'ai' | 'deterministic'): GeneratedOpsInsight[] {
+function normalizeInsights(
+  raw: RawInsight[] | undefined,
+  source: "ai" | "deterministic",
+): GeneratedOpsInsight[] {
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((item) => typeof item?.content === 'string' && item.content.trim().length > 0)
+    .filter((item) => typeof item?.content === "string" && item.content.trim().length > 0)
     .map((item) => {
       const confidence =
-        typeof item.confidence === 'number' && item.confidence >= 0 && item.confidence <= 1
+        typeof item.confidence === "number" && item.confidence >= 0 && item.confidence <= 1
           ? item.confidence
           : 0.5;
       return {
-        type: typeof item.type === 'string' && item.type.length > 0 ? item.type : 'operational',
+        type: typeof item.type === "string" && item.type.length > 0 ? item.type : "operational",
         content: item.content as string,
         confidence,
         source,
@@ -370,27 +386,30 @@ function normalizeInsights(raw: RawInsight[] | undefined, source: 'ai' | 'determ
 
 function normalizeRecommendations(
   raw: RawRecommendation[] | undefined,
-  source: 'ai' | 'deterministic'
+  source: "ai" | "deterministic",
 ): GeneratedOpsRecommendation[] {
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((item) => typeof item?.action === 'string' && item.action.trim().length > 0)
+    .filter((item) => typeof item?.action === "string" && item.action.trim().length > 0)
     .map((item) => {
       const priority = normalizePriority(item.priority);
       return {
-        title: typeof item.title === 'string' && item.title.length > 0 ? item.title : 'Recommended action',
+        title:
+          typeof item.title === "string" && item.title.length > 0
+            ? item.title
+            : "Recommended action",
         priority,
         action: item.action as string,
         expectedImpact:
-          typeof item.expectedImpact === 'string' && item.expectedImpact.length > 0
+          typeof item.expectedImpact === "string" && item.expectedImpact.length > 0
             ? item.expectedImpact
-            : 'Improved operational performance',
+            : "Improved operational performance",
         source,
       };
     });
 }
 
 function normalizePriority(priority: unknown): string {
-  if (priority === 'low' || priority === 'high' || priority === 'critical') return priority;
-  return 'normal';
+  if (priority === "low" || priority === "high" || priority === "critical") return priority;
+  return "normal";
 }

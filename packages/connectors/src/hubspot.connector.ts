@@ -1,25 +1,25 @@
-import { CRMConnector } from './crm.connector.js';
-import { ConnectorResult, ConnectorMetadata } from './types.js';
-import { Client } from '@hubspot/api-client';
+import { CRMConnector } from "./crm.connector.js";
+import { ConnectorResult, ConnectorMetadata } from "./types.js";
+import { Client } from "@hubspot/api-client";
 
 export class HubSpotConnector extends CRMConnector {
   private hubspotClient?: Client;
 
   constructor() {
     const metadata: ConnectorMetadata = {
-      id: 'hubspot-01',
-      name: 'HubSpot Connector',
-      type: 'hubspot',
-      version: '1.0.0',
+      id: "hubspot-01",
+      name: "HubSpot Connector",
+      type: "hubspot",
+      version: "1.0.0",
       capabilities: [
-        'create_lead',
-        'update_lead',
-        'create_company',
-        'create_contact',
-        'create_deal',
-        'update_deal',
-        'search',
-        'health_check'
+        "create_lead",
+        "update_lead",
+        "create_company",
+        "create_contact",
+        "create_deal",
+        "update_deal",
+        "search",
+        "health_check",
       ],
     };
     super(metadata);
@@ -31,15 +31,15 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async createLead(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
     const response: any = await this.hubspotClient.crm.contacts.basicApi.create({
-      properties: { ...params, lifecyclestage: 'lead' },
+      properties: { ...params, lifecyclestage: "lead" },
     });
     return { success: response.success, data: response };
   }
 
   async updateLead(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
     const { id, ...properties } = params;
     const response: any = await this.hubspotClient.crm.contacts.basicApi.update(id, {
       properties,
@@ -48,7 +48,7 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async createCompany(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
     const response: any = await this.hubspotClient.crm.companies.basicApi.create({
       properties: params,
     });
@@ -56,7 +56,7 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async createContact(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
     const response: any = await this.hubspotClient.crm.contacts.basicApi.create({
       properties: params,
     });
@@ -64,7 +64,7 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async createDeal(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
     const response: any = await this.hubspotClient.crm.deals.basicApi.create({
       properties: params,
     });
@@ -72,7 +72,7 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async updateDeal(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
     const { id, ...properties } = params;
     const response: any = await this.hubspotClient.crm.deals.basicApi.update(id, {
       properties,
@@ -81,8 +81,8 @@ export class HubSpotConnector extends CRMConnector {
   }
 
   async search(params: any): Promise<ConnectorResult> {
-    if (!this.hubspotClient) throw new Error('HubSpot client not initialized');
-    const { filterGroups, sort, properties, limit, after, objectType = 'contacts' } = params;
+    if (!this.hubspotClient) throw new Error("HubSpot client not initialized");
+    const { filterGroups, sort, properties, limit, after, objectType = "contacts" } = params;
     const response = await (this.hubspotClient.crm as any)[objectType].searchApi.doSearch({
       filterGroups,
       sorts: sort,
@@ -95,16 +95,16 @@ export class HubSpotConnector extends CRMConnector {
 
   async health(): Promise<any> {
     try {
-      if (!this.hubspotClient) return { status: 'disconnected' };
+      if (!this.hubspotClient) return { status: "disconnected" };
       // Simple call to verify token
       await this.hubspotClient.crm.contacts.basicApi.getPage(1);
       return {
-        status: 'connected',
+        status: "connected",
         lastCheck: new Date(),
       };
     } catch (error: any) {
       return {
-        status: 'error',
+        status: "error",
         lastCheck: new Date(),
         error: error.message,
       };

@@ -20,6 +20,7 @@ The package follows the exact conventions of `packages/crm`, `packages/sales-int
 ## Files / Packages
 
 ### Created
+
 ```
 packages/enterprise-intelligence/
 ├── package.json
@@ -51,6 +52,7 @@ packages/enterprise-intelligence/
 ```
 
 ### Modified
+
 - `database/schema.prisma` — new `Ei*` models and `Organization` back-relations.
 - `pnpm-lock.yaml` — new workspace package linked via `pnpm install`.
 - `apps/backend` Prisma client regenerated (during backend build) against the new schema.
@@ -70,6 +72,7 @@ New models (all tenant-scoped to `Organization`):
 `Organization` gained back-relations: `eiKpiSnapshots`, `eiBusinessHealthSnapshots`, `eiForecasts`, `eiScenarios`, `eiInsights`, `eiRecommendations`, `eiEnterpriseReports`.
 
 Validation and client generation:
+
 ```
 prisma validate .......... PASS (schema valid)
 prisma generate .......... PASS (Prisma Client v5.22.0 regenerated)
@@ -78,14 +81,14 @@ backend build ............ PASS (regenerates client against new schema)
 
 ## Services / Engines
 
-| Engine | Deterministic | Persists | Publishes |
-| ------ | ------------- | -------- | --------- |
-| `EiKpiEngine` | Yes | `EiKpiSnapshot` | `ei.kpi.updated` |
-| `EiBusinessHealthEngine` | Yes | `EiBusinessHealthSnapshot` | `ei.business_health.updated`, `ei.business_health.deteriorated` |
-| `EiForecastEngine` | Yes | `EiForecast` | `ei.forecast.updated` |
-| `EiScenarioEngine` | Yes | `EiScenario` | `ei.scenario.created` |
-| `EiInsightEngine` | AI + deterministic fallback | `EiInsight`, `EiRecommendation` (+ `MemoryManager` write) | `ei.insight.generated`, `ei.recommendation.generated` |
-| `EiReportService` | Composes engines | `EiEnterpriseReport` | `ei.report.generated`, `ei.executive_alert.required` |
+| Engine                   | Deterministic               | Persists                                                  | Publishes                                                       |
+| ------------------------ | --------------------------- | --------------------------------------------------------- | --------------------------------------------------------------- |
+| `EiKpiEngine`            | Yes                         | `EiKpiSnapshot`                                           | `ei.kpi.updated`                                                |
+| `EiBusinessHealthEngine` | Yes                         | `EiBusinessHealthSnapshot`                                | `ei.business_health.updated`, `ei.business_health.deteriorated` |
+| `EiForecastEngine`       | Yes                         | `EiForecast`                                              | `ei.forecast.updated`                                           |
+| `EiScenarioEngine`       | Yes                         | `EiScenario`                                              | `ei.scenario.created`                                           |
+| `EiInsightEngine`        | AI + deterministic fallback | `EiInsight`, `EiRecommendation` (+ `MemoryManager` write) | `ei.insight.generated`, `ei.recommendation.generated`           |
+| `EiReportService`        | Composes engines            | `EiEnterpriseReport`                                      | `ei.report.generated`, `ei.executive_alert.required`            |
 
 **EiKpiEngine** — aggregates opportunities, leads, contacts and customer-success data into 22 KPIs (pipeline value, weighted pipeline, win rate, lead conversion, average customer health, at-risk/critical accounts, active churn risks, interaction volume, etc.).
 
@@ -101,17 +104,17 @@ backend build ............ PASS (regenerates client against new schema)
 
 ## API Endpoints
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/enterprise-intelligence/kpis/:organizationId` | Compute + persist KPI snapshot |
-| GET | `/enterprise-intelligence/business-health/:organizationId` | Compute + persist business health snapshot |
-| GET | `/enterprise-intelligence/forecast/:organizationId` | Compute + persist revenue forecast |
-| POST | `/enterprise-intelligence/scenarios/:organizationId` | Run + persist a what-if scenario |
-| POST | `/enterprise-intelligence/insights/:organizationId` | Generate + persist insights & recommendations |
-| GET | `/enterprise-intelligence/insights/:organizationId` | List persisted insights |
-| GET | `/enterprise-intelligence/recommendations/:organizationId` | List persisted recommendations |
-| POST | `/enterprise-intelligence/reports/:organizationId` | Generate + persist executive report |
-| GET | `/enterprise-intelligence/reports/:organizationId` | List persisted reports |
+| Method | Path                                                       | Description                                   |
+| ------ | ---------------------------------------------------------- | --------------------------------------------- |
+| GET    | `/enterprise-intelligence/kpis/:organizationId`            | Compute + persist KPI snapshot                |
+| GET    | `/enterprise-intelligence/business-health/:organizationId` | Compute + persist business health snapshot    |
+| GET    | `/enterprise-intelligence/forecast/:organizationId`        | Compute + persist revenue forecast            |
+| POST   | `/enterprise-intelligence/scenarios/:organizationId`       | Run + persist a what-if scenario              |
+| POST   | `/enterprise-intelligence/insights/:organizationId`        | Generate + persist insights & recommendations |
+| GET    | `/enterprise-intelligence/insights/:organizationId`        | List persisted insights                       |
+| GET    | `/enterprise-intelligence/recommendations/:organizationId` | List persisted recommendations                |
+| POST   | `/enterprise-intelligence/reports/:organizationId`         | Generate + persist executive report           |
+| GET    | `/enterprise-intelligence/reports/:organizationId`         | List persisted reports                        |
 
 ## Events (`ei.events`)
 

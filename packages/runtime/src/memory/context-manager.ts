@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { IContextManager } from './memory.types.js';
-import { RuntimeEventType } from '../events/runtime.events.js';
-import { EventBus } from '../events/event-bus.js';
+import { Injectable } from "@nestjs/common";
+import { IContextManager } from "./memory.types.js";
+import { RuntimeEventType } from "../events/runtime.events.js";
+import { EventBus } from "../events/event-bus.js";
 
 @Injectable()
 export class ContextManager implements IContextManager {
@@ -18,6 +18,6 @@ export class ContextManager implements IContextManager {
   }
 
   private emit(type: RuntimeEventType, payload: Record<string, unknown>): void {
-    this.eventBus.publish(type, payload, { source: 'ContextManager' });
+    this.eventBus.publish(type, payload, { source: "ContextManager" });
   }
 }

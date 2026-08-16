@@ -20,6 +20,7 @@ The package follows the exact conventions of `packages/crm`, `packages/sales-int
 ## Files / Packages
 
 ### Created
+
 ```
 packages/marketing-intelligence/
 ├── package.json
@@ -51,6 +52,7 @@ packages/marketing-intelligence/
 ```
 
 ### Modified
+
 - `database/schema.prisma` — new `Mi*` models and `Organization` back-relations.
 - `pnpm-lock.yaml` — new workspace package linked via `pnpm install`.
 - `apps/backend` Prisma client regenerated (during backend build) against the new schema.
@@ -71,6 +73,7 @@ New models (all tenant-scoped to `Organization`):
 `Organization` gained back-relations: `miCampaigns`, `miCampaignMetrics`, `miSeoSnapshots`, `miConversionSnapshots`, `miLeadScores`, `miGrowthInsights`, `miPricingSuggestions`, `miGrowthReports`.
 
 Validation and client generation:
+
 ```
 prisma validate .......... PASS (schema valid)
 prisma generate .......... PASS (Prisma Client v5.22.0 regenerated)
@@ -79,14 +82,14 @@ backend build ............ PASS (regenerates client against new schema)
 
 ## Services / Engines
 
-| Engine | Deterministic | Persists | Publishes |
-| ------ | ------------- | -------- | --------- |
-| `MiCampaignEngine` | Yes | `MiCampaign`, `MiCampaignMetric` | `mi.campaign.created`, `mi.campaign.metrics.updated` |
-| `MiSeoEngine` | Yes | `MiSeoSnapshot` | `mi.seo.updated` |
-| `MiConversionEngine` | Yes | `MiConversionSnapshot` | `mi.conversion.updated` |
-| `MiLeadScoreEngine` | Yes | `MiLeadScore` (+ `CrmLead.score` updates) | `mi.lead.scored`, `mi.opportunity.detected` |
+| Engine                  | Deterministic               | Persists                                                           | Publishes                                                 |
+| ----------------------- | --------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
+| `MiCampaignEngine`      | Yes                         | `MiCampaign`, `MiCampaignMetric`                                   | `mi.campaign.created`, `mi.campaign.metrics.updated`      |
+| `MiSeoEngine`           | Yes                         | `MiSeoSnapshot`                                                    | `mi.seo.updated`                                          |
+| `MiConversionEngine`    | Yes                         | `MiConversionSnapshot`                                             | `mi.conversion.updated`                                   |
+| `MiLeadScoreEngine`     | Yes                         | `MiLeadScore` (+ `CrmLead.score` updates)                          | `mi.lead.scored`, `mi.opportunity.detected`               |
 | `MiGrowthInsightEngine` | AI + deterministic fallback | `MiGrowthInsight`, `MiPricingSuggestion` (+ `MemoryManager` write) | `mi.insight.generated`, `mi.pricing_suggestion.generated` |
-| `MiReportService` | Composes engines | `MiGrowthReport` | `mi.report.generated`, `mi.growth_alert.required` |
+| `MiReportService`       | Composes engines            | `MiGrowthReport`                                                   | `mi.report.generated`, `mi.growth_alert.required`         |
 
 **MiCampaignEngine** — manages campaigns and computes per-channel growth metrics by aggregating `CrmLead` sources and attributing won `CrmOpportunity` revenue back to the channel through its contacts, combined with campaign spend to produce lead volume, conversion rate, ROAS, CAC and cost-per-lead. Source aliases normalise organic/google/search to `seo`, ads to `paid`, social platforms to `social`, newsletters to `email`, and so on.
 
@@ -102,23 +105,23 @@ backend build ............ PASS (regenerates client against new schema)
 
 ## API Endpoints
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/marketing-intelligence/campaigns/:organizationId` | Register a campaign |
-| GET | `/marketing-intelligence/campaigns/:organizationId` | List campaigns |
-| GET | `/marketing-intelligence/campaigns/:organizationId/metrics` | Compute + persist per-channel campaign metrics |
-| GET | `/marketing-intelligence/campaign-metrics/:organizationId` | List persisted campaign metrics |
-| GET | `/marketing-intelligence/seo/:organizationId` | Compute + persist SEO snapshot |
-| GET | `/marketing-intelligence/seo-snapshots/:organizationId` | List persisted SEO snapshots |
-| GET | `/marketing-intelligence/conversion/:organizationId` | Compute + persist conversion snapshot |
-| GET | `/marketing-intelligence/conversion-snapshots/:organizationId` | List persisted conversion snapshots |
-| POST | `/marketing-intelligence/leads/:organizationId/score` | Score leads + detect opportunities |
-| GET | `/marketing-intelligence/lead-scores/:organizationId` | List persisted lead scores |
-| POST | `/marketing-intelligence/insights/:organizationId` | Generate + persist growth insights, content briefs & pricing suggestions |
-| GET | `/marketing-intelligence/insights/:organizationId` | List persisted growth insights |
-| GET | `/marketing-intelligence/pricing-suggestions/:organizationId` | List persisted pricing suggestions |
-| POST | `/marketing-intelligence/reports/:organizationId` | Generate + persist growth report |
-| GET | `/marketing-intelligence/reports/:organizationId` | List persisted reports |
+| Method | Path                                                           | Description                                                              |
+| ------ | -------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| POST   | `/marketing-intelligence/campaigns/:organizationId`            | Register a campaign                                                      |
+| GET    | `/marketing-intelligence/campaigns/:organizationId`            | List campaigns                                                           |
+| GET    | `/marketing-intelligence/campaigns/:organizationId/metrics`    | Compute + persist per-channel campaign metrics                           |
+| GET    | `/marketing-intelligence/campaign-metrics/:organizationId`     | List persisted campaign metrics                                          |
+| GET    | `/marketing-intelligence/seo/:organizationId`                  | Compute + persist SEO snapshot                                           |
+| GET    | `/marketing-intelligence/seo-snapshots/:organizationId`        | List persisted SEO snapshots                                             |
+| GET    | `/marketing-intelligence/conversion/:organizationId`           | Compute + persist conversion snapshot                                    |
+| GET    | `/marketing-intelligence/conversion-snapshots/:organizationId` | List persisted conversion snapshots                                      |
+| POST   | `/marketing-intelligence/leads/:organizationId/score`          | Score leads + detect opportunities                                       |
+| GET    | `/marketing-intelligence/lead-scores/:organizationId`          | List persisted lead scores                                               |
+| POST   | `/marketing-intelligence/insights/:organizationId`             | Generate + persist growth insights, content briefs & pricing suggestions |
+| GET    | `/marketing-intelligence/insights/:organizationId`             | List persisted growth insights                                           |
+| GET    | `/marketing-intelligence/pricing-suggestions/:organizationId`  | List persisted pricing suggestions                                       |
+| POST   | `/marketing-intelligence/reports/:organizationId`              | Generate + persist growth report                                         |
+| GET    | `/marketing-intelligence/reports/:organizationId`              | List persisted reports                                                   |
 
 ## Events (`mi.events`)
 

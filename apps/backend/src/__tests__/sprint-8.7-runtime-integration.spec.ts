@@ -2,7 +2,15 @@ import "reflect-metadata";
 import { describe, it, expect, beforeAll, jest } from "@jest/globals";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Global, Module } from "@nestjs/common";
-import { RuntimeModule, EventBus, EventCatalogService, MissionManager, DeploymentService, TenantContextService, RuntimeEventType } from "@oracle69/runtime";
+import {
+  RuntimeModule,
+  EventBus,
+  EventCatalogService,
+  MissionManager,
+  DeploymentService,
+  TenantContextService,
+  RuntimeEventType,
+} from "@oracle69/runtime";
 import { PrismaClient } from "@prisma/client";
 
 @Global()
@@ -75,10 +83,14 @@ describe("Runtime-to-Backend integration (Sprint 8.7)", () => {
   it("should register the persistent EventLog as a sink on module init", async () => {
     prisma.runtimeEventLog.upsert.mockClear();
 
-    eventBus.publish(RuntimeEventType.MISSION_CREATED, { missionId: "m1" }, {
-      tenantId: "org-1",
-      idempotencyKey: "mission.created:m1:org-1",
-    });
+    eventBus.publish(
+      RuntimeEventType.MISSION_CREATED,
+      { missionId: "m1" },
+      {
+        tenantId: "org-1",
+        idempotencyKey: "mission.created:m1:org-1",
+      },
+    );
 
     await new Promise((resolve) => setTimeout(resolve, 10));
 

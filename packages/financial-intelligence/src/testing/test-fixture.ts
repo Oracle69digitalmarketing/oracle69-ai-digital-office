@@ -1,13 +1,25 @@
-import { EventBus, EventCatalogService, TenantContextService } from '@oracle69/runtime';
-import { FinancialKpiService } from '../services/financial-kpi.service.js';
-import { FinancialHealthService } from '../services/financial-health.service.js';
-import { BudgetService } from '../services/budget.service.js';
-import { InvoiceService } from '../services/invoice.service.js';
-import { TransactionService } from '../services/transaction.service.js';
-import { FinancialAiService } from '../services/financial-ai.service.js';
-import { TransactionRepository, TRANSACTION_REPOSITORY, InMemoryTransactionRepository } from '../repositories/transaction.repository.js';
-import { BudgetRepository, BUDGET_REPOSITORY, InMemoryBudgetRepository } from '../repositories/budget.repository.js';
-import { InvoiceRepository, INVOICE_REPOSITORY, InMemoryInvoiceRepository } from '../repositories/invoice.repository.js';
+import { EventBus, EventCatalogService, TenantContextService } from "@oracle69/runtime";
+import { FinancialKpiService } from "../services/financial-kpi.service.js";
+import { FinancialHealthService } from "../services/financial-health.service.js";
+import { BudgetService } from "../services/budget.service.js";
+import { InvoiceService } from "../services/invoice.service.js";
+import { TransactionService } from "../services/transaction.service.js";
+import { FinancialAiService } from "../services/financial-ai.service.js";
+import {
+  TransactionRepository,
+  TRANSACTION_REPOSITORY,
+  InMemoryTransactionRepository,
+} from "../repositories/transaction.repository.js";
+import {
+  BudgetRepository,
+  BUDGET_REPOSITORY,
+  InMemoryBudgetRepository,
+} from "../repositories/budget.repository.js";
+import {
+  InvoiceRepository,
+  INVOICE_REPOSITORY,
+  InMemoryInvoiceRepository,
+} from "../repositories/invoice.repository.js";
 
 export interface FinancialTestContext {
   kpiService: FinancialKpiService;
@@ -44,7 +56,12 @@ export function createFinancialTestModule(): FinancialTestContext {
   const kpiService = new FinancialKpiService(transactionRepo, tenantContext);
   const transactionService = new TransactionService(transactionRepo, eventBus, tenantContext);
   const budgetService = new BudgetService(budgetRepo, transactionRepo, eventBus, tenantContext);
-  const invoiceService = new InvoiceService(invoiceRepo, transactionService, eventBus, tenantContext);
+  const invoiceService = new InvoiceService(
+    invoiceRepo,
+    transactionService,
+    eventBus,
+    tenantContext,
+  );
   const healthService = new FinancialHealthService(kpiService, budgetService, invoiceService);
   const aiService = new FinancialAiService(undefined as never);
 

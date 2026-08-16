@@ -1,12 +1,25 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { HR_POSITION_REPOSITORY, type PositionRepository } from '../repositories/position.repository.js';
-import { HR_CANDIDATE_REPOSITORY, type CandidateRepository } from '../repositories/candidate.repository.js';
-import { CandidateStage, EmployeeStatus, EmploymentType, HrCandidate, HrPosition, PositionStatus } from '../types.js';
-import { EmployeeService } from './employee.service.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
-import { HrEventType } from '../events/hr.events.js';
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  HR_POSITION_REPOSITORY,
+  type PositionRepository,
+} from "../repositories/position.repository.js";
+import {
+  HR_CANDIDATE_REPOSITORY,
+  type CandidateRepository,
+} from "../repositories/candidate.repository.js";
+import {
+  CandidateStage,
+  EmployeeStatus,
+  EmploymentType,
+  HrCandidate,
+  HrPosition,
+  PositionStatus,
+} from "../types.js";
+import { EmployeeService } from "./employee.service.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
+import { HrEventType } from "../events/hr.events.js";
 
-const EVENT_SOURCE = 'hr-intelligence';
+const EVENT_SOURCE = "hr-intelligence";
 
 @Injectable()
 export class RecruitmentService {
@@ -19,7 +32,9 @@ export class RecruitmentService {
   ) {}
 
   async createPosition(
-    position: Omit<HrPosition, 'id' | 'createdAt' | 'updatedAt' | 'organizationId'> & { organizationId?: string },
+    position: Omit<HrPosition, "id" | "createdAt" | "updatedAt" | "organizationId"> & {
+      organizationId?: string;
+    },
   ): Promise<HrPosition> {
     const tenantId = this.tenantContext.resolveTenantId(position.organizationId);
     const created = await this.positionRepo.create({
@@ -35,17 +50,20 @@ export class RecruitmentService {
     return created;
   }
 
-  async updatePosition(id: string, data: Partial<HrPosition> & { organizationId?: string }): Promise<HrPosition> {
+  async updatePosition(
+    id: string,
+    data: Partial<HrPosition> & { organizationId?: string },
+  ): Promise<HrPosition> {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     const existing = await this.positionRepo.findById(id, tenantId);
-    if (!existing) throw new Error('Position not found');
+    if (!existing) throw new Error("Position not found");
     return this.positionRepo.update(id, data);
   }
 
   async closePosition(id: string, organizationId?: string): Promise<HrPosition> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const existing = await this.positionRepo.findById(id, tenantId);
-    if (!existing) throw new Error('Position not found');
+    if (!existing) throw new Error("Position not found");
     if (existing.status === PositionStatus.CLOSED) return existing;
 
     const updated = await this.positionRepo.update(id, { status: PositionStatus.CLOSED });
@@ -62,12 +80,14 @@ export class RecruitmentService {
   }
 
   async createCandidate(
-    candidate: Omit<HrCandidate, 'id' | 'createdAt' | 'updatedAt' | 'organizationId' | 'stage'> &
-      { organizationId?: string; stage?: CandidateStage },
+    candidate: Omit<HrCandidate, "id" | "createdAt" | "updatedAt" | "organizationId" | "stage"> & {
+      organizationId?: string;
+      stage?: CandidateStage;
+    },
   ): Promise<HrCandidate> {
     const tenantId = this.tenantContext.resolveTenantId(candidate.organizationId);
     const position = await this.positionRepo.findById(candidate.positionId, tenantId);
-    if (!position) throw new Error('Position not found');
+    if (!position) throw new Error("Position not found");
 
     const created = await this.candidateRepo.create({
       ...candidate,
@@ -82,10 +102,14 @@ export class RecruitmentService {
     return created;
   }
 
-  async updateCandidateStage(id: string, stage: CandidateStage, organizationId?: string): Promise<HrCandidate> {
+  async updateCandidateStage(
+    id: string,
+    stage: CandidateStage,
+    organizationId?: string,
+  ): Promise<HrCandidate> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const candidate = await this.candidateRepo.findById(id, tenantId);
-    if (!candidate) throw new Error('Candidate not found');
+    if (!candidate) throw new Error("Candidate not found");
     if (candidate.stage === CandidateStage.HIRED || candidate.stage === CandidateStage.REJECTED) {
       throw new Error(`Cannot change stage of ${candidate.stage} candidate ${id}`);
     }
@@ -113,7 +137,7 @@ export class RecruitmentService {
   async hireCandidate(id: string, organizationId?: string): Promise<HrCandidate> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const candidate = await this.candidateRepo.findById(id, tenantId);
-    if (!candidate) throw new Error('Candidate not found');
+    if (!candidate) throw new Error("Candidate not found");
     if (candidate.stage === CandidateStage.HIRED) return candidate;
     if (candidate.stage === CandidateStage.REJECTED) {
       throw new Error(`Cannot hire rejected candidate ${id}`);
@@ -138,15 +162,18 @@ export class RecruitmentService {
   }
 
   private async hireCandidateFrom(candidate: HrCandidate): Promise<void> {
-    const position = await this.positionRepo.findById(candidate.positionId, candidate.organizationId);
+    const position = await this.positionRepo.findById(
+      candidate.positionId,
+      candidate.organizationId,
+    );
 
     // The hired candidate joins the workforce through the canonical employee
     // lifecycle and the position is marked as filled.
     await this.employeeService.hireEmployee({
       fullName: candidate.name,
       email: candidate.email,
-      department: position?.department ?? 'General',
-      title: position?.title ?? 'Team Member',
+      department: position?.department ?? "General",
+      title: position?.title ?? "Team Member",
       status: EmployeeStatus.ONBOARDING,
       hireDate: new Date().toISOString(),
       organizationId: candidate.organizationId,

@@ -1,9 +1,14 @@
-import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
-import { BaseAgent } from './base-agent.js';
-import { AgentMetadata, AgentStatus } from '@oracle69/shared';
+import { Injectable, Logger, OnModuleDestroy, Optional } from "@nestjs/common";
+import { BaseAgent } from "./base-agent.js";
+import { AgentMetadata, AgentStatus } from "@oracle69/shared";
 
 export interface AgentRegistryStore {
-  register(agentId: string, role: string, healthStatus: AgentStatus, organizationId?: string): Promise<void>;
+  register(
+    agentId: string,
+    role: string,
+    healthStatus: AgentStatus,
+    organizationId?: string,
+  ): Promise<void>;
   updateStatus(agentId: string, healthStatus: AgentStatus): Promise<void>;
 }
 
@@ -25,14 +30,16 @@ export class AgentRegistry implements OnModuleDestroy {
           agent.metadata.id,
           agent.metadata.role,
           agent.metadata.healthStatus,
-          organizationId
+          organizationId,
         );
       } catch (error) {
         this.logger.error(`Failed to persist agent ${agent.metadata.id} to registry store`, error);
       }
     }
 
-    this.logger.log(`Registered agent: ${agent.metadata.name} (${agent.metadata.role}) v${agent.metadata.version}`);
+    this.logger.log(
+      `Registered agent: ${agent.metadata.name} (${agent.metadata.role}) v${agent.metadata.version}`,
+    );
   }
 
   async deregister(id: string) {
@@ -49,14 +56,14 @@ export class AgentRegistry implements OnModuleDestroy {
   }
 
   findAgentsByCapability(capability: string): BaseAgent[] {
-    return Array.from(this.agents.values()).filter(agent => 
-      agent.metadata.capabilities.includes(capability)
+    return Array.from(this.agents.values()).filter((agent) =>
+      agent.metadata.capabilities.includes(capability),
     );
   }
 
   findAgentsByRole(role: string): BaseAgent[] {
-    return Array.from(this.agents.values()).filter(agent => 
-      agent.metadata.role.toLowerCase() === role.toLowerCase()
+    return Array.from(this.agents.values()).filter(
+      (agent) => agent.metadata.role.toLowerCase() === role.toLowerCase(),
     );
   }
 
@@ -86,7 +93,7 @@ export class AgentRegistry implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    this.logger.log('Shutting down all agents in registry...');
+    this.logger.log("Shutting down all agents in registry...");
     for (const agent of this.agents.values()) {
       await agent.onShutdown();
     }

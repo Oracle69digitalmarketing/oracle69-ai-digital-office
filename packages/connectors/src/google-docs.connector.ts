@@ -1,6 +1,6 @@
-import { AbstractConnector } from './abstract-connector.js';
-import { ConnectorActionRequest, ConnectorResult, ConnectorMetadata } from './types.js';
-import { google, docs_v1, drive_v3 } from 'googleapis';
+import { AbstractConnector } from "./abstract-connector.js";
+import { ConnectorActionRequest, ConnectorResult, ConnectorMetadata } from "./types.js";
+import { google, docs_v1, drive_v3 } from "googleapis";
 
 export class GoogleDocsConnector extends AbstractConnector {
   private docsClient?: docs_v1.Docs;
@@ -8,18 +8,18 @@ export class GoogleDocsConnector extends AbstractConnector {
 
   constructor() {
     const metadata: ConnectorMetadata = {
-      id: 'google-docs-01',
-      name: 'Google Docs Connector',
-      type: 'google-docs',
-      version: '1.0.0',
+      id: "google-docs-01",
+      name: "Google Docs Connector",
+      type: "google-docs",
+      version: "1.0.0",
       capabilities: [
-        'create_document',
-        'update_document',
-        'append_content',
-        'read_document',
-        'export_pdf',
-        'share_document',
-        'health_check'
+        "create_document",
+        "update_document",
+        "append_content",
+        "read_document",
+        "export_pdf",
+        "share_document",
+        "health_check",
       ],
     };
     super(metadata);
@@ -29,42 +29,44 @@ export class GoogleDocsConnector extends AbstractConnector {
     await super.connect(credentials);
     const auth = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET
+      process.env.GOOGLE_CLIENT_SECRET,
     );
     auth.setCredentials({
       access_token: credentials.accessToken,
       refresh_token: credentials.refreshToken,
     });
-    this.docsClient = google.docs({ version: 'v1', auth });
-    this.driveClient = google.drive({ version: 'v3', auth });
+    this.docsClient = google.docs({ version: "v1", auth });
+    this.driveClient = google.drive({ version: "v3", auth });
   }
 
   async execute(request: ConnectorActionRequest): Promise<ConnectorResult> {
     if (!this.docsClient || !this.driveClient) {
-      return this.handleError(new Error('Docs/Drive client not initialized. Call connect() first.'));
+      return this.handleError(
+        new Error("Docs/Drive client not initialized. Call connect() first."),
+      );
     }
 
     return this.withRetry(async () => {
       switch (request.action) {
-        case 'create_document':
+        case "create_document":
           return this.createDocument(request.params);
-        case 'update_document':
+        case "update_document":
           return this.updateDocument(request.params);
-        case 'append_content':
+        case "append_content":
           return this.appendContent(request.params);
-        case 'read_document':
+        case "read_document":
           return this.readDocument(request.params);
-        case 'export_pdf':
+        case "export_pdf":
           return this.exportPdf(request.params);
-        case 'share_document':
+        case "share_document":
           return this.shareDocument(request.params);
-        case 'health_check':
+        case "health_check":
           const health = await this.health();
           return { success: true, data: health };
         default:
           throw new Error(`Unsupported action: ${request.action}`);
       }
-    }).catch(err => this.handleError(err));
+    }).catch((err) => this.handleError(err));
   }
 
   private async createDocument(params: any): Promise<ConnectorResult> {
@@ -112,14 +114,17 @@ export class GoogleDocsConnector extends AbstractConnector {
     const { documentId } = params;
     // Exporting as PDF requires Drive API
     const response = await this.driveClient!.files.export(
-      { fileId: documentId, mimeType: 'application/pdf' },
-      { responseType: 'stream' }
+      { fileId: documentId, mimeType: "application/pdf" },
+      { responseType: "stream" },
     );
-    return { success: true, data: { documentId, status: 'export_started', mimeType: 'application/pdf' } };
+    return {
+      success: true,
+      data: { documentId, status: "export_started", mimeType: "application/pdf" },
+    };
   }
 
   private async shareDocument(params: any): Promise<ConnectorResult> {
-    const { documentId, role = 'reader', type = 'user', emailAddress } = params;
+    const { documentId, role = "reader", type = "user", emailAddress } = params;
     const response = await this.driveClient!.permissions.create({
       fileId: documentId,
       requestBody: { role, type, emailAddress },

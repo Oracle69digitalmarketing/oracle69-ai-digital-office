@@ -1,9 +1,9 @@
-import { jest } from '@jest/globals';
-import { TenantContextService } from '@oracle69/runtime';
-import { LeadScoringEngine } from '../lead-scoring/lead-scoring.engine.js';
-import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
+import { jest } from "@jest/globals";
+import { TenantContextService } from "@oracle69/runtime";
+import { LeadScoringEngine } from "../lead-scoring/lead-scoring.engine.js";
+import { SalesIntelligenceEventType } from "../events/sales-intelligence.events.js";
 
-describe('LeadScoringEngine', () => {
+describe("LeadScoringEngine", () => {
   let engine: LeadScoringEngine;
   let modelProvider: any;
   let messageBus: any;
@@ -17,16 +17,16 @@ describe('LeadScoringEngine', () => {
       publish: jest.fn(),
     };
     tenantContextService = {
-      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+      resolveTenantId: jest.fn().mockReturnValue("tenant-a"),
     };
     engine = new LeadScoringEngine(modelProvider, messageBus, tenantContextService);
   });
 
-  it('should score a lead and publish an event', async () => {
-    const leadId = 'lead-123';
+  it("should score a lead and publish an event", async () => {
+    const leadId = "lead-123";
     const mockLead = {
       id: leadId,
-      source: 'referral',
+      source: "referral",
       crmOrganization: { revenue: 2000000 },
       activities: [{}, {}, {}, {}, {}, {}],
       notes: [],
@@ -38,21 +38,21 @@ describe('LeadScoringEngine', () => {
     modelProvider.analyze.mockResolvedValue({
       content: JSON.stringify({
         score: 80,
-        grade: 'A',
-        status: 'qualified',
-        recommendedAction: 'Contact immediately',
+        grade: "A",
+        status: "qualified",
+        recommendedAction: "Contact immediately",
         confidence: 0.9,
-        reasoning: ['High revenue', 'Strong engagement'],
+        reasoning: ["High revenue", "Strong engagement"],
       }),
     });
 
     const result = await engine.scoreLead(leadId);
 
     expect(result).toBeDefined();
-    expect(result?.grade).toBe('A');
+    expect(result?.grade).toBe("A");
     expect(messageBus.publish).toHaveBeenCalledWith(
       SalesIntelligenceEventType.LEAD_SCORED,
-      expect.objectContaining({ type: SalesIntelligenceEventType.LEAD_SCORED })
+      expect.objectContaining({ type: SalesIntelligenceEventType.LEAD_SCORED }),
     );
   });
 });

@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from '../events/mi.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from "../events/mi.events.js";
 
-export type LeadGrade = 'A' | 'B' | 'C' | 'D';
-export type LeadStage = 'sql' | 'mql' | 'nurture' | 'disqualified' | 'converted';
+export type LeadGrade = "A" | "B" | "C" | "D";
+export type LeadStage = "sql" | "mql" | "nurture" | "disqualified" | "converted";
 
 export interface LeadScoreResult {
   leadId: string;
@@ -63,15 +63,17 @@ export class MiLeadScoreEngine {
   private readonly logger = new Logger(MiLeadScoreEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+  constructor(private readonly messageBus: MessageBus) {}
 
   /**
    * Scores all leads, persists the results, updates CRM lead scores and detects
    * sales-ready opportunities.
    */
-  async generate(organizationId: string): Promise<{ summary: LeadScoringSummary; opportunities: DetectedOpportunity[]; results: LeadScoreResult[] }> {
+  async generate(organizationId: string): Promise<{
+    summary: LeadScoringSummary;
+    opportunities: DetectedOpportunity[];
+    results: LeadScoreResult[];
+  }> {
     this.logger.log(`Scoring leads for organization ${organizationId}`);
 
     const organization = await this.prisma.organization.findUnique({
@@ -81,7 +83,7 @@ export class MiLeadScoreEngine {
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const results: LeadScoreResult[] = [];
     const opportunities: DetectedOpportunity[] = [];
@@ -95,7 +97,11 @@ export class MiLeadScoreEngine {
         data: { score: result.score },
       });
 
-      if (result.status === 'sql' && lead.status !== 'converted' && lead.status !== 'disqualified') {
+      if (
+        result.status === "sql" &&
+        lead.status !== "converted" &&
+        lead.status !== "disqualified"
+      ) {
         opportunities.push({
           leadId: lead.id,
           leadTitle: lead.title ?? null,
@@ -125,7 +131,7 @@ export class MiLeadScoreEngine {
       new MarketingIntelligenceEvent(MarketingIntelligenceEventType.LEAD_SCORED, {
         organizationId,
         summary,
-      })
+      }),
     );
 
     if (opportunities.length > 0) {
@@ -134,7 +140,7 @@ export class MiLeadScoreEngine {
         new MarketingIntelligenceEvent(MarketingIntelligenceEventType.OPPORTUNITY_DETECTED, {
           organizationId,
           opportunities,
-        })
+        }),
       );
     }
 
@@ -147,7 +153,7 @@ export class MiLeadScoreEngine {
   async listScores(organizationId: string, take = 100) {
     return this.prisma.miLeadScore.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }
@@ -164,28 +170,28 @@ function scoreLead(lead: any): LeadScoreResult {
 
   const account = lead.crmOrganization;
   if (account) {
-    if (typeof account.revenue === 'number') {
+    if (typeof account.revenue === "number") {
       if (account.revenue > 1000000) {
         score += 15;
-        reasoning.push('Linked account revenue exceeds $1M');
+        reasoning.push("Linked account revenue exceeds $1M");
       } else if (account.revenue >= 500000) {
         score += 10;
-        reasoning.push('Linked account revenue is between $500K and $1M');
+        reasoning.push("Linked account revenue is between $500K and $1M");
       } else {
         score += 5;
-        reasoning.push('Linked account revenue is under $500K');
+        reasoning.push("Linked account revenue is under $500K");
       }
     }
-    if (typeof account.healthScore === 'number') {
+    if (typeof account.healthScore === "number") {
       if (account.healthScore >= 75) {
         score += 10;
-        reasoning.push('Linked account is healthy');
+        reasoning.push("Linked account is healthy");
       } else if (account.healthScore >= 45) {
         score += 5;
-        reasoning.push('Linked account is at risk');
+        reasoning.push("Linked account is at risk");
       } else {
         score -= 10;
-        reasoning.push('Linked account is critical');
+        reasoning.push("Linked account is critical");
       }
     }
   }
@@ -198,36 +204,36 @@ function scoreLead(lead: any): LeadScoreResult {
 
   if (lead.notes.length > 0) {
     score += 5;
-    reasoning.push('Lead has recorded notes');
+    reasoning.push("Lead has recorded notes");
   }
 
-  const status = lead.status ?? 'new';
-  if (status === 'converted') {
+  const status = lead.status ?? "new";
+  if (status === "converted") {
     score += 30;
-    reasoning.push('Lead is already converted');
-  } else if (status === 'qualified') {
+    reasoning.push("Lead is already converted");
+  } else if (status === "qualified") {
     score += 20;
-    reasoning.push('Lead is already qualified');
-  } else if (status === 'nurture') {
+    reasoning.push("Lead is already qualified");
+  } else if (status === "nurture") {
     score += 5;
-  } else if (status === 'disqualified') {
+  } else if (status === "disqualified") {
     score -= 30;
-    reasoning.push('Lead was previously disqualified');
+    reasoning.push("Lead was previously disqualified");
   }
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   let stage: LeadStage;
-  if (status === 'converted') {
-    stage = 'converted';
+  if (status === "converted") {
+    stage = "converted";
   } else if (score >= SQL_THRESHOLD) {
-    stage = 'sql';
+    stage = "sql";
   } else if (score >= MQL_THRESHOLD) {
-    stage = 'mql';
+    stage = "mql";
   } else if (score >= NURTURE_THRESHOLD) {
-    stage = 'nurture';
+    stage = "nurture";
   } else {
-    stage = 'disqualified';
+    stage = "disqualified";
   }
 
   return {
@@ -242,14 +248,22 @@ function scoreLead(lead: any): LeadScoreResult {
 }
 
 function toGrade(score: number): LeadGrade {
-  if (score >= 80) return 'A';
-  if (score >= 60) return 'B';
-  if (score >= 40) return 'C';
-  return 'D';
+  if (score >= 80) return "A";
+  if (score >= 60) return "B";
+  if (score >= 40) return "C";
+  return "D";
 }
 
 function summarize(results: LeadScoreResult[], opportunities: number): LeadScoringSummary {
-  const summary: LeadScoringSummary = { scored: results.length, sql: 0, mql: 0, nurture: 0, disqualified: 0, converted: 0, opportunities };
+  const summary: LeadScoringSummary = {
+    scored: results.length,
+    sql: 0,
+    mql: 0,
+    nurture: 0,
+    disqualified: 0,
+    converted: 0,
+    opportunities,
+  };
   for (const result of results) {
     summary[result.status] += 1;
   }

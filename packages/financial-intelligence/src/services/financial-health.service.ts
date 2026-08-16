@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { FinancialKpiService } from './financial-kpi.service.js';
-import { BudgetService } from './budget.service.js';
-import { InvoiceService } from './invoice.service.js';
-import { FinancialHealth, InvoiceStatus } from '../types.js';
+import { Injectable } from "@nestjs/common";
+import { FinancialKpiService } from "./financial-kpi.service.js";
+import { BudgetService } from "./budget.service.js";
+import { InvoiceService } from "./invoice.service.js";
+import { FinancialHealth, InvoiceStatus } from "../types.js";
 
-const HEALTH_FACTORS: Record<'healthy' | 'at_risk' | 'critical', number> = {
+const HEALTH_FACTORS: Record<"healthy" | "at_risk" | "critical", number> = {
   healthy: 80,
   at_risk: 55,
   critical: 30,
@@ -31,7 +31,9 @@ export class FinancialHealthService {
       this.invoiceService.getInvoices(organizationId),
     ]);
 
-    const outstandingInvoices = invoices.filter((i) => i.status === InvoiceStatus.SENT || i.status === InvoiceStatus.OVERDUE).length;
+    const outstandingInvoices = invoices.filter(
+      (i) => i.status === InvoiceStatus.SENT || i.status === InvoiceStatus.OVERDUE,
+    ).length;
     const overdueInvoices = invoices.filter((i) => i.status === InvoiceStatus.OVERDUE).length;
     const exceededBudgets = budgetSummaries.filter((b) => b.exceeded).length;
 
@@ -40,9 +42,11 @@ export class FinancialHealthService {
 
     if (kpis.netProfit < 0) {
       score -= 35;
-      reasoning.push('Net profit is negative; expenses exceed revenue.');
+      reasoning.push("Net profit is negative; expenses exceed revenue.");
     } else {
-      reasoning.push(`Net profit is $${kpis.netProfit.toFixed(2)} with a ${kpis.profitMargin.toFixed(1)}% margin.`);
+      reasoning.push(
+        `Net profit is $${kpis.netProfit.toFixed(2)} with a ${kpis.profitMargin.toFixed(1)}% margin.`,
+      );
     }
 
     if (kpis.profitMargin < 0) {
@@ -53,7 +57,9 @@ export class FinancialHealthService {
 
     if (exceededBudgets > 0) {
       score -= exceededBudgets * 10;
-      reasoning.push(`${exceededBudgets} departmental budget(s) have exceeded their allocated amount.`);
+      reasoning.push(
+        `${exceededBudgets} departmental budget(s) have exceeded their allocated amount.`,
+      );
     }
 
     if (overdueInvoices > 0) {
@@ -63,12 +69,17 @@ export class FinancialHealthService {
       reasoning.push(`${outstandingInvoices} invoice(s) are outstanding.`);
     }
 
-    if (typeof kpis.runway === 'number' && kpis.runway < 3) {
+    if (typeof kpis.runway === "number" && kpis.runway < 3) {
       score -= 10;
       reasoning.push(`Runway is only ${kpis.runway} month(s) at the current burn rate.`);
     }
 
-    const status: FinancialHealth['status'] = score >= HEALTH_FACTORS.healthy ? 'healthy' : score >= HEALTH_FACTORS.at_risk ? 'at_risk' : 'critical';
+    const status: FinancialHealth["status"] =
+      score >= HEALTH_FACTORS.healthy
+        ? "healthy"
+        : score >= HEALTH_FACTORS.at_risk
+          ? "at_risk"
+          : "critical";
 
     return {
       score: Math.max(0, Math.min(100, score)),

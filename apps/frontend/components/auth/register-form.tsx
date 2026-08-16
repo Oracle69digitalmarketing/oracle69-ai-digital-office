@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@oracle69/ui";
 
 export function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -14,8 +15,7 @@ export function RegisterForm() {
   const router = useRouter();
 
   const API_URL =
-    process.env.NEXT_PUBLIC_API_URL ??
-    "https://oracle69-ai-digital-office.onrender.com/api";
+    process.env.NEXT_PUBLIC_API_URL ?? "https://oracle69-ai-digital-office.onrender.com/api";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +40,6 @@ export function RegisterForm() {
         setSuccess(true);
         setTimeout(() => router.push("/auth/login"), 2000);
       } else {
-        // Handle validation errors or backend message
         const message = data.message || "Registration failed";
         const validationError = Array.isArray(data.message) ? data.message.join(", ") : message;
         setError(validationError);
@@ -71,7 +70,7 @@ export function RegisterForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
       <div>
@@ -81,7 +80,7 @@ export function RegisterForm() {
           value={organizationName}
           onChange={(e) => setOrganizationName(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
       <div>
@@ -91,7 +90,7 @@ export function RegisterForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
       <div>
@@ -101,16 +100,12 @@ export function RegisterForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-      >
+      <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Registering..." : "Register"}
-      </button>
+      </Button>
     </form>
   );
 }

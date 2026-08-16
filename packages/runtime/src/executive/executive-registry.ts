@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ExecutiveMetadata } from './executive.types.js';
+import { Injectable } from "@nestjs/common";
+import { ExecutiveMetadata } from "./executive.types.js";
 
 @Injectable()
 export class ExecutiveRegistry {

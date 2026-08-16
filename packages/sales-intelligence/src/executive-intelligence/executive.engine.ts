@@ -1,12 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { AiModelProvider } from '../models/ai-model.interface.js';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { AiModelProvider } from "../models/ai-model.interface.js";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface ExecutiveAlert {
   title: string;
-  severity: 'info' | 'warning' | 'critical';
+  severity: "info" | "warning" | "critical";
   impact: string;
   strategicObservation: string;
   recommendedExecutiveAction: string;
@@ -20,7 +23,7 @@ export class ExecutiveIntelligenceEngine {
   constructor(
     private readonly modelProvider: any,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async generateExecutiveSummary(organizationId: string): Promise<ExecutiveAlert[] | null> {
@@ -28,7 +31,7 @@ export class ExecutiveIntelligenceEngine {
 
     const data = await this.prisma.organization.findUnique({
       where: {
-        id: this.tenantContext.resolveTenantId(organizationId)
+        id: this.tenantContext.resolveTenantId(organizationId),
       },
       include: {
         crmOpportunities: { include: { activities: true } },
@@ -46,23 +49,26 @@ export class ExecutiveIntelligenceEngine {
 
     try {
       const response = await this.modelProvider.analyze(data, aiInstruction);
-      const result = JSON.parse(response.content.replace(/```json/g, '').replace(/```/g, ''));
+      const result = JSON.parse(response.content.replace(/```json/g, "").replace(/```/g, ""));
       const alerts: ExecutiveAlert[] = result.alerts || [];
 
-      if (alerts.some(a => a.severity === 'critical')) {
+      if (alerts.some((a) => a.severity === "critical")) {
         this.messageBus.publish(
           SalesIntelligenceEventType.EXECUTIVE_SALES_ALERT_CREATED,
           new SalesIntelligenceEvent(SalesIntelligenceEventType.EXECUTIVE_SALES_ALERT_CREATED, {
             organizationId,
             alerts,
-            tenantId: this.tenantContext.resolveTenantId()
-          })
+            tenantId: this.tenantContext.resolveTenantId(),
+          }),
         );
       }
 
       return alerts;
     } catch (error) {
-      this.logger.error(`Failed to generate executive intelligence for organization ${organizationId} via AI:`, error);
+      this.logger.error(
+        `Failed to generate executive intelligence for organization ${organizationId} via AI:`,
+        error,
+      );
       return null;
     }
   }

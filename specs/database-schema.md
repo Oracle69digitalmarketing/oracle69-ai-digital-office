@@ -21,12 +21,14 @@ As the **Operate** component of the Oracle69 Enterprise AI Platform, the schema 
 # 2. Capability Ownership Boundaries
 
 ### [Digital Office Only] - Core Ownership
+
 - **Operational Tables:** Users (Operate context), Agents, Projects, Tasks, Workflows.
 - **Agent Registry:** Managing local agent capabilities and status.
 - **Workflow Execution History:** Detailed step-by-step records of AI execution.
 - **Operational Memory:** Task-specific and department-specific memory records.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Tenant Master Records:** Global organization and subscription data (Launch/Build).
 - **Strategic Blueprint Data:** Discovered business processes and architecture (Discover/Architect).
 - **Enterprise-Wide Analytics:** Cross-product performance and ROI data (Executive/Decide).
@@ -38,12 +40,14 @@ As the **Operate** component of the Oracle69 Enterprise AI Platform, the schema 
 The following models support the platform-wide `v1/platform/*` integration layer.
 
 ### AgentRegistryEntry
+
 - **ID:** UUID
 - **AgentRef:** Reference to `Agents` table.
 - **PlatformRole:** Standard role identifier from `platform-contracts`.
 - **CapabilitySet:** JSONB of standardized platform capabilities.
 
 ### WorkflowStepRecord
+
 - **ID:** UUID
 - **WorkflowID:** Reference to `Workflow` table.
 - **StepIndex:** Integer.
@@ -52,6 +56,7 @@ The following models support the platform-wide `v1/platform/*` integration layer
 - **ExecutionTime:** Float.
 
 ### LongTermMemoryRecord
+
 - **ID:** UUID
 - **EnterpriseID:** Global platform ID.
 - **Content:** Text.

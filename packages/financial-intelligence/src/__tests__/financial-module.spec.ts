@@ -3,7 +3,13 @@ import { EventCatalogService } from "@oracle69/runtime";
 import { FinancialIntelligenceModule } from "../financial-intelligence.module.js";
 import { FinancialEventType } from "../events/financial.events.js";
 import { createFinancialTestModule, FinancialTestContext } from "../testing/test-fixture.js";
-import { BudgetPeriod, BudgetStatus, InvoiceStatus, TransactionStatus, TransactionType } from "../types.js";
+import {
+  BudgetPeriod,
+  BudgetStatus,
+  InvoiceStatus,
+  TransactionStatus,
+  TransactionType,
+} from "../types.js";
 
 describe("Financial Intelligence module (Event Bus integration)", () => {
   let ctx: FinancialTestContext;

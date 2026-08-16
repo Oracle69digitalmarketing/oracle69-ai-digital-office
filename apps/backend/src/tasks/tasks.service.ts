@@ -50,7 +50,12 @@ export class TasksService {
     this.eventBus.publish({
       type: "task.status_changed",
       source: "TasksService",
-      payload: { taskId: id, status, userId, organizationId: task.assignedAgent?.organizationId || 'system' },
+      payload: {
+        taskId: id,
+        status,
+        userId,
+        organizationId: task.assignedAgent?.organizationId || "system",
+      },
     });
 
     // Create Audit Log
@@ -60,7 +65,7 @@ export class TasksService {
         resource: "Task",
         status: "SUCCESS",
         userId: userId,
-        organizationId: task.assignedAgent?.organizationId || 'system',
+        organizationId: task.assignedAgent?.organizationId || "system",
         createdAt: new Date(),
       },
     });
@@ -76,7 +81,11 @@ export class TasksService {
     this.eventBus.publish({
       type: "task.created",
       source: "TasksService",
-      payload: { taskId: task.id, title: task.title, organizationId: (data as any).organizationId || 'system' },
+      payload: {
+        taskId: task.id,
+        title: task.title,
+        organizationId: (data as any).organizationId || "system",
+      },
     });
 
     return task;

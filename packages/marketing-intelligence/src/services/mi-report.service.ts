@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, MissionManager, MissionStatus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from '../events/mi.events.js';
-import { MiCampaignEngine } from './mi-campaign.engine.js';
-import { MiSeoEngine } from './mi-seo.engine.js';
-import { MiConversionEngine } from './mi-conversion.engine.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, MissionManager, MissionStatus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from "../events/mi.events.js";
+import { MiCampaignEngine } from "./mi-campaign.engine.js";
+import { MiSeoEngine } from "./mi-seo.engine.js";
+import { MiConversionEngine } from "./mi-conversion.engine.js";
+import { currentPeriod } from "../utils/period.js";
 
 /**
  * Composes the marketing intelligence engines into a growth report, persists
@@ -24,11 +24,13 @@ export class MiReportService {
     private readonly seoEngine: MiSeoEngine,
     private readonly conversionEngine: MiConversionEngine,
     private readonly missionManager: MissionManager,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
   ) {}
 
   async generateReport(organizationId: string, period: string = currentPeriod()) {
-    this.logger.log(`Generating growth report for organization ${organizationId}, period ${period}`);
+    this.logger.log(
+      `Generating growth report for organization ${organizationId}, period ${period}`,
+    );
 
     const campaign = await this.campaignEngine.compute(organizationId, period);
     const seo = await this.seoEngine.compute(organizationId, period);
@@ -60,7 +62,7 @@ export class MiReportService {
         reportId: report.id,
         period,
         growthScore,
-      })
+      }),
     );
 
     if (growthScore < GROWTH_ALERT_THRESHOLD) {
@@ -70,9 +72,9 @@ export class MiReportService {
         goal:
           `Growth intelligence: the growth score is ${Math.round(growthScore)}/100 (below ${GROWTH_ALERT_THRESHOLD}) for ` +
           `organization ${organizationId}. Execute the growth recovery plan.`,
-        priority: 'critical',
+        priority: "critical",
         deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
-        owner: 'marketing-intelligence',
+        owner: "marketing-intelligence",
         status: MissionStatus.DRAFT,
         tenantId: organizationId,
       });
@@ -83,7 +85,7 @@ export class MiReportService {
           organizationId,
           missionId,
           growthScore,
-        })
+        }),
       );
     }
 
@@ -93,7 +95,7 @@ export class MiReportService {
   async listReports(organizationId: string, take = 20) {
     return this.prisma.miGrowthReport.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }
@@ -115,7 +117,7 @@ function computeGrowthScore(campaign: any, conversion: any): number {
     score += Math.min(15, maxRoas * 5);
   }
   if (campaign.channels.some((c: any) => c.leads > 0)) {
-    const organic = campaign.channels.find((c: any) => c.channel === 'seo');
+    const organic = campaign.channels.find((c: any) => c.channel === "seo");
     if (organic && organic.leads > 0) {
       score += Math.min(15, (organic.leads / campaign.totals.leads) * 20);
     }

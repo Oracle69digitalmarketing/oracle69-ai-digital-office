@@ -2,7 +2,10 @@
  * Base class for all runtime-related errors.
  */
 export class RuntimeError extends Error {
-  constructor(message: string, public readonly metadata: Record<string, any> = {}) {
+  constructor(
+    message: string,
+    public readonly metadata: Record<string, any> = {},
+  ) {
     super(message);
     this.name = this.constructor.name;
     Object.setPrototypeOf(this, new.target.prototype);

@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ModelTier, ModelRoutingRequest, ModelUsage } from '@oracle69/shared';
+import { Injectable, Logger } from "@nestjs/common";
+import { ModelTier, ModelRoutingRequest, ModelUsage } from "@oracle69/shared";
 
 export interface ModelProvider {
   name: string;
@@ -19,15 +19,19 @@ export class ModelRouter {
 
   route(request: ModelRoutingRequest): ModelTier {
     this.logger.debug(`Routing task: ${request.taskId} (${request.taskDescription})`);
-    
+
     // Cost-aware and complexity-based routing logic
-    if (request.complexity > 8 || request.department === 'CEO' || request.department === 'Chief of Staff') {
-      return 'gpt-5.6';
-    } else if (request.complexity > 4 || request.businessRisk === 'high') {
-      return 'mini';
+    if (
+      request.complexity > 8 ||
+      request.department === "CEO" ||
+      request.department === "Chief of Staff"
+    ) {
+      return "gpt-5.6";
+    } else if (request.complexity > 4 || request.businessRisk === "high") {
+      return "mini";
     }
-    
-    return 'nano';
+
+    return "nano";
   }
 
   async execute(agentId: string, prompt: string, request: ModelRoutingRequest): Promise<string> {
@@ -59,19 +63,26 @@ export class ModelRouter {
   private getBestProvider(tier: ModelTier): ModelProvider {
     // Logic to select provider based on tier availability and cost
     const provider = Array.from(this.providers.values())[0]; // Simple for now
-    if (!provider) throw new Error('No model providers registered');
+    if (!provider) throw new Error("No model providers registered");
     return provider;
   }
 
-  private async handleFallback(agentId: string, prompt: string, request: ModelRoutingRequest, failedTier: ModelTier): Promise<string> {
-    if (failedTier === 'nano') {
-      this.logger.log('Fallback: nano -> mini');
+  private async handleFallback(
+    agentId: string,
+    prompt: string,
+    request: ModelRoutingRequest,
+    failedTier: ModelTier,
+  ): Promise<string> {
+    if (failedTier === "nano") {
+      this.logger.log("Fallback: nano -> mini");
       return this.execute(agentId, prompt, { ...request, complexity: 5 });
-    } else if (failedTier === 'mini') {
-      this.logger.log('Fallback: mini -> gpt-5.6');
+    } else if (failedTier === "mini") {
+      this.logger.log("Fallback: mini -> gpt-5.6");
       return this.execute(agentId, prompt, { ...request, complexity: 9 });
     }
-    throw new Error(`Critical failure: Model execution failed for all tiers including ${failedTier}`);
+    throw new Error(
+      `Critical failure: Model execution failed for all tiers including ${failedTier}`,
+    );
   }
 
   private trackUsage(usage: ModelUsage) {
@@ -82,9 +93,9 @@ export class ModelRouter {
   private calculateCost(tier: ModelTier, usage: any): number {
     // Placeholder cost calculation logic
     const rates = {
-      'nano': 0.0001,
-      'mini': 0.001,
-      'gpt-5.6': 0.01
+      nano: 0.0001,
+      mini: 0.001,
+      "gpt-5.6": 0.01,
     };
     return (usage?.total_tokens || 0) * (rates[tier] / 1000);
   }

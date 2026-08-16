@@ -1,29 +1,29 @@
 export enum EmployeeStatus {
-  ONBOARDING = 'onboarding',
-  ACTIVE = 'active',
-  OFFBOARDING = 'offboarding',
-  INACTIVE = 'inactive',
+  ONBOARDING = "onboarding",
+  ACTIVE = "active",
+  OFFBOARDING = "offboarding",
+  INACTIVE = "inactive",
 }
 
 export enum PositionStatus {
-  OPEN = 'open',
-  CLOSED = 'closed',
-  FILLED = 'filled',
+  OPEN = "open",
+  CLOSED = "closed",
+  FILLED = "filled",
 }
 
 export enum EmploymentType {
-  FULL_TIME = 'full_time',
-  PART_TIME = 'part_time',
-  CONTRACT = 'contract',
+  FULL_TIME = "full_time",
+  PART_TIME = "part_time",
+  CONTRACT = "contract",
 }
 
 export enum CandidateStage {
-  APPLIED = 'applied',
-  SCREENING = 'screening',
-  INTERVIEWING = 'interviewing',
-  OFFER = 'offer',
-  HIRED = 'hired',
-  REJECTED = 'rejected',
+  APPLIED = "applied",
+  SCREENING = "screening",
+  INTERVIEWING = "interviewing",
+  OFFER = "offer",
+  HIRED = "hired",
+  REJECTED = "rejected",
 }
 
 export interface HrEmployee {
@@ -86,7 +86,7 @@ export interface HrKpis {
 /** Workforce health snapshot combining KPIs and recruitment exposure. */
 export interface HrHealth {
   score: number;
-  status: 'healthy' | 'at_risk' | 'critical';
+  status: "healthy" | "at_risk" | "critical";
   kpis: HrKpis;
   openPositions: number;
   candidatesInPipeline: number;
@@ -94,9 +94,9 @@ export interface HrHealth {
 }
 
 export interface HrAiInsight {
-  type: 'forecast' | 'recommendation' | 'alert';
+  type: "forecast" | "recommendation" | "alert";
   title: string;
   content: string;
-  priority: 'low' | 'normal' | 'high';
+  priority: "low" | "normal" | "high";
   impact?: string;
 }

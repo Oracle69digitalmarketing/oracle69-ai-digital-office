@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { DepartmentMemory } from './department.types.js';
+import { Injectable } from "@nestjs/common";
+import { DepartmentMemory } from "./department.types.js";
 
 @Injectable()
 export class DepartmentMemoryManager {
@@ -8,9 +8,16 @@ export class DepartmentMemoryManager {
   constructor() {}
 
   getMemory(deptId: string): DepartmentMemory {
-    return this.memories.get(deptId) || { knowledge: [], objectives: [], openTasks: [], completedWork: [] };
+    return (
+      this.memories.get(deptId) || {
+        knowledge: [],
+        objectives: [],
+        openTasks: [],
+        completedWork: [],
+      }
+    );
   }
-  
+
   updateMemory(deptId: string, memory: DepartmentMemory): void {
     this.memories.set(deptId, memory);
   }

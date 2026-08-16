@@ -1,14 +1,14 @@
-import { Module, Global } from '@nestjs/common';
-import { RuntimeModule, MemoryManager, MessageBus, MissionManager } from '@oracle69/runtime';
-import { CrmModule } from '@oracle69/crm';
-import { SalesIntelligenceModule } from '@oracle69/sales-intelligence';
-import { MarketingIntelligenceController } from './controllers/mi.controller.js';
-import { MiCampaignEngine } from './services/mi-campaign.engine.js';
-import { MiSeoEngine } from './services/mi-seo.engine.js';
-import { MiConversionEngine } from './services/mi-conversion.engine.js';
-import { MiLeadScoreEngine } from './services/mi-lead-score.engine.js';
-import { MiGrowthInsightEngine } from './services/mi-growth-insight.engine.js';
-import { MiReportService } from './services/mi-report.service.js';
+import { Module, Global } from "@nestjs/common";
+import { RuntimeModule, MemoryManager, MessageBus, MissionManager } from "@oracle69/runtime";
+import { CrmModule } from "@oracle69/crm";
+import { SalesIntelligenceModule } from "@oracle69/sales-intelligence";
+import { MarketingIntelligenceController } from "./controllers/mi.controller.js";
+import { MiCampaignEngine } from "./services/mi-campaign.engine.js";
+import { MiSeoEngine } from "./services/mi-seo.engine.js";
+import { MiConversionEngine } from "./services/mi-conversion.engine.js";
+import { MiLeadScoreEngine } from "./services/mi-lead-score.engine.js";
+import { MiGrowthInsightEngine } from "./services/mi-growth-insight.engine.js";
+import { MiReportService } from "./services/mi-report.service.js";
 
 @Global()
 @Module({
@@ -27,9 +27,16 @@ import { MiReportService } from './services/mi-report.service.js';
         seo: MiSeoEngine,
         conversion: MiConversionEngine,
         bus: MessageBus,
-        memory: MemoryManager
+        memory: MemoryManager,
       ) => new MiGrowthInsightEngine(provider, campaign, seo, conversion, bus, memory),
-      inject: ['AiModelProvider', MiCampaignEngine, MiSeoEngine, MiConversionEngine, MessageBus, MemoryManager],
+      inject: [
+        "AiModelProvider",
+        MiCampaignEngine,
+        MiSeoEngine,
+        MiConversionEngine,
+        MessageBus,
+        MemoryManager,
+      ],
     },
     MiReportService,
   ],

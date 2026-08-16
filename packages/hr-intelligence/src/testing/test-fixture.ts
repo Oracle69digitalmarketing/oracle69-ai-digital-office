@@ -1,12 +1,24 @@
-import { EventBus, EventCatalogService, TenantContextService } from '@oracle69/runtime';
-import { EmployeeService } from '../services/employee.service.js';
-import { RecruitmentService } from '../services/recruitment.service.js';
-import { HrKpiService } from '../services/hr-kpi.service.js';
-import { HrHealthService } from '../services/hr-health.service.js';
-import { HrAiService } from '../services/hr-ai.service.js';
-import { EmployeeRepository, HR_EMPLOYEE_REPOSITORY, InMemoryEmployeeRepository } from '../repositories/employee.repository.js';
-import { PositionRepository, HR_POSITION_REPOSITORY, InMemoryPositionRepository } from '../repositories/position.repository.js';
-import { CandidateRepository, HR_CANDIDATE_REPOSITORY, InMemoryCandidateRepository } from '../repositories/candidate.repository.js';
+import { EventBus, EventCatalogService, TenantContextService } from "@oracle69/runtime";
+import { EmployeeService } from "../services/employee.service.js";
+import { RecruitmentService } from "../services/recruitment.service.js";
+import { HrKpiService } from "../services/hr-kpi.service.js";
+import { HrHealthService } from "../services/hr-health.service.js";
+import { HrAiService } from "../services/hr-ai.service.js";
+import {
+  EmployeeRepository,
+  HR_EMPLOYEE_REPOSITORY,
+  InMemoryEmployeeRepository,
+} from "../repositories/employee.repository.js";
+import {
+  PositionRepository,
+  HR_POSITION_REPOSITORY,
+  InMemoryPositionRepository,
+} from "../repositories/position.repository.js";
+import {
+  CandidateRepository,
+  HR_CANDIDATE_REPOSITORY,
+  InMemoryCandidateRepository,
+} from "../repositories/candidate.repository.js";
 
 export interface HrTestContext {
   employeeService: EmployeeService;
@@ -40,7 +52,13 @@ export function createHrTestModule(): HrTestContext {
   const candidateRepo: CandidateRepository = new InMemoryCandidateRepository();
 
   const employeeService = new EmployeeService(employeeRepo, eventBus, tenantContext);
-  const recruitmentService = new RecruitmentService(positionRepo, candidateRepo, employeeService, eventBus, tenantContext);
+  const recruitmentService = new RecruitmentService(
+    positionRepo,
+    candidateRepo,
+    employeeService,
+    eventBus,
+    tenantContext,
+  );
   const kpiService = new HrKpiService(employeeRepo, positionRepo, candidateRepo, tenantContext);
   const healthService = new HrHealthService(kpiService);
   const aiService = new HrAiService(undefined as never);

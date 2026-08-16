@@ -1,8 +1,8 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
-import { KnowledgeIndexEntry } from '../types.js';
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
+import { KnowledgeIndexEntry } from "../types.js";
 
-export const KNOWLEDGE_INDEX_REPOSITORY = 'KNOWLEDGE_INDEX_REPOSITORY';
+export const KNOWLEDGE_INDEX_REPOSITORY = "KNOWLEDGE_INDEX_REPOSITORY";
 
 export interface IndexEntryInput {
   articleId: string;
@@ -12,7 +12,11 @@ export interface IndexEntryInput {
 }
 
 export interface IndexRepository {
-  replaceForArticle(articleId: string, organizationId: string, entries: IndexEntryInput[]): Promise<void>;
+  replaceForArticle(
+    articleId: string,
+    organizationId: string,
+    entries: IndexEntryInput[],
+  ): Promise<void>;
   findByTokens(organizationId: string, tokens: string[]): Promise<KnowledgeIndexEntry[]>;
   findByOrganization(organizationId: string): Promise<KnowledgeIndexEntry[]>;
   countByArticle(organizationId: string): Promise<Map<string, number>>;
@@ -20,11 +24,11 @@ export interface IndexRepository {
 
 @Injectable()
 export class PrismaIndexRepository implements IndexRepository {
-  constructor(@Optional() @Inject('PrismaService') private readonly prisma?: PrismaClient) {}
+  constructor(@Optional() @Inject("PrismaService") private readonly prisma?: PrismaClient) {}
 
   private get db(): PrismaClient {
     if (!this.prisma) {
-      throw new Error('PrismaService is not available');
+      throw new Error("PrismaService is not available");
     }
     return this.prisma;
   }

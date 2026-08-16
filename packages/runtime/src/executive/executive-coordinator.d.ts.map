@@ -1,0 +1,1 @@
+{"version":3,"file":"executive-coordinator.d.ts","sourceRoot":"","sources":["executive-coordinator.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,QAAQ,EAAE,MAAM,wBAAwB,CAAC;AAElD,qBACa,oBAAoB;IAGnB,OAAO,CAAC,QAAQ,CAAC,QAAQ;IAFrC,OAAO,CAAC,QAAQ,CAAC,MAAM,CAAyC;gBAEnC,QAAQ,EAAE,QAAQ;IAEzC,eAAe,CAAC,UAAU,EAAE,MAAM,GAAG,OAAO,CAAC,IAAI,CAAC;CAIzD"}

@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
-import { IRuntimeContext } from './runtime.types.js';
+import { v4 as uuidv4 } from "uuid";
+import { IRuntimeContext } from "./runtime.types.js";
 
 /**
  * Implementation of the Runtime Context for cross-system correlation and state management.
@@ -12,11 +12,11 @@ export class RuntimeContext implements IRuntimeContext {
   constructor(
     public readonly taskId: string,
     public readonly orgId: string,
-    initialMetadata: Record<string, any> = {}
+    initialMetadata: Record<string, any> = {},
   ) {
     this.traceId = uuidv4();
     this.startTime = new Date().toISOString();
-    
+
     // Seed initial metadata
     Object.entries(initialMetadata).forEach(([key, value]) => {
       this.state.set(key, value);

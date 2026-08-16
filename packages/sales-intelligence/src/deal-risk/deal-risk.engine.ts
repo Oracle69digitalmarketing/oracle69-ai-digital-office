@@ -1,12 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { AiModelProvider } from '../models/ai-model.interface.js';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { AiModelProvider } from "../models/ai-model.interface.js";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface DealRisk {
   riskType: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   confidence: number;
   evidence: string[];
   recommendedAction: string;
@@ -20,7 +23,7 @@ export class DealRiskEngine {
   constructor(
     private readonly modelProvider: any,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async detectRisks(opportunityId: string): Promise<DealRisk[] | null> {
@@ -29,10 +32,10 @@ export class DealRiskEngine {
     const opportunity = await this.prisma.crmOpportunity.findUnique({
       where: {
         id: opportunityId,
-        organizationId: this.tenantContext.resolveTenantId()
+        organizationId: this.tenantContext.resolveTenantId(),
       },
       include: {
-        activities: { orderBy: { createdAt: 'desc' }, take: 10 },
+        activities: { orderBy: { createdAt: "desc" }, take: 10 },
         notes: true,
         contacts: true,
       },
@@ -48,7 +51,7 @@ export class DealRiskEngine {
 
     try {
       const response = await this.modelProvider.analyze(opportunity, aiInstruction);
-      const data = JSON.parse(response.content.replace(/```json/g, '').replace(/```/g, ''));
+      const data = JSON.parse(response.content.replace(/```json/g, "").replace(/```/g, ""));
       const risks: DealRisk[] = data.risks || [];
 
       if (risks.length > 0) {
@@ -57,8 +60,8 @@ export class DealRiskEngine {
           new SalesIntelligenceEvent(SalesIntelligenceEventType.DEAL_RISK_DETECTED, {
             opportunityId,
             risks,
-            tenantId: this.tenantContext.resolveTenantId()
-          })
+            tenantId: this.tenantContext.resolveTenantId(),
+          }),
         );
       }
 

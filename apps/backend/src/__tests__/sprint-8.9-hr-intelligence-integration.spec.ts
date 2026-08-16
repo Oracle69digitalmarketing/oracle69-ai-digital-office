@@ -241,7 +241,9 @@ describe("HR Intelligence backend integration (Sprint 8.9)", () => {
       updatedAt: new Date(),
     });
 
-    const staged = await controller.updateCandidateStage("org-1", "cand-1", { stage: "interviewing" });
+    const staged = await controller.updateCandidateStage("org-1", "cand-1", {
+      stage: "interviewing",
+    });
     expect(staged.stage).toBe("interviewing");
     expect(prisma.hrCandidate.update).toHaveBeenCalledTimes(1);
   });
@@ -321,12 +323,18 @@ describe("HR Intelligence backend integration (Sprint 8.9)", () => {
     });
 
     expect(await controller.listEmployees("org-attacker")).toEqual([]);
-    await expect(controller.updateEmployee("org-attacker", "emp-owner", { title: "Hacked" })).rejects.toThrow(
+    await expect(
+      controller.updateEmployee("org-attacker", "emp-owner", { title: "Hacked" }),
+    ).rejects.toThrow("Employee not found");
+    await expect(controller.offboardEmployee("org-attacker", "emp-owner")).rejects.toThrow(
       "Employee not found",
     );
-    await expect(controller.offboardEmployee("org-attacker", "emp-owner")).rejects.toThrow("Employee not found");
-    await expect(controller.closePosition("org-attacker", "pos-owner")).rejects.toThrow("Position not found");
-    await expect(controller.hireCandidate("org-attacker", "cand-owner")).rejects.toThrow("Candidate not found");
+    await expect(controller.closePosition("org-attacker", "pos-owner")).rejects.toThrow(
+      "Position not found",
+    );
+    await expect(controller.hireCandidate("org-attacker", "cand-owner")).rejects.toThrow(
+      "Candidate not found",
+    );
   });
 
   it("should assess workforce health and generate deterministic insights without an AI provider", async () => {
@@ -353,6 +361,8 @@ describe("HR Intelligence backend integration (Sprint 8.9)", () => {
 
     const insights = await controller.getInsights("org-1");
     expect(insights.length).toBeGreaterThanOrEqual(3);
-    expect(insights.every((i: any) => typeof i.content === "string" && i.content.length > 0)).toBe(true);
+    expect(insights.every((i: any) => typeof i.content === "string" && i.content.length > 0)).toBe(
+      true,
+    );
   });
 });

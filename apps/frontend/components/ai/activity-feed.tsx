@@ -66,21 +66,26 @@ export function ActivityFeed() {
   return (
     <div className="space-y-4">
       {activities.map((item) => (
-        <div key={item.id} className="flex space-x-3 rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-          <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full shrink-0",
-            item.status === "EVENT" ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-600"
-          )}>
+        <div
+          key={item.id}
+          className="flex space-x-3 rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+        >
+          <div
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-full shrink-0",
+              item.status === "EVENT"
+                ? "bg-indigo-100 text-indigo-600"
+                : "bg-gray-100 text-gray-600",
+            )}
+          >
             {item.user ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
           </div>
           <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-gray-900">
-                {item.action.replace(/([A-Z])/g, ' $1').trim()}
+                {item.action.replace(/([A-Z])/g, " $1").trim()}
               </p>
-              <span className="text-xs text-gray-500">
-                {timeAgo(new Date(item.createdAt))}
-              </span>
+              <span className="text-xs text-gray-500">{timeAgo(new Date(item.createdAt))}</span>
             </div>
             <p className="text-sm text-gray-500">
               Source: <span className="font-mono text-xs">{item.resource}</span>

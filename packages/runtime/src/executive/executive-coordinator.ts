@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ExecutiveEventType, ExecutiveEvent } from './executive-events.js';
-import { EventBus } from '../events/event-bus.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { ExecutiveEventType, ExecutiveEvent } from "./executive-events.js";
+import { EventBus } from "../events/event-bus.js";
 
 @Injectable()
 export class ExecutiveCoordinator {
@@ -10,6 +10,12 @@ export class ExecutiveCoordinator {
 
   async resolveConflict(conflictId: string): Promise<void> {
     this.logger.log(`Resolving conflict ${conflictId}`);
-    this.eventBus.publish(new ExecutiveEvent(ExecutiveEventType.ENTERPRISE_CONFLICT_RESOLVED, { conflictId }, { source: 'ExecutiveCoordinator' }));
+    this.eventBus.publish(
+      new ExecutiveEvent(
+        ExecutiveEventType.ENTERPRISE_CONFLICT_RESOLVED,
+        { conflictId },
+        { source: "ExecutiveCoordinator" },
+      ),
+    );
   }
 }

@@ -1,20 +1,20 @@
 export enum MissionStatus {
-  DRAFT = 'draft',
-  APPROVED = 'approved',
-  PLANNED = 'planned',
-  SCHEDULED = 'scheduled',
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  WAITING_FOR_APPROVAL = 'waiting_for_approval',
-  RETRYING = 'retrying',
-  RECOVERED = 'recovered',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  FAILED = 'failed',
-  ARCHIVED = 'archived',
+  DRAFT = "draft",
+  APPROVED = "approved",
+  PLANNED = "planned",
+  SCHEDULED = "scheduled",
+  RUNNING = "running",
+  PAUSED = "paused",
+  WAITING_FOR_APPROVAL = "waiting_for_approval",
+  RETRYING = "retrying",
+  RECOVERED = "recovered",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
+  FAILED = "failed",
+  ARCHIVED = "archived",
 }
 
-export type MissionPriority = 'low' | 'normal' | 'high' | 'critical';
+export type MissionPriority = "low" | "normal" | "high" | "critical";
 
 /**
  * Durable mission contract.
@@ -62,7 +62,10 @@ export interface Mission {
 }
 
 export interface IMissionManager {
-  createMission(mission: Mission, options?: { tenantId?: string; idempotencyKey?: string }): Promise<Mission>;
+  createMission(
+    mission: Mission,
+    options?: { tenantId?: string; idempotencyKey?: string },
+  ): Promise<Mission>;
   startMission(missionId: string, options?: { tenantId?: string }): Promise<Mission>;
   listMissions(tenantId?: string): Promise<Mission[]>;
   getMission(missionId: string, tenantId?: string): Promise<Mission | null>;

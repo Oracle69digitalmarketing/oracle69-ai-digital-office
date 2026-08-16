@@ -1,13 +1,13 @@
-import { IRuntimeContext } from '../runtime.types.js';
+import { IRuntimeContext } from "../runtime.types.js";
 
 /**
  * Supported task execution types.
  */
 export enum TaskType {
-  SEQUENTIAL = 'sequential',
-  PARALLEL = 'parallel',
-  CONDITIONAL = 'conditional',
-  APPROVAL = 'approval',
+  SEQUENTIAL = "sequential",
+  PARALLEL = "parallel",
+  CONDITIONAL = "conditional",
+  APPROVAL = "approval",
 }
 
 /**
@@ -46,7 +46,7 @@ export interface TaskDefinition {
  */
 export interface RetryPolicy {
   maxAttempts: number;
-  backoff: 'fixed' | 'exponential';
+  backoff: "fixed" | "exponential";
   delayMs: number;
 }
 
@@ -77,7 +77,7 @@ export interface IPlanningEngine {
    * @param context The current execution context.
    */
   generatePlan(goal: string, context: IRuntimeContext): Promise<ExecutionPlan>;
-  
+
   /**
    * Validates if a plan is executable (e.g. no cycles, agents available).
    * @param plan The plan to validate.

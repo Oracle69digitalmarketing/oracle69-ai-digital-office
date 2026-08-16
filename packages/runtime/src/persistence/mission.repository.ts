@@ -1,10 +1,10 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
-import { Mission, MissionStatus } from '../missions/mission.types.js';
-import { RuntimeError } from '../errors/runtime.errors.js';
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
+import { Mission, MissionStatus } from "../missions/mission.types.js";
+import { RuntimeError } from "../errors/runtime.errors.js";
 
 /** Nest DI token for the {@link MissionRepository} contract. */
-export const MISSION_REPOSITORY = 'MISSION_REPOSITORY';
+export const MISSION_REPOSITORY = "MISSION_REPOSITORY";
 
 /**
  * Thrown when a mission with the same deterministic key already exists within
@@ -12,10 +12,13 @@ export const MISSION_REPOSITORY = 'MISSION_REPOSITORY';
  */
 export class MissionConflictError extends RuntimeError {
   constructor(missionKey: string, tenantId: string) {
-    super(`Mission Conflict: a mission with key '${missionKey}' already exists for tenant '${tenantId}'.`, {
-      missionKey,
-      tenantId,
-    });
+    super(
+      `Mission Conflict: a mission with key '${missionKey}' already exists for tenant '${tenantId}'.`,
+      {
+        missionKey,
+        tenantId,
+      },
+    );
   }
 }
 
@@ -60,7 +63,10 @@ export class InMemoryMissionRepository implements MissionRepository {
     if (this.missions.has(mission.id)) {
       throw new MissionConflictError(mission.missionKey ?? mission.id, mission.tenantId);
     }
-    const existing = await this.findByMissionKey(mission.missionKey ?? mission.id, mission.tenantId);
+    const existing = await this.findByMissionKey(
+      mission.missionKey ?? mission.id,
+      mission.tenantId,
+    );
     if (existing && existing.id !== mission.id) {
       throw new MissionConflictError(mission.missionKey ?? mission.id, mission.tenantId);
     }
@@ -71,7 +77,9 @@ export class InMemoryMissionRepository implements MissionRepository {
 
   async update(mission: Mission): Promise<Mission> {
     if (!this.missions.has(mission.id)) {
-      throw new RuntimeError(`Mission not found: '${mission.id}' cannot be updated.`, { missionId: mission.id });
+      throw new RuntimeError(`Mission not found: '${mission.id}' cannot be updated.`, {
+        missionId: mission.id,
+      });
     }
     const updated: Mission = {
       ...this.clone(mission),
@@ -127,11 +135,11 @@ export class InMemoryMissionRepository implements MissionRepository {
  */
 @Injectable()
 export class PrismaMissionRepository implements MissionRepository {
-  constructor(@Optional() @Inject('PrismaService') private readonly prisma?: PrismaClient) {}
+  constructor(@Optional() @Inject("PrismaService") private readonly prisma?: PrismaClient) {}
 
   private get db(): PrismaClient {
     if (!this.prisma) {
-      throw new Error('PrismaService is not available for the mission repository.');
+      throw new Error("PrismaService is not available for the mission repository.");
     }
     return this.prisma;
   }
@@ -144,7 +152,7 @@ export class PrismaMissionRepository implements MissionRepository {
       });
       return this.fromRow(created as any);
     } catch (error: any) {
-      if (error?.code === 'P2002') {
+      if (error?.code === "P2002") {
         throw new MissionConflictError(missionKey, mission.tenantId);
       }
       throw error;
@@ -160,7 +168,7 @@ export class PrismaMissionRepository implements MissionRepository {
       });
       return this.fromRow(updated as any);
     } catch (error: any) {
-      if (error?.code === 'P2002') {
+      if (error?.code === "P2002") {
         throw new MissionConflictError(missionKey, mission.tenantId);
       }
       throw error;
@@ -187,7 +195,7 @@ export class PrismaMissionRepository implements MissionRepository {
         organizationId: tenantId,
         ...(status ? { status: status } : {}),
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
     return rows.map((row: unknown) => this.fromRow(row as any));
   }
@@ -196,7 +204,14 @@ export class PrismaMissionRepository implements MissionRepository {
     const rows = await this.db.mission.findMany({
       where: {
         ...(tenantId ? { organizationId: tenantId } : {}),
-        status: { in: [MissionStatus.RUNNING, MissionStatus.PAUSED, MissionStatus.RETRYING, MissionStatus.SCHEDULED] },
+        status: {
+          in: [
+            MissionStatus.RUNNING,
+            MissionStatus.PAUSED,
+            MissionStatus.RETRYING,
+            MissionStatus.SCHEDULED,
+          ],
+        },
       },
     });
     return rows.map((row: unknown) => this.fromRow(row as any));
@@ -224,7 +239,7 @@ export class PrismaMissionRepository implements MissionRepository {
     return {
       id: row.id,
       goal: row.goal,
-      priority: row.priority as Mission['priority'],
+      priority: row.priority as Mission["priority"],
       deadline: row.deadline ? new Date(row.deadline).toISOString() : new Date(0).toISOString(),
       owner: row.owner,
       status: row.status as MissionStatus,

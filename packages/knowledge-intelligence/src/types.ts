@@ -1,7 +1,7 @@
 export enum KnowledgeArticleStatus {
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  ARCHIVED = 'archived',
+  DRAFT = "draft",
+  PUBLISHED = "published",
+  ARCHIVED = "archived",
 }
 
 /** A versioned, tenant-scoped knowledge article/document. */
@@ -73,23 +73,23 @@ export interface KnowledgeKpis {
 /** Knowledge health snapshot combining KPIs and content exposure. */
 export interface KnowledgeHealth {
   score: number;
-  status: 'healthy' | 'at_risk' | 'critical';
+  status: "healthy" | "at_risk" | "critical";
   kpis: KnowledgeKpis;
   reasoning: string[];
 }
 
 export interface KnowledgeAiInsight {
-  type: 'forecast' | 'recommendation' | 'alert';
+  type: "forecast" | "recommendation" | "alert";
   title: string;
   content: string;
-  priority: 'low' | 'normal' | 'high';
+  priority: "low" | "normal" | "high";
   impact?: string;
 }
 
 export interface KnowledgeRecommendation {
   title: string;
   reason: string;
-  priority: 'low' | 'normal' | 'high';
+  priority: "low" | "normal" | "high";
   category?: string;
 }
 

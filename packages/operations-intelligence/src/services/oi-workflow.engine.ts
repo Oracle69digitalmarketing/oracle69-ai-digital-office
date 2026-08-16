@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { OperationsIntelligenceEventType, OperationsIntelligenceEvent } from '../events/oi.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  OperationsIntelligenceEventType,
+  OperationsIntelligenceEvent,
+} from "../events/oi.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface WorkflowMetrics {
   period: string;
@@ -19,10 +22,10 @@ export interface WorkflowMetrics {
   };
 }
 
-const COMPLETED_STATUSES = ['completed', 'done'];
-const FAILED_STATUSES = ['failed', 'error'];
-const CANCELLED_STATUSES = ['cancelled', 'canceled'];
-const RUNNING_STATUSES = ['in_progress', 'running', 'waiting', 'paused', 'retrying', 'ready'];
+const COMPLETED_STATUSES = ["completed", "done"];
+const FAILED_STATUSES = ["failed", "error"];
+const CANCELLED_STATUSES = ["cancelled", "canceled"];
+const RUNNING_STATUSES = ["in_progress", "running", "waiting", "paused", "retrying", "ready"];
 
 const STALLED_AFTER_DAYS = 7;
 
@@ -42,12 +45,15 @@ export class OiWorkflowEngine {
   /**
    * Deterministically computes the workflow metrics without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<WorkflowMetrics> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<WorkflowMetrics> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const workflows = await this.prisma.workflow.findMany({
       where: { project: { organizationId } },
@@ -59,20 +65,20 @@ export class OiWorkflowEngine {
 
     const workflowsTotal = workflows.length;
     const workflowsCompleted = workflows.filter((workflow) =>
-      COMPLETED_STATUSES.includes(workflow.status)
+      COMPLETED_STATUSES.includes(workflow.status),
     ).length;
     const failedWorkflows = workflows.filter((workflow) =>
-      FAILED_STATUSES.includes(workflow.status)
+      FAILED_STATUSES.includes(workflow.status),
     ).length;
     const runningWorkflows = workflows.filter((workflow) =>
-      RUNNING_STATUSES.includes(workflow.status)
+      RUNNING_STATUSES.includes(workflow.status),
     );
     const successRate = workflowsTotal > 0 ? workflowsCompleted / workflowsTotal : 0;
     const avgStages = workflowsTotal > 0 ? steps.length / workflowsTotal : 0;
 
     const stalenessCutoff = new Date(Date.now() - STALLED_AFTER_DAYS * 86400000);
     const stalledWorkflows = runningWorkflows.filter(
-      (workflow) => workflow.createdAt < stalenessCutoff
+      (workflow) => workflow.createdAt < stalenessCutoff,
     ).length;
 
     const statusBreakdown: Record<string, number> = {};
@@ -99,8 +105,13 @@ export class OiWorkflowEngine {
   /**
    * Computes, persists and publishes the workflow snapshot.
    */
-  async generateSnapshot(organizationId: string, period: string = currentPeriod()): Promise<WorkflowMetrics> {
-    this.logger.log(`Generating workflow snapshot for organization ${organizationId}, period ${period}`);
+  async generateSnapshot(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<WorkflowMetrics> {
+    this.logger.log(
+      `Generating workflow snapshot for organization ${organizationId}, period ${period}`,
+    );
 
     const metrics = await this.compute(organizationId, period);
 
@@ -123,7 +134,7 @@ export class OiWorkflowEngine {
         organizationId,
         period,
         metrics,
-      })
+      }),
     );
 
     return metrics;
@@ -135,7 +146,7 @@ export class OiWorkflowEngine {
   async listSnapshots(organizationId: string, take = 50) {
     return this.prisma.oiWorkflowSnapshot.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }

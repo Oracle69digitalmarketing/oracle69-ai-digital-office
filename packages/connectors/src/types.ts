@@ -1,6 +1,6 @@
-import { Priority } from '@oracle69/shared';
+import { Priority } from "@oracle69/shared";
 
-export type ConnectorStatus = 'connected' | 'disconnected' | 'error' | 'unauthorized';
+export type ConnectorStatus = "connected" | "disconnected" | "error" | "unauthorized";
 
 export interface ConnectorMetadata {
   id: string;

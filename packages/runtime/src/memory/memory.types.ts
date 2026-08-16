@@ -1,6 +1,6 @@
 export interface MemoryRecord {
   id: string;
-  type: 'working' | 'semantic' | 'business';
+  type: "working" | "semantic" | "business";
   content: any;
   timestamp: string;
   metadata?: Record<string, any>;

@@ -1,23 +1,23 @@
-import { Module, OnModuleInit } from '@nestjs/common';
-import { ConnectorRegistry } from './connector-registry.js';
-import { ConnectorManager } from './connector-manager.js';
-import { CredentialManager } from './credential-manager.js';
-import { OAuthManager } from './oauth-manager.js';
-import { SharedModule } from '@oracle69/shared';
-import { MemoryModule } from '@oracle69/memory';
-import { GoogleDriveConnector } from './google-drive.connector.js';
-import { GoogleDocsConnector } from './google-docs.connector.js';
-import { GmailConnector } from './gmail.connector.js';
-import { GoogleCalendarConnector } from './google-calendar.connector.js';
-import { SlackConnector } from './slack.connector.js';
-import { HubSpotConnector } from './hubspot.connector.js';
-import { SalesforceConnector } from './salesforce.connector.js';
-import { OutlookConnector } from './outlook.connector.js';
-import { TeamsConnector } from './teams.connector.js';
-import { ZoomConnector } from './zoom.connector.js';
-import { NotionConnector } from './notion.connector.js';
-import { JiraConnector } from './jira.connector.js';
-import { WhatsAppBusinessConnector } from './whatsapp.connector.js';
+import { Module, OnModuleInit } from "@nestjs/common";
+import { ConnectorRegistry } from "./connector-registry.js";
+import { ConnectorManager } from "./connector-manager.js";
+import { CredentialManager } from "./credential-manager.js";
+import { OAuthManager } from "./oauth-manager.js";
+import { SharedModule } from "@oracle69/shared";
+import { MemoryModule } from "@oracle69/memory";
+import { GoogleDriveConnector } from "./google-drive.connector.js";
+import { GoogleDocsConnector } from "./google-docs.connector.js";
+import { GmailConnector } from "./gmail.connector.js";
+import { GoogleCalendarConnector } from "./google-calendar.connector.js";
+import { SlackConnector } from "./slack.connector.js";
+import { HubSpotConnector } from "./hubspot.connector.js";
+import { SalesforceConnector } from "./salesforce.connector.js";
+import { OutlookConnector } from "./outlook.connector.js";
+import { TeamsConnector } from "./teams.connector.js";
+import { ZoomConnector } from "./zoom.connector.js";
+import { NotionConnector } from "./notion.connector.js";
+import { JiraConnector } from "./jira.connector.js";
+import { WhatsAppBusinessConnector } from "./whatsapp.connector.js";
 
 @Module({
   imports: [SharedModule, MemoryModule],
@@ -40,12 +40,7 @@ import { WhatsAppBusinessConnector } from './whatsapp.connector.js';
     JiraConnector,
     WhatsAppBusinessConnector,
   ],
-  exports: [
-    ConnectorRegistry,
-    ConnectorManager,
-    CredentialManager,
-    OAuthManager,
-  ],
+  exports: [ConnectorRegistry, ConnectorManager, CredentialManager, OAuthManager],
 })
 export class ConnectorModule implements OnModuleInit {
   constructor(
@@ -62,7 +57,7 @@ export class ConnectorModule implements OnModuleInit {
     private zoom: ZoomConnector,
     private notion: NotionConnector,
     private jira: JiraConnector,
-    private whatsapp: WhatsAppBusinessConnector
+    private whatsapp: WhatsAppBusinessConnector,
   ) {}
 
   onModuleInit() {

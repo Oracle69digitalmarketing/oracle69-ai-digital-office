@@ -1,17 +1,68 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { KNOWLEDGE_ARTICLE_REPOSITORY, type ArticleRepository } from '../repositories/article.repository.js';
-import { KNOWLEDGE_INDEX_REPOSITORY, type IndexRepository } from '../repositories/index.repository.js';
-import { KnowledgeArticle } from '../types.js';
-import { EventBus, TenantContextService } from '@oracle69/runtime';
-import { KnowledgeEventType } from '../events/knowledge.events.js';
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  KNOWLEDGE_ARTICLE_REPOSITORY,
+  type ArticleRepository,
+} from "../repositories/article.repository.js";
+import {
+  KNOWLEDGE_INDEX_REPOSITORY,
+  type IndexRepository,
+} from "../repositories/index.repository.js";
+import { KnowledgeArticle } from "../types.js";
+import { EventBus, TenantContextService } from "@oracle69/runtime";
+import { KnowledgeEventType } from "../events/knowledge.events.js";
 
-const EVENT_SOURCE = 'knowledge-intelligence';
+const EVENT_SOURCE = "knowledge-intelligence";
 const STOP_WORDS = new Set([
-  'the', 'and', 'for', 'are', 'was', 'were', 'with', 'that', 'this', 'these',
-  'those', 'from', 'into', 'onto', 'out', 'off', 'over', 'under', 'about',
-  'who', 'whom', 'whose', 'which', 'what', 'when', 'where', 'why', 'how',
-  'not', 'but', 'our', 'their', 'your', 'its', 'his', 'her', 'them', 'they',
-  'you', 'we', 'us', 'to', 'of', 'in', 'on', 'by', 'at', 'as', 'an', 'a',
+  "the",
+  "and",
+  "for",
+  "are",
+  "was",
+  "were",
+  "with",
+  "that",
+  "this",
+  "these",
+  "those",
+  "from",
+  "into",
+  "onto",
+  "out",
+  "off",
+  "over",
+  "under",
+  "about",
+  "who",
+  "whom",
+  "whose",
+  "which",
+  "what",
+  "when",
+  "where",
+  "why",
+  "how",
+  "not",
+  "but",
+  "our",
+  "their",
+  "your",
+  "its",
+  "his",
+  "her",
+  "them",
+  "they",
+  "you",
+  "we",
+  "us",
+  "to",
+  "of",
+  "in",
+  "on",
+  "by",
+  "at",
+  "as",
+  "an",
+  "a",
 ]);
 
 export interface TokenWeight {
@@ -42,12 +93,14 @@ export class IndexService {
       .filter((t) => t.length > 1 && !STOP_WORDS.has(t));
   }
 
-  buildTokens(article: Pick<KnowledgeArticle, 'title' | 'summary' | 'content' | 'tags'>): TokenWeight[] {
+  buildTokens(
+    article: Pick<KnowledgeArticle, "title" | "summary" | "content" | "tags">,
+  ): TokenWeight[] {
     const fields: Array<[string, number]> = [
       [article.title, 5],
-      [article.summary ?? '', 3],
+      [article.summary ?? "", 3],
       [article.content, 1],
-      [(article.tags ?? []).join(' '), 4],
+      [(article.tags ?? []).join(" "), 4],
     ];
     const counts = new Map<string, number>();
     let total = 0;
@@ -66,13 +119,18 @@ export class IndexService {
   async reindexArticle(articleId: string, organizationId?: string): Promise<void> {
     const tenantId = this.tenantContext.resolveTenantId(organizationId);
     const article = await this.articleRepo.findById(articleId, tenantId);
-    if (!article) throw new Error('Article not found');
+    if (!article) throw new Error("Article not found");
 
     const tokens = this.buildTokens(article);
     await this.indexRepo.replaceForArticle(
       articleId,
       tenantId,
-      tokens.map((t) => ({ articleId, token: t.token, weight: t.weight, organizationId: tenantId })),
+      tokens.map((t) => ({
+        articleId,
+        token: t.token,
+        weight: t.weight,
+        organizationId: tenantId,
+      })),
     );
     await this.eventBus.publish(
       KnowledgeEventType.INDEX_UPDATED,

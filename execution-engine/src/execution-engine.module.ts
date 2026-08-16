@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { ExecutionEngine } from './execution-engine.js';
-import { PrismaWorkflowTraceRepository } from './prisma-workflow-trace-repository.js';
-import { MemoryModule } from '@oracle69/memory';
+import { Module } from "@nestjs/common";
+import { ExecutionEngine } from "./execution-engine.js";
+import { PrismaWorkflowTraceRepository } from "./prisma-workflow-trace-repository.js";
+import { MemoryModule } from "@oracle69/memory";
 
 @Module({
   imports: [MemoryModule],

@@ -1,8 +1,11 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  EnterpriseIntelligenceEventType,
+  EnterpriseIntelligenceEvent,
+} from "../events/ei.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface EnterpriseKpiMetrics {
   period: string;
@@ -40,7 +43,7 @@ export class EiKpiEngine {
 
   constructor(
     private readonly messageBus: MessageBus,
-    @Optional() @Inject('PrismaService') prismaService?: PrismaClient,
+    @Optional() @Inject("PrismaService") prismaService?: PrismaClient,
   ) {
     this.prisma = prismaService ?? new PrismaClient();
   }
@@ -48,7 +51,10 @@ export class EiKpiEngine {
   /**
    * Deterministically computes enterprise KPIs without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<EnterpriseKpiMetrics> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<EnterpriseKpiMetrics> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       include: {
@@ -64,21 +70,21 @@ export class EiKpiEngine {
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const opportunities = organization.crmOpportunities;
     const leads = organization.crmLeads;
     const contacts = organization.crmContacts;
     const accounts = organization.crmOrganizations;
 
-    const openOpportunities = opportunities.filter((o) => o.stage !== 'won' && o.stage !== 'lost');
-    const wonOpportunities = opportunities.filter((o) => o.stage === 'won');
-    const lostOpportunities = opportunities.filter((o) => o.stage === 'lost');
+    const openOpportunities = opportunities.filter((o) => o.stage !== "won" && o.stage !== "lost");
+    const wonOpportunities = opportunities.filter((o) => o.stage === "won");
+    const lostOpportunities = opportunities.filter((o) => o.stage === "lost");
 
     const totalPipelineValue = openOpportunities.reduce((sum, o) => sum + o.value, 0);
     const weightedPipeline = openOpportunities.reduce(
       (sum, o) => sum + o.value * (o.probability || 0.5),
-      0
+      0,
     );
     const wonRevenue = wonOpportunities.reduce((sum, o) => sum + o.value, 0);
     const lostValue = lostOpportunities.reduce((sum, o) => sum + o.value, 0);
@@ -86,7 +92,9 @@ export class EiKpiEngine {
     const wonLostTotal = wonOpportunities.length + lostOpportunities.length;
     const winRate = wonLostTotal > 0 ? wonOpportunities.length / wonLostTotal : 0;
 
-    const qualifiedLeads = leads.filter((l) => l.status === 'converted' || l.status === 'qualified').length;
+    const qualifiedLeads = leads.filter(
+      (l) => l.status === "converted" || l.status === "qualified",
+    ).length;
     const leadConversionRate = leads.length > 0 ? qualifiedLeads / leads.length : 0;
 
     const healthScores = accounts
@@ -97,11 +105,16 @@ export class EiKpiEngine {
         ? healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length
         : 0;
 
-    const accountsAtRisk = accounts.filter((a) => a.healthScore !== null && a.healthScore !== undefined && a.healthScore < 75).length;
-    const criticalAccounts = accounts.filter((a) => a.healthScore !== null && a.healthScore !== undefined && a.healthScore < 45).length;
+    const accountsAtRisk = accounts.filter(
+      (a) => a.healthScore !== null && a.healthScore !== undefined && a.healthScore < 75,
+    ).length;
+    const criticalAccounts = accounts.filter(
+      (a) => a.healthScore !== null && a.healthScore !== undefined && a.healthScore < 45,
+    ).length;
     const activeChurnRisks = accounts.reduce(
-      (sum, a) => sum + a.churnRisks.filter((r) => r.severity === 'high' || r.severity === 'critical').length,
-      0
+      (sum, a) =>
+        sum + a.churnRisks.filter((r) => r.severity === "high" || r.severity === "critical").length,
+      0,
     );
     const totalInteractions = accounts.reduce((sum, a) => sum + a.interactions.length, 0);
 
@@ -134,8 +147,13 @@ export class EiKpiEngine {
   /**
    * Computes, persists and publishes an enterprise KPI snapshot.
    */
-  async generateSnapshot(organizationId: string, period: string = currentPeriod()): Promise<EnterpriseKpiMetrics> {
-    this.logger.log(`Generating enterprise KPI snapshot for organization ${organizationId}, period ${period}`);
+  async generateSnapshot(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<EnterpriseKpiMetrics> {
+    this.logger.log(
+      `Generating enterprise KPI snapshot for organization ${organizationId}, period ${period}`,
+    );
 
     const metrics = await this.compute(organizationId, period);
 
@@ -149,7 +167,10 @@ export class EiKpiEngine {
 
     this.messageBus.publish(
       EnterpriseIntelligenceEventType.KPI_UPDATED,
-      new EnterpriseIntelligenceEvent(EnterpriseIntelligenceEventType.KPI_UPDATED, { organizationId, metrics })
+      new EnterpriseIntelligenceEvent(EnterpriseIntelligenceEventType.KPI_UPDATED, {
+        organizationId,
+        metrics,
+      }),
     );
 
     return metrics;

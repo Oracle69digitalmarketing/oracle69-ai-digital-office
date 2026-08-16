@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from '../events/mi.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { MarketingIntelligenceEventType, MarketingIntelligenceEvent } from "../events/mi.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface SourceConversion {
   source: string;
@@ -40,35 +40,37 @@ export class MiConversionEngine {
   private readonly logger = new Logger(MiConversionEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+  constructor(private readonly messageBus: MessageBus) {}
 
   /**
    * Deterministically computes the conversion metrics without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<ConversionMetrics> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<ConversionMetrics> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       include: { crmLeads: true },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const leads = organization.crmLeads;
     const totalLeads = leads.length;
     const qualifiedLeads = leads.filter(
-      (lead) => lead.status === 'qualified' || lead.status === 'converted'
+      (lead) => lead.status === "qualified" || lead.status === "converted",
     ).length;
     const conversions = qualifiedLeads;
     const conversionRate = totalLeads > 0 ? conversions / totalLeads : 0;
 
     const bySource = new Map<string, SourceConversion>();
     for (const lead of leads) {
-      const source = lead.source && lead.source.trim().length > 0 ? lead.source.toLowerCase() : 'unknown';
+      const source =
+        lead.source && lead.source.trim().length > 0 ? lead.source.toLowerCase() : "unknown";
       const entry = bySource.get(source) ?? { source, leads: 0, conversions: 0, conversionRate: 0 };
       entry.leads += 1;
-      if (lead.status === 'qualified' || lead.status === 'converted') entry.conversions += 1;
+      if (lead.status === "qualified" || lead.status === "converted") entry.conversions += 1;
       bySource.set(source, entry);
     }
 
@@ -80,16 +82,20 @@ export class MiConversionEngine {
       .sort((a, b) => b.leads - a.leads);
 
     const withLeads = sources.filter((s) => s.leads > 0);
-    const bestSource = withLeads.length > 0
-      ? withLeads.reduce((best, s) => (s.conversionRate > best.conversionRate ? s : best)).source
-      : null;
-    const weakestSource = withLeads.length > 0
-      ? withLeads.reduce((weakest, s) => (s.conversionRate < weakest.conversionRate ? s : weakest)).source
-      : null;
+    const bestSource =
+      withLeads.length > 0
+        ? withLeads.reduce((best, s) => (s.conversionRate > best.conversionRate ? s : best)).source
+        : null;
+    const weakestSource =
+      withLeads.length > 0
+        ? withLeads.reduce((weakest, s) =>
+            s.conversionRate < weakest.conversionRate ? s : weakest,
+          ).source
+        : null;
 
     const mql = leads.filter((lead) => (lead.score ?? 0) >= 60).length;
     const sql = leads.filter((lead) => (lead.score ?? 0) >= 75).length;
-    const converted = leads.filter((lead) => lead.status === 'converted').length;
+    const converted = leads.filter((lead) => lead.status === "converted").length;
 
     return {
       period,
@@ -113,8 +119,13 @@ export class MiConversionEngine {
   /**
    * Computes, persists and publishes the conversion snapshot.
    */
-  async generateSnapshot(organizationId: string, period: string = currentPeriod()): Promise<ConversionMetrics> {
-    this.logger.log(`Generating conversion snapshot for organization ${organizationId}, period ${period}`);
+  async generateSnapshot(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<ConversionMetrics> {
+    this.logger.log(
+      `Generating conversion snapshot for organization ${organizationId}, period ${period}`,
+    );
 
     const metrics = await this.compute(organizationId, period);
 
@@ -141,7 +152,7 @@ export class MiConversionEngine {
         organizationId,
         period,
         metrics,
-      })
+      }),
     );
 
     return metrics;
@@ -153,7 +164,7 @@ export class MiConversionEngine {
   async listSnapshots(organizationId: string, take = 50) {
     return this.prisma.miConversionSnapshot.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }

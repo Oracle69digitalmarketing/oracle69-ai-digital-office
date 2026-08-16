@@ -1,9 +1,9 @@
-import { jest } from '@jest/globals';
-import { TenantContextService } from '@oracle69/runtime';
-import { OpportunityEngine } from '../opportunity-scoring/opportunity.engine.js';
-import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
+import { jest } from "@jest/globals";
+import { TenantContextService } from "@oracle69/runtime";
+import { OpportunityEngine } from "../opportunity-scoring/opportunity.engine.js";
+import { SalesIntelligenceEventType } from "../events/sales-intelligence.events.js";
 
-describe('OpportunityEngine', () => {
+describe("OpportunityEngine", () => {
   let engine: OpportunityEngine;
   let modelProvider: any;
   let messageBus: any;
@@ -17,19 +17,19 @@ describe('OpportunityEngine', () => {
       publish: jest.fn(),
     };
     tenantContextService = {
-      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+      resolveTenantId: jest.fn().mockReturnValue("tenant-a"),
     };
     engine = new OpportunityEngine(modelProvider, messageBus, tenantContextService);
   });
 
-  it('should analyze an opportunity and publish an event', async () => {
-    const oppId = 'opp-123';
+  it("should analyze an opportunity and publish an event", async () => {
+    const oppId = "opp-123";
     const mockOpp = {
       id: oppId,
-      name: 'Big Deal',
+      name: "Big Deal",
       value: 500000,
-      stage: 'discovery',
-      crmOrganization: { name: 'Acme' },
+      stage: "discovery",
+      crmOrganization: { name: "Acme" },
       activities: [],
       notes: [],
       contacts: [],
@@ -43,11 +43,11 @@ describe('OpportunityEngine', () => {
       content: JSON.stringify({
         opportunityScore: 75,
         winProbability: 0.6,
-        dealVelocity: 'high',
-        engagementLevel: 'medium',
+        dealVelocity: "high",
+        engagementLevel: "medium",
         expectedCloseProbability: 0.5,
         anomalyDetected: false,
-        reasoning: ['Strong interest'],
+        reasoning: ["Strong interest"],
       }),
     });
 
@@ -57,7 +57,7 @@ describe('OpportunityEngine', () => {
     expect(result?.winProbability).toBe(0.6);
     expect(messageBus.publish).toHaveBeenCalledWith(
       SalesIntelligenceEventType.OPPORTUNITY_SCORED,
-      expect.objectContaining({ type: SalesIntelligenceEventType.OPPORTUNITY_SCORED })
+      expect.objectContaining({ type: SalesIntelligenceEventType.OPPORTUNITY_SCORED }),
     );
   });
 });

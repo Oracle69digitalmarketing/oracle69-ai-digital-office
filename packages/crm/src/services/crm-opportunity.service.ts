@@ -1,26 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { CrmOpportunityRepository } from '../repositories/crm-opportunity.repository.js';
-import { CreateCrmOpportunityDto, UpdateCrmOpportunityDto, CreateCrmPipelineDto, UpdateCrmPipelineDto, CreateCrmPipelineStageDto, UpdateCrmPipelineStageDto } from '../dto/crm.dto.js';
-import { CrmEventType, CrmEvent } from '../events/crm.events.js';
+import { Injectable } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { CrmOpportunityRepository } from "../repositories/crm-opportunity.repository.js";
+import {
+  CreateCrmOpportunityDto,
+  UpdateCrmOpportunityDto,
+  CreateCrmPipelineDto,
+  UpdateCrmPipelineDto,
+  CreateCrmPipelineStageDto,
+  UpdateCrmPipelineStageDto,
+} from "../dto/crm.dto.js";
+import { CrmEventType, CrmEvent } from "../events/crm.events.js";
 
 @Injectable()
 export class CrmOpportunityService {
   constructor(
     private readonly repository: CrmOpportunityRepository,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   // Opportunity Methods
   async createOpportunity(data: CreateCrmOpportunityDto) {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
-    const opportunity = await this.repository.createOpportunity({ ...data, organizationId: tenantId });
-    
+    const opportunity = await this.repository.createOpportunity({
+      ...data,
+      organizationId: tenantId,
+    });
+
     this.messageBus.publish(
       CrmEventType.OPPORTUNITY_CREATED,
       new CrmEvent(CrmEventType.OPPORTUNITY_CREATED, { opportunity }),
-      { tenantId }
+      { tenantId },
     );
 
     return opportunity;
@@ -34,31 +44,31 @@ export class CrmOpportunityService {
     this.messageBus.publish(
       CrmEventType.OPPORTUNITY_UPDATED,
       new CrmEvent(CrmEventType.OPPORTUNITY_UPDATED, { opportunity }),
-      { tenantId }
+      { tenantId },
     );
 
     if (data.stage && oldOpportunity?.stage !== data.stage) {
       this.messageBus.publish(
         CrmEventType.OPPORTUNITY_STAGE_CHANGED,
-        new CrmEvent(CrmEventType.OPPORTUNITY_STAGE_CHANGED, { 
-          opportunityId: id, 
+        new CrmEvent(CrmEventType.OPPORTUNITY_STAGE_CHANGED, {
+          opportunityId: id,
           oldStage: oldOpportunity?.stage,
-          newStage: data.stage 
+          newStage: data.stage,
         }),
-        { tenantId }
+        { tenantId },
       );
 
-      if (data.stage === 'won') {
+      if (data.stage === "won") {
         this.messageBus.publish(
           CrmEventType.OPPORTUNITY_WON,
           new CrmEvent(CrmEventType.OPPORTUNITY_WON, { opportunityId: id }),
-          { tenantId }
+          { tenantId },
         );
-      } else if (data.stage === 'lost') {
+      } else if (data.stage === "lost") {
         this.messageBus.publish(
           CrmEventType.OPPORTUNITY_LOST,
           new CrmEvent(CrmEventType.OPPORTUNITY_LOST, { opportunityId: id }),
-          { tenantId }
+          { tenantId },
         );
       }
     }
@@ -73,7 +83,7 @@ export class CrmOpportunityService {
     this.messageBus.publish(
       CrmEventType.OPPORTUNITY_DELETED,
       new CrmEvent(CrmEventType.OPPORTUNITY_DELETED, { opportunityId: id }),
-      { tenantId }
+      { tenantId },
     );
 
     return opportunity;
@@ -121,7 +131,10 @@ export class CrmOpportunityService {
     return this.repository.createPipelineStage({ ...data, organizationId: tenantId });
   }
 
-  async updatePipelineStage(id: string, data: UpdateCrmPipelineStageDto & { organizationId?: string }) {
+  async updatePipelineStage(
+    id: string,
+    data: UpdateCrmPipelineStageDto & { organizationId?: string },
+  ) {
     const tenantId = this.tenantContext.resolveTenantId(data.organizationId);
     return this.repository.updatePipelineStage(id, tenantId, data);
   }

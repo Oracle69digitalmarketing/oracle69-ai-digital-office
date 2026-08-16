@@ -1,6 +1,5 @@
 /* eslint-disable */
-import { Injectable, Logger } from '@nestjs/common';
-
+import { Injectable, Logger } from "@nestjs/common";
 
 export type Trigger = "ProjectApproved" | "TaskCompleted";
 export type Action = "NotifyFinance" | "CreateDocuments" | "AssignTasks";

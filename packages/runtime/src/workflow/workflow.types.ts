@@ -1,15 +1,15 @@
-import { IRuntimeContext } from '../runtime.types.js';
+import { IRuntimeContext } from "../runtime.types.js";
 
 export enum WorkflowState {
-  CREATED = 'created',
-  READY = 'ready',
-  RUNNING = 'running',
-  WAITING = 'waiting',
-  PAUSED = 'paused',
-  RETRYING = 'retrying',
-  FAILED = 'failed',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
+  CREATED = "created",
+  READY = "ready",
+  RUNNING = "running",
+  WAITING = "waiting",
+  PAUSED = "paused",
+  RETRYING = "retrying",
+  FAILED = "failed",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
 }
 
 export interface WorkflowMetadata {

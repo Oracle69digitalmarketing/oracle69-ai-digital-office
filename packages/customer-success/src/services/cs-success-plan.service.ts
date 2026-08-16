@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MissionManager, MissionStatus } from '@oracle69/runtime';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { CustomerSuccessEventType, CustomerSuccessEvent } from '../events/cs.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MissionManager, MissionStatus } from "@oracle69/runtime";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import { CustomerSuccessEventType, CustomerSuccessEvent } from "../events/cs.events.js";
 
 export interface SuccessPlanMilestoneInput {
   name: string;
@@ -17,35 +17,43 @@ export class CsSuccessPlanService {
 
   constructor(
     private readonly missionManager: MissionManager,
-    private readonly messageBus: MessageBus
+    private readonly messageBus: MessageBus,
   ) {}
 
-  async createSuccessPlan(crmOrganizationId: string, name: string, milestones: SuccessPlanMilestoneInput[] = []) {
+  async createSuccessPlan(
+    crmOrganizationId: string,
+    name: string,
+    milestones: SuccessPlanMilestoneInput[] = [],
+  ) {
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
       select: { id: true },
     });
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const plan = await this.prisma.csSuccessPlan.create({
       data: {
         crmOrganizationId,
         name,
-        milestones: milestones.length > 0
-          ? {
-              create: milestones.map((milestone) => ({
-                name: milestone.name,
-                dueDate: new Date(milestone.dueDate),
-              })),
-            }
-          : undefined,
+        milestones:
+          milestones.length > 0
+            ? {
+                create: milestones.map((milestone) => ({
+                  name: milestone.name,
+                  dueDate: new Date(milestone.dueDate),
+                })),
+              }
+            : undefined,
       },
       include: { milestones: true },
     });
 
     this.messageBus.publish(
       CustomerSuccessEventType.SUCCESS_PLAN_CREATED,
-      new CustomerSuccessEvent(CustomerSuccessEventType.SUCCESS_PLAN_CREATED, { crmOrganizationId, plan })
+      new CustomerSuccessEvent(CustomerSuccessEventType.SUCCESS_PLAN_CREATED, {
+        crmOrganizationId,
+        plan,
+      }),
     );
 
     return plan;
@@ -54,15 +62,15 @@ export class CsSuccessPlanService {
   async listSuccessPlans(crmOrganizationId: string) {
     return this.prisma.csSuccessPlan.findMany({
       where: { crmOrganizationId },
-      include: { milestones: { orderBy: { dueDate: 'asc' } } },
-      orderBy: { createdAt: 'desc' },
+      include: { milestones: { orderBy: { dueDate: "asc" } } },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async completeMilestone(milestoneId: string) {
     const milestone = await this.prisma.csSuccessPlanMilestone.update({
       where: { id: milestoneId },
-      data: { status: 'completed' },
+      data: { status: "completed" },
       include: { successPlan: true },
     });
 
@@ -72,20 +80,26 @@ export class CsSuccessPlanService {
         milestoneId,
         successPlanId: milestone.successPlanId,
         crmOrganizationId: milestone.successPlan.crmOrganizationId,
-      })
+      }),
     );
 
     return milestone;
   }
 
-  async triggerIntervention(crmOrganizationId: string, action: string, priority: 'low' | 'normal' | 'high' | 'critical' = 'normal') {
-    this.logger.log(`Triggering intervention for organization: ${crmOrganizationId}, action: ${action}`);
+  async triggerIntervention(
+    crmOrganizationId: string,
+    action: string,
+    priority: "low" | "normal" | "high" | "critical" = "normal",
+  ) {
+    this.logger.log(
+      `Triggering intervention for organization: ${crmOrganizationId}, action: ${action}`,
+    );
 
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
       select: { id: true },
     });
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const missionId = uuidv4();
     await this.missionManager.createMission({
@@ -93,16 +107,16 @@ export class CsSuccessPlanService {
       goal: `Intervention: ${action} for organization ${crmOrganizationId}`,
       priority,
       deadline: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days
-      owner: 'customer-success',
+      owner: "customer-success",
       status: MissionStatus.DRAFT,
-      tenantId: crmOrganizationId
+      tenantId: crmOrganizationId,
     });
 
     // Persist the intervention as an interaction so downstream intelligence can use it
     await this.prisma.csInteraction.create({
       data: {
         crmOrganizationId,
-        type: 'intervention',
+        type: "intervention",
         content: action,
       },
     });
@@ -114,7 +128,7 @@ export class CsSuccessPlanService {
         action,
         priority,
         missionId,
-      })
+      }),
     );
 
     return { missionId };

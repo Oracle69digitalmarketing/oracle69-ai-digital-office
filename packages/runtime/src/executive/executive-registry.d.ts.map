@@ -1,0 +1,1 @@
+{"version":3,"file":"executive-registry.d.ts","sourceRoot":"","sources":["executive-registry.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,iBAAiB,EAAE,MAAM,sBAAsB,CAAC;AAEzD,qBACa,iBAAiB;IAC5B,OAAO,CAAC,UAAU,CAAwC;IAE1D,iBAAiB,CAAC,QAAQ,EAAE,iBAAiB,GAAG,IAAI;IAIpD,aAAa,CAAC,EAAE,EAAE,MAAM,GAAG,iBAAiB,GAAG,SAAS;CAGzD"}

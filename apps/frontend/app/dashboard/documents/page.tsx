@@ -1,22 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  FileText, 
-  FilePlus, 
-  Search, 
-  Filter, 
-  Download,
-  History,
-  ExternalLink
-} from "lucide-react";
+import { FileText, FilePlus, Search, Filter, Download, History, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Document {
   id: string;
   title: string;
-  category: 'proposal' | 'contract' | 'invoice' | 'report' | 'sop' | 'case_study';
-  status: 'draft' | 'final' | 'archived';
+  category: "proposal" | "contract" | "invoice" | "report" | "sop" | "case_study";
+  status: "draft" | "final" | "archived";
   version: string;
   updatedAt: string;
   owner: string;
@@ -27,10 +19,42 @@ export default function DocumentCenterPage() {
 
   useEffect(() => {
     const mockDocs: Document[] = [
-      { id: "1", title: "Acme Corp - Q3 Proposal", category: "proposal", status: "final", version: "2.1.0", updatedAt: "2 hours ago", owner: "Elena" },
-      { id: "2", title: "Master Service Agreement v4", category: "contract", status: "draft", version: "4.0.0-beta", updatedAt: "1 day ago", owner: "Paul" },
-      { id: "3", title: "Invoice #INV-2026-001", category: "invoice", status: "final", version: "1.0.0", updatedAt: "3 days ago", owner: "System" },
-      { id: "4", title: "Internal SOP: AI Ethics", category: "sop", status: "final", version: "1.2.0", updatedAt: "1 week ago", owner: "Owen" },
+      {
+        id: "1",
+        title: "Acme Corp - Q3 Proposal",
+        category: "proposal",
+        status: "final",
+        version: "2.1.0",
+        updatedAt: "2 hours ago",
+        owner: "Elena",
+      },
+      {
+        id: "2",
+        title: "Master Service Agreement v4",
+        category: "contract",
+        status: "draft",
+        version: "4.0.0-beta",
+        updatedAt: "1 day ago",
+        owner: "Paul",
+      },
+      {
+        id: "3",
+        title: "Invoice #INV-2026-001",
+        category: "invoice",
+        status: "final",
+        version: "1.0.0",
+        updatedAt: "3 days ago",
+        owner: "System",
+      },
+      {
+        id: "4",
+        title: "Internal SOP: AI Ethics",
+        category: "sop",
+        status: "final",
+        version: "1.2.0",
+        updatedAt: "1 week ago",
+        owner: "Owen",
+      },
     ];
     setDocuments(mockDocs);
   }, []);
@@ -40,7 +64,9 @@ export default function DocumentCenterPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Document Center</h1>
-          <p className="text-gray-500">Generate and manage business documents with AI assistance.</p>
+          <p className="text-gray-500">
+            Generate and manage business documents with AI assistance.
+          </p>
         </div>
         <div className="flex space-x-3">
           <button className="flex items-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
@@ -51,8 +77,11 @@ export default function DocumentCenterPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-6">
-        {['Proposal', 'Contract', 'Invoice', 'Report', 'SOP', 'Case Study'].map((type) => (
-          <button key={type} className="flex flex-col items-center justify-center p-6 rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:border-indigo-200 hover:shadow-md group">
+        {["Proposal", "Contract", "Invoice", "Report", "SOP", "Case Study"].map((type) => (
+          <button
+            key={type}
+            className="flex flex-col items-center justify-center p-6 rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:border-indigo-200 hover:shadow-md group"
+          >
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 mb-3 group-hover:bg-indigo-100">
               <FileText className="h-6 w-6" />
             </div>
@@ -65,9 +94,9 @@ export default function DocumentCenterPage() {
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search documents..." 
+            <input
+              type="text"
+              placeholder="Search documents..."
               className="w-full rounded-md border border-gray-300 pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -105,13 +134,19 @@ export default function DocumentCenterPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="capitalize text-gray-500">{doc.category.replace('_', ' ')}</span>
+                    <span className="capitalize text-gray-500">
+                      {doc.category.replace("_", " ")}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                      doc.status === 'final' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-                    )}>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                        doc.status === "final"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700",
+                      )}
+                    >
                       {doc.status}
                     </span>
                   </td>

@@ -1,8 +1,8 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
 
 /** Nest DI token for the {@link DeploymentRepository} contract. */
-export const DEPLOYMENT_REPOSITORY = 'DEPLOYMENT_REPOSITORY';
+export const DEPLOYMENT_REPOSITORY = "DEPLOYMENT_REPOSITORY";
 
 /**
  * Durable deployment record scoped to a tenant/organization.
@@ -62,9 +62,9 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
     const deployment: Deployment = {
       id: `dep-${this.deployments.size + 1}`,
       name: input.name,
-      environment: input.environment ?? 'production',
-      status: input.status ?? 'active',
-      version: input.version ?? '1.0.0',
+      environment: input.environment ?? "production",
+      status: input.status ?? "active",
+      version: input.version ?? "1.0.0",
       config: input.config ?? {},
       tenantId: input.tenantId,
       createdAt: this.now(),
@@ -98,7 +98,7 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
 
   async findActive(tenantId: string): Promise<Deployment | null> {
     const active = Array.from(this.deployments.values()).filter(
-      (d) => d.tenantId === tenantId && d.status === 'active'
+      (d) => d.tenantId === tenantId && d.status === "active",
     );
     return active.length > 0 ? this.clone(active[0]) : null;
   }
@@ -110,11 +110,11 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
  */
 @Injectable()
 export class PrismaDeploymentRepository implements DeploymentRepository {
-  constructor(@Optional() @Inject('PrismaService') private readonly prisma?: PrismaClient) {}
+  constructor(@Optional() @Inject("PrismaService") private readonly prisma?: PrismaClient) {}
 
   private get db(): PrismaClient {
     if (!this.prisma) {
-      throw new Error('PrismaService is not available for the deployment repository.');
+      throw new Error("PrismaService is not available for the deployment repository.");
     }
     return this.prisma;
   }
@@ -123,9 +123,9 @@ export class PrismaDeploymentRepository implements DeploymentRepository {
     const row = await this.db.deployment.create({
       data: {
         name: input.name,
-        environment: input.environment ?? 'production',
-        status: input.status ?? 'active',
-        version: input.version ?? '1.0.0',
+        environment: input.environment ?? "production",
+        status: input.status ?? "active",
+        version: input.version ?? "1.0.0",
         config: (input.config ?? {}) as object,
         organizationId: input.tenantId,
       },
@@ -155,15 +155,15 @@ export class PrismaDeploymentRepository implements DeploymentRepository {
   async findByTenant(tenantId: string, status?: string): Promise<Deployment[]> {
     const rows = await this.db.deployment.findMany({
       where: { organizationId: tenantId, ...(status ? { status } : {}) },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
     return rows.map((row: unknown) => this.fromRow(row as any));
   }
 
   async findActive(tenantId: string): Promise<Deployment | null> {
     const row = await this.db.deployment.findFirst({
-      where: { organizationId: tenantId, status: 'active' },
-      orderBy: { createdAt: 'asc' },
+      where: { organizationId: tenantId, status: "active" },
+      orderBy: { createdAt: "asc" },
     });
     return row ? this.fromRow(row as any) : null;
   }

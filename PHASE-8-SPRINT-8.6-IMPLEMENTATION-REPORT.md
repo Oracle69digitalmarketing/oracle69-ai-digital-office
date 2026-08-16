@@ -20,6 +20,7 @@ The package follows the exact conventions of `packages/marketing-intelligence` a
 ## Files / Packages
 
 ### Created
+
 ```
 packages/operations-intelligence/
 ├── package.json
@@ -49,6 +50,7 @@ packages/operations-intelligence/
 ```
 
 ### Modified
+
 - `database/schema.prisma` — new `Oi*` models and `Organization` back-relations.
 - `pnpm-lock.yaml` — new workspace package linked via `pnpm install`.
 
@@ -66,6 +68,7 @@ New models (all tenant-scoped to `Organization`):
 `Organization` gained back-relations: `oiOperationsSnapshots`, `oiWorkflowSnapshots`, `oiAgentUtilizations`, `oiOpsInsights`, `oiOpsRecommendations`, `oiOperationsReports`.
 
 Validation and client generation:
+
 ```
 prisma validate .......... PASS (schema valid)
 prisma generate .......... PASS (Prisma Client v5.22.0 regenerated)
@@ -74,13 +77,13 @@ backend build ............ PASS (regenerates client against new schema)
 
 ## Services / Engines
 
-| Engine | Deterministic | Persists | Publishes |
-| ------ | ------------- | -------- | --------- |
-| `OiOperationsEngine` | Yes | `OiOperationsSnapshot` | `oi.operations.updated` |
-| `OiWorkflowEngine` | Yes | `OiWorkflowSnapshot` | `oi.workflow.updated` |
-| `OiAgentEngine` | Yes | `OiAgentUtilization` | `oi.agent.utilization.updated` |
-| `OiInsightEngine` | AI + deterministic fallback | `OiOpsInsight`, `OiOpsRecommendation` (+ `MemoryManager` write) | `oi.insight.generated`, `oi.recommendation.generated` |
-| `OiReportService` | Composes engines | `OiOperationsReport` | `oi.report.generated`, `oi.ops_alert.required` |
+| Engine               | Deterministic               | Persists                                                        | Publishes                                             |
+| -------------------- | --------------------------- | --------------------------------------------------------------- | ----------------------------------------------------- |
+| `OiOperationsEngine` | Yes                         | `OiOperationsSnapshot`                                          | `oi.operations.updated`                               |
+| `OiWorkflowEngine`   | Yes                         | `OiWorkflowSnapshot`                                            | `oi.workflow.updated`                                 |
+| `OiAgentEngine`      | Yes                         | `OiAgentUtilization`                                            | `oi.agent.utilization.updated`                        |
+| `OiInsightEngine`    | AI + deterministic fallback | `OiOpsInsight`, `OiOpsRecommendation` (+ `MemoryManager` write) | `oi.insight.generated`, `oi.recommendation.generated` |
+| `OiReportService`    | Composes engines            | `OiOperationsReport`                                            | `oi.report.generated`, `oi.ops_alert.required`        |
 
 **OiOperationsEngine** — deterministic operational KPIs computed from the organization's `Task` backlog: completion rate (completed / total), cycle time (average elapsed hours for completed tasks), throughput (completed count), backlog (non-terminal tasks), average execution time and average task cost, plus status breakdown and active agent count. Completion/cancellation status sets are normalised (`completed`/`done`, `cancelled`/`canceled`).
 
@@ -94,19 +97,19 @@ backend build ............ PASS (regenerates client against new schema)
 
 ## API Endpoints
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/operations-intelligence/operations/:organizationId` | Compute + persist operational snapshot |
-| GET | `/operations-intelligence/operations-snapshots/:organizationId` | List persisted operational snapshots |
-| GET | `/operations-intelligence/workflows/:organizationId` | Compute + persist workflow snapshot |
-| GET | `/operations-intelligence/workflow-snapshots/:organizationId` | List persisted workflow snapshots |
-| GET | `/operations-intelligence/agents/:organizationId` | Compute + persist agent utilization |
-| GET | `/operations-intelligence/agent-utilization/:organizationId` | List persisted agent utilization |
-| POST | `/operations-intelligence/insights/:organizationId` | Generate + persist operational insights & recommendations |
-| GET | `/operations-intelligence/insights/:organizationId` | List persisted operational insights |
-| GET | `/operations-intelligence/recommendations/:organizationId` | List persisted operational recommendations |
-| POST | `/operations-intelligence/reports/:organizationId` | Generate + persist operations report |
-| GET | `/operations-intelligence/reports/:organizationId` | List persisted operations reports |
+| Method | Path                                                            | Description                                               |
+| ------ | --------------------------------------------------------------- | --------------------------------------------------------- |
+| GET    | `/operations-intelligence/operations/:organizationId`           | Compute + persist operational snapshot                    |
+| GET    | `/operations-intelligence/operations-snapshots/:organizationId` | List persisted operational snapshots                      |
+| GET    | `/operations-intelligence/workflows/:organizationId`            | Compute + persist workflow snapshot                       |
+| GET    | `/operations-intelligence/workflow-snapshots/:organizationId`   | List persisted workflow snapshots                         |
+| GET    | `/operations-intelligence/agents/:organizationId`               | Compute + persist agent utilization                       |
+| GET    | `/operations-intelligence/agent-utilization/:organizationId`    | List persisted agent utilization                          |
+| POST   | `/operations-intelligence/insights/:organizationId`             | Generate + persist operational insights & recommendations |
+| GET    | `/operations-intelligence/insights/:organizationId`             | List persisted operational insights                       |
+| GET    | `/operations-intelligence/recommendations/:organizationId`      | List persisted operational recommendations                |
+| POST   | `/operations-intelligence/reports/:organizationId`              | Generate + persist operations report                      |
+| GET    | `/operations-intelligence/reports/:organizationId`              | List persisted operations reports                         |
 
 ## Events (`oi.events`)
 

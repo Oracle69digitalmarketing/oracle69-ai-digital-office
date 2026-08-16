@@ -1,8 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { KNOWLEDGE_ARTICLE_REPOSITORY, type ArticleRepository } from '../repositories/article.repository.js';
-import { KNOWLEDGE_INDEX_REPOSITORY, type IndexRepository } from '../repositories/index.repository.js';
-import { KnowledgeArticleStatus, KnowledgeKpis } from '../types.js';
-import { TenantContextService } from '@oracle69/runtime';
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  KNOWLEDGE_ARTICLE_REPOSITORY,
+  type ArticleRepository,
+} from "../repositories/article.repository.js";
+import {
+  KNOWLEDGE_INDEX_REPOSITORY,
+  type IndexRepository,
+} from "../repositories/index.repository.js";
+import { KnowledgeArticleStatus, KnowledgeKpis } from "../types.js";
+import { TenantContextService } from "@oracle69/runtime";
 
 const STALE_DAYS = 90;
 
@@ -28,8 +34,12 @@ export class KnowledgeKpiService {
 
     const totalArticles = articles.length;
     const draftCount = articles.filter((a) => a.status === KnowledgeArticleStatus.DRAFT).length;
-    const publishedCount = articles.filter((a) => a.status === KnowledgeArticleStatus.PUBLISHED).length;
-    const archivedCount = articles.filter((a) => a.status === KnowledgeArticleStatus.ARCHIVED).length;
+    const publishedCount = articles.filter(
+      (a) => a.status === KnowledgeArticleStatus.PUBLISHED,
+    ).length;
+    const archivedCount = articles.filter(
+      (a) => a.status === KnowledgeArticleStatus.ARCHIVED,
+    ).length;
     const categories = Array.from(new Set(articles.map((a) => a.category))).sort();
 
     const averageVersionCount =

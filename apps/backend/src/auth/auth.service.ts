@@ -22,7 +22,12 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role, organizationId: user.organizationId };
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      role: user.role,
+      organizationId: user.organizationId,
+    };
     return {
       access_token: this.jwtService.sign(payload),
       refresh_token: this.jwtService.sign(payload, { expiresIn: "7d" }),
@@ -57,7 +62,10 @@ export class AuthService {
     try {
       console.log("STEP 2: checking existing user");
       const existingUser = await this.usersService.findOne(data.email);
-      console.log("STEP 3: existing user check result:", existingUser ? "User exists" : "User not found");
+      console.log(
+        "STEP 3: existing user check result:",
+        existingUser ? "User exists" : "User not found",
+      );
 
       if (existingUser) {
         throw new ConflictException("User already exists");
@@ -85,7 +93,7 @@ export class AuthService {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _password, ...result } = user;
-      
+
       console.log("STEP 10: registration complete");
       return result;
     } catch (error: any) {

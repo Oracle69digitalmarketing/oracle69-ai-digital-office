@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { OperationsIntelligenceEventType, OperationsIntelligenceEvent } from '../events/oi.events.js';
-import { currentPeriod } from '../utils/period.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  OperationsIntelligenceEventType,
+  OperationsIntelligenceEvent,
+} from "../events/oi.events.js";
+import { currentPeriod } from "../utils/period.js";
 
 export interface OperationsMetrics {
   period: string;
@@ -20,8 +23,8 @@ export interface OperationsMetrics {
   };
 }
 
-const COMPLETED_STATUSES = ['completed', 'done'];
-const CANCELLED_STATUSES = ['cancelled', 'canceled'];
+const COMPLETED_STATUSES = ["completed", "done"];
+const CANCELLED_STATUSES = ["cancelled", "canceled"];
 
 /**
  * Computes deterministic operational KPIs for the organization from the
@@ -39,12 +42,15 @@ export class OiOperationsEngine {
   /**
    * Deterministically computes the operational metrics without side effects.
    */
-  async compute(organizationId: string, period: string = currentPeriod()): Promise<OperationsMetrics> {
+  async compute(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<OperationsMetrics> {
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const tasks = await this.prisma.task.findMany({
       where: { project: { organizationId } },
@@ -68,13 +74,13 @@ export class OiOperationsEngine {
 
     const executionTimes = tasks
       .map((task) => task.executionTime)
-      .filter((value): value is number => typeof value === 'number');
+      .filter((value): value is number => typeof value === "number");
 
     const avgExecutionTime = executionTimes.length > 0 ? average(executionTimes) : null;
 
     const costs = tasks
       .map((task) => task.estimatedCost)
-      .filter((value): value is number => typeof value === 'number');
+      .filter((value): value is number => typeof value === "number");
 
     const statusBreakdown: Record<string, number> = {};
     for (const task of tasks) {
@@ -82,7 +88,7 @@ export class OiOperationsEngine {
     }
 
     const activeAgents = new Set(
-      tasks.map((task) => task.assignedAgentId).filter((id): id is string => id !== null)
+      tasks.map((task) => task.assignedAgentId).filter((id): id is string => id !== null),
     ).size;
 
     return {
@@ -105,8 +111,13 @@ export class OiOperationsEngine {
   /**
    * Computes, persists and publishes the operational snapshot.
    */
-  async generateSnapshot(organizationId: string, period: string = currentPeriod()): Promise<OperationsMetrics> {
-    this.logger.log(`Generating operations snapshot for organization ${organizationId}, period ${period}`);
+  async generateSnapshot(
+    organizationId: string,
+    period: string = currentPeriod(),
+  ): Promise<OperationsMetrics> {
+    this.logger.log(
+      `Generating operations snapshot for organization ${organizationId}, period ${period}`,
+    );
 
     const metrics = await this.compute(organizationId, period);
 
@@ -131,7 +142,7 @@ export class OiOperationsEngine {
         organizationId,
         period,
         metrics,
-      })
+      }),
     );
 
     return metrics;
@@ -143,7 +154,7 @@ export class OiOperationsEngine {
   async listSnapshots(organizationId: string, take = 50) {
     return this.prisma.oiOperationsSnapshot.findMany({
       where: { organizationId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take,
     });
   }

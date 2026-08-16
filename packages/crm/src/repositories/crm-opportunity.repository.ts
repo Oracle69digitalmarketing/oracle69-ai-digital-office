@@ -1,6 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { CreateCrmOpportunityDto, UpdateCrmOpportunityDto, CreateCrmPipelineDto, UpdateCrmPipelineDto, CreateCrmPipelineStageDto, UpdateCrmPipelineStageDto } from '../dto/crm.dto.js';
+import { Injectable } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
+import {
+  CreateCrmOpportunityDto,
+  UpdateCrmOpportunityDto,
+  CreateCrmPipelineDto,
+  UpdateCrmPipelineDto,
+  CreateCrmPipelineStageDto,
+  UpdateCrmPipelineStageDto,
+} from "../dto/crm.dto.js";
 
 @Injectable()
 export class CrmOpportunityRepository {
@@ -15,7 +22,7 @@ export class CrmOpportunityRepository {
 
   async updateOpportunity(id: string, organizationId: string, data: UpdateCrmOpportunityDto) {
     const record = await this.prisma.crmOpportunity.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmOpportunity.update({
       where: { id },
       data,
@@ -24,7 +31,7 @@ export class CrmOpportunityRepository {
 
   async deleteOpportunity(id: string, organizationId: string) {
     const record = await this.prisma.crmOpportunity.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmOpportunity.delete({
       where: { id },
     });
@@ -63,7 +70,7 @@ export class CrmOpportunityRepository {
 
   async updatePipeline(id: string, organizationId: string, data: UpdateCrmPipelineDto) {
     const record = await this.prisma.crmPipeline.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmPipeline.update({
       where: { id },
       data,
@@ -72,7 +79,7 @@ export class CrmOpportunityRepository {
 
   async deletePipeline(id: string, organizationId: string) {
     const record = await this.prisma.crmPipeline.findFirst({ where: { id, organizationId } });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmPipeline.delete({
       where: { id },
     });
@@ -83,7 +90,7 @@ export class CrmOpportunityRepository {
       where: { id, organizationId },
       include: {
         stages: {
-          orderBy: { order: 'asc' },
+          orderBy: { order: "asc" },
         },
         opportunities: true,
       },
@@ -95,7 +102,7 @@ export class CrmOpportunityRepository {
       where: { organizationId },
       include: {
         stages: {
-          orderBy: { order: 'asc' },
+          orderBy: { order: "asc" },
         },
       },
     });
@@ -111,13 +118,13 @@ export class CrmOpportunityRepository {
   }
 
   async updatePipelineStage(id: string, organizationId: string, data: UpdateCrmPipelineStageDto) {
-    const record = await this.prisma.crmPipelineStage.findFirst({ 
-      where: { 
-        id, 
-        pipeline: { organizationId } 
-      } 
+    const record = await this.prisma.crmPipelineStage.findFirst({
+      where: {
+        id,
+        pipeline: { organizationId },
+      },
     });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmPipelineStage.update({
       where: { id },
       data,
@@ -125,13 +132,13 @@ export class CrmOpportunityRepository {
   }
 
   async deletePipelineStage(id: string, organizationId: string) {
-    const record = await this.prisma.crmPipelineStage.findFirst({ 
-      where: { 
-        id, 
-        pipeline: { organizationId } 
-      } 
+    const record = await this.prisma.crmPipelineStage.findFirst({
+      where: {
+        id,
+        pipeline: { organizationId },
+      },
     });
-    if (!record) throw new Error('Not found or access denied');
+    if (!record) throw new Error("Not found or access denied");
     return this.prisma.crmPipelineStage.delete({
       where: { id },
     });

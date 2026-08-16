@@ -28,7 +28,7 @@ export function Header() {
             <span className="text-sm font-medium text-gray-900">{user?.name}</span>
             <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
             aria-label="Logout"
             className="rounded-full bg-gray-200 p-2 text-gray-600 hover:bg-gray-300"

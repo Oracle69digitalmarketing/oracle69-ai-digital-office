@@ -1,8 +1,8 @@
-import { Global, Module } from '@nestjs/common';
-import { PersistenceModule } from '../persistence/persistence.module.js';
-import { EventBus } from './event-bus.js';
-import { EventCatalogService } from './event-catalog.js';
-import { EventLogWriter } from './event-log-writer.js';
+import { Global, Module } from "@nestjs/common";
+import { PersistenceModule } from "../persistence/persistence.module.js";
+import { EventBus } from "./event-bus.js";
+import { EventCatalogService } from "./event-catalog.js";
+import { EventLogWriter } from "./event-log-writer.js";
 
 /**
  * Provides the canonical {@link EventBus}, {@link EventCatalogService} and the

@@ -1,6 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { AiModelProvider } from '@oracle69/sales-intelligence';
-import { KnowledgeAiInsight, KnowledgeHealth } from '../types.js';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import type { AiModelProvider } from "@oracle69/sales-intelligence";
+import { KnowledgeAiInsight, KnowledgeHealth } from "../types.js";
 
 interface RawInsight {
   type?: string;
@@ -24,10 +24,14 @@ interface RawInsight {
 export class KnowledgeAiService {
   private readonly logger = new Logger(KnowledgeAiService.name);
 
-  constructor(@Inject('AiModelProvider') private readonly modelProvider?: AiModelProvider) {}
+  constructor(@Inject("AiModelProvider") private readonly modelProvider?: AiModelProvider) {}
 
   async generateInsights(health: KnowledgeHealth): Promise<KnowledgeAiInsight[]> {
-    if (!this.modelProvider || !process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY === 'your_api_key_here') {
+    if (
+      !this.modelProvider ||
+      !process.env.GOOGLE_AI_API_KEY ||
+      process.env.GOOGLE_AI_API_KEY === "your_api_key_here"
+    ) {
       return this.deterministicInsights(health);
     }
 
@@ -43,11 +47,13 @@ export class KnowledgeAiService {
       const insights = Array.isArray(parsed) ? parsed : parsed.insights;
       const normalized = normalizeInsights(insights);
       if (normalized.length === 0) {
-        throw new Error('AI returned no usable insights');
+        throw new Error("AI returned no usable insights");
       }
       return normalized;
     } catch (error) {
-      this.logger.warn(`Knowledge AI insight generation failed; using deterministic fallback: ${(error as Error).message}`);
+      this.logger.warn(
+        `Knowledge AI insight generation failed; using deterministic fallback: ${(error as Error).message}`,
+      );
       return this.deterministicInsights(health);
     }
   }
@@ -58,67 +64,69 @@ export class KnowledgeAiService {
 
     if (kpis.totalArticles === 0) {
       insights.push({
-        type: 'alert',
-        title: 'Empty Knowledge Base',
-        content: 'No knowledge articles are on record. Establish an editorial process to capture institutional knowledge.',
-        priority: 'high',
-        impact: 'Institutional Knowledge',
+        type: "alert",
+        title: "Empty Knowledge Base",
+        content:
+          "No knowledge articles are on record. Establish an editorial process to capture institutional knowledge.",
+        priority: "high",
+        impact: "Institutional Knowledge",
       });
     } else {
       insights.push({
-        type: 'forecast',
-        title: 'Knowledge Base Growth',
+        type: "forecast",
+        title: "Knowledge Base Growth",
         content: `With ${kpis.publishedCount} published article(s) across ${kpis.categories.length} categor(ies), the knowledge base supports a repeatable onboarding and decision framework.`,
-        priority: 'normal',
-        impact: 'Organizational Learning',
+        priority: "normal",
+        impact: "Organizational Learning",
       });
     }
 
     if (kpis.indexCoverage < 0.8) {
       insights.push({
-        type: 'alert',
-        title: 'Search Coverage Gap',
+        type: "alert",
+        title: "Search Coverage Gap",
         content: `Only ${(kpis.indexCoverage * 100).toFixed(0)}% of articles are indexed. Re-index the knowledge base so every article is discoverable.`,
-        priority: 'high',
-        impact: 'Knowledge Discovery',
+        priority: "high",
+        impact: "Knowledge Discovery",
       });
     } else if (kpis.totalArticles > 0) {
       insights.push({
-        type: 'recommendation',
-        title: 'Indexed Knowledge Base',
+        type: "recommendation",
+        title: "Indexed Knowledge Base",
         content: `${(kpis.indexCoverage * 100).toFixed(0)}% of articles are indexed, keeping search results complete and current.`,
-        priority: 'low',
-        impact: 'Knowledge Discovery',
+        priority: "low",
+        impact: "Knowledge Discovery",
       });
     }
 
     if (kpis.staleArticles > 0) {
       insights.push({
-        type: 'alert',
-        title: 'Stale Content',
+        type: "alert",
+        title: "Stale Content",
         content: `${kpis.staleArticles} article(s) have not been updated in over 90 days. Schedule a refresh to keep institutional knowledge accurate.`,
-        priority: 'normal',
-        impact: 'Content Accuracy',
+        priority: "normal",
+        impact: "Content Accuracy",
       });
     } else {
       insights.push({
-        type: 'forecast',
-        title: 'Content Freshness',
-        content: kpis.totalArticles > 0
-          ? 'All articles are up to date; the knowledge base remains accurate and reliable.'
-          : 'No articles to assess for freshness yet.',
-        priority: 'low',
-        impact: 'Content Accuracy',
+        type: "forecast",
+        title: "Content Freshness",
+        content:
+          kpis.totalArticles > 0
+            ? "All articles are up to date; the knowledge base remains accurate and reliable."
+            : "No articles to assess for freshness yet.",
+        priority: "low",
+        impact: "Content Accuracy",
       });
     }
 
     if (kpis.draftBacklog > 0) {
       insights.push({
-        type: 'recommendation',
-        title: 'Clear Draft Backlog',
+        type: "recommendation",
+        title: "Clear Draft Backlog",
         content: `${kpis.draftBacklog} draft(s) await review. Assign owners and publish vetted content to grow the institutional knowledge base.`,
-        priority: 'normal',
-        impact: 'Editorial Velocity',
+        priority: "normal",
+        impact: "Editorial Velocity",
       });
     }
 
@@ -127,18 +135,30 @@ export class KnowledgeAiService {
 }
 
 function sanitizeJson(content: string): string {
-  return content.replace(/```json/g, '').replace(/```/g, '').trim();
+  return content
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 }
 
 function normalizeInsights(raw: RawInsight[] | undefined): KnowledgeAiInsight[] {
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((item) => typeof item?.content === 'string' && item.content.trim().length > 0)
+    .filter((item) => typeof item?.content === "string" && item.content.trim().length > 0)
     .map((item) => ({
-      type: item.type === 'forecast' || item.type === 'recommendation' || item.type === 'alert' ? item.type : 'recommendation',
-      title: typeof item.title === 'string' && item.title.length > 0 ? item.title : 'Knowledge recommendation',
+      type:
+        item.type === "forecast" || item.type === "recommendation" || item.type === "alert"
+          ? item.type
+          : "recommendation",
+      title:
+        typeof item.title === "string" && item.title.length > 0
+          ? item.title
+          : "Knowledge recommendation",
       content: item.content as string,
-      priority: item.priority === 'low' || item.priority === 'high' ? item.priority : 'normal',
-      impact: typeof item.impact === 'string' && item.impact.length > 0 ? item.impact : 'Improved knowledge health',
+      priority: item.priority === "low" || item.priority === "high" ? item.priority : "normal",
+      impact:
+        typeof item.impact === "string" && item.impact.length > 0
+          ? item.impact
+          : "Improved knowledge health",
     }));
 }

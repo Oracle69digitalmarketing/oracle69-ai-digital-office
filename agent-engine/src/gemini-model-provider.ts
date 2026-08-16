@@ -1,12 +1,12 @@
-import { Logger } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ModelTier } from '@oracle69/shared';
-import { ModelProvider } from './model-router.js';
+import { Logger } from "@nestjs/common";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ModelTier } from "@oracle69/shared";
+import { ModelProvider } from "./model-router.js";
 
 export class GeminiModelProvider implements ModelProvider {
   private readonly logger = new Logger(GeminiModelProvider.name);
   private genAI: GoogleGenerativeAI;
-  public readonly name = 'gemini';
+  public readonly name = "gemini";
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -36,14 +36,14 @@ export class GeminiModelProvider implements ModelProvider {
 
   private mapTierToModel(tier: ModelTier): string {
     switch (tier) {
-      case 'nano':
-        return 'gemini-1.5-flash';
-      case 'mini':
-        return 'gemini-1.5-flash';
-      case 'gpt-5.6':
-        return 'gemini-1.5-pro';
+      case "nano":
+        return "gemini-1.5-flash";
+      case "mini":
+        return "gemini-1.5-flash";
+      case "gpt-5.6":
+        return "gemini-1.5-pro";
       default:
-        return 'gemini-1.5-flash';
+        return "gemini-1.5-flash";
     }
   }
 }

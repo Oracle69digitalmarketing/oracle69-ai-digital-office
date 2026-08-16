@@ -5,6 +5,7 @@ This package contains the versioned TypeScript types and interfaces that define 
 ## Versioning Policy
 
 **Important:** This package follows a strict semver policy.
+
 - **Breaking Change:** Any change to an existing type or interface that would break compatibility with consumers **MUST** result in a major version bump (e.g., 1.x.x -> 2.0.0).
 - **Additive Change:** New types or optional fields can be added with a minor version bump.
 

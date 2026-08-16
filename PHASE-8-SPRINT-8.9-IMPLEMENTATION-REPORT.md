@@ -17,6 +17,7 @@ This sprint was **continued from the current repository state**; no work was dis
 ## Files / Packages
 
 ### Created
+
 ```
 packages/hr-intelligence/                         @oracle69/hr-intelligence package
   package.json / tsconfig.json / jest.config.cjs
@@ -46,6 +47,7 @@ PHASE-8-SPRINT-8.9-IMPLEMENTATION-REPORT.md          this document
 ```
 
 ### Modified
+
 - `database/schema.prisma` — added `HrEmployee`, `HrPosition`, `HrCandidate` models and `Organization` back-relations (added in the current working state before this continuation; verified present).
 - `apps/backend/src/app.module.ts` — imported `HrIntelligenceModule` (wired in the current working state before this continuation; verified).
 - `apps/backend/package.json` — `@oracle69/hr-intelligence` workspace dependency (already present).
@@ -117,6 +119,7 @@ Repositories: `PrismaEmployeeRepository`/`InMemoryEmployeeRepository`, `PrismaPo
 ## Tests Added
 
 HR package (`packages/hr-intelligence`, 7 suites / 40 tests):
+
 - `employee.spec.ts` — tenant-scoped employee lifecycle, status transitions, events.
 - `recruitment.spec.ts` — positions/candidates pipeline, stage transitions, hire-to-employee promotion, tenant isolation, events.
 - `hr-kpi.spec.ts` — headcount, active headcount, turnover, recruitment KPIs, trends.
@@ -126,6 +129,7 @@ HR package (`packages/hr-intelligence`, 7 suites / 40 tests):
 - `repositories.spec.ts` — Prisma/InMemory repository persistence, tenant scoping, fail-fast.
 
 Backend integration (`apps/backend/src/__tests__/sprint-8.9-hr-intelligence-integration.spec.ts`, 7 tests):
+
 - Module wiring of `HrController` REST surface; EventCatalog registration; hire/offboard through the controller; position + candidate pipeline; KPIs + health; strict tenant isolation (cross-tenant reads/writes rejected); deterministic insights without an AI provider.
 
 ## Verification Results
@@ -149,21 +153,21 @@ The single non-green `pnpm test` task is `@oracle69/connectors`' `salesforce.con
 
 ## Sprint 8.9 Requirements — Completion Status
 
-| # | Requirement | Status | Implementation |
-| -- | ----------- | ------ | -------------- |
-| 1 | Employee management | ✅ Complete | `HrEmployee` model, `EmployeeService`, tenant-scoped lifecycle/status, `HrEmployeeRepository`. |
-| 2 | Position/workforce structure | ✅ Complete | `HrPosition` model, department/employment type data, position status, persistent Prisma storage. |
-| 3 | Recruitment | ✅ Complete | `HrCandidate` model, candidate lifecycle/stage transitions, recruitment KPIs. |
-| 4 | HR KPIs | ✅ Complete | `HrKpiService`: headcount, active employees, turnover-related metrics, recruitment metrics, workforce trends. |
-| 5 | HR health intelligence | ✅ Complete | `HrHealthService`: deterministic workforce health score + actionable reasoning. |
-| 6 | HR AI intelligence | ✅ Complete | Uses existing `AiModelProvider` (`GeminiModelProvider`); deterministic fallback when unavailable. |
-| 7 | Tenant isolation | ✅ Complete | Existing `TenantContextService`; repository/service/controller enforcement; no cross-tenant reads/writes. |
-| 8 | Durable persistence | ✅ Complete | Existing Prisma/repository architecture; no unrelated abstraction. |
-| 9 | Canonical Event Bus | ✅ Complete | HR events registered in existing `EventCatalog`; published through canonical `EventBus` with tenant/causation context. |
-| 10 | Backend REST API | ✅ Complete | `/hr/:organizationId/...` controller surface; tenant scope enforced. |
-| 11 | Backend integration | ✅ Complete | `HrIntelligenceModule` wired into `AppModule`; integration tests exercise the REST surface. |
-| 12 | Comprehensive tests | ✅ Complete | employee, recruitment, KPI, health/AI, repository persistence, tenant isolation, event integration, backend integration. |
-| 13 | PHASE-8-SPRINT-8.9-IMPLEMENTATION-REPORT.md | ✅ Complete | This document. |
+| #   | Requirement                                 | Status      | Implementation                                                                                                           |
+| --- | ------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Employee management                         | ✅ Complete | `HrEmployee` model, `EmployeeService`, tenant-scoped lifecycle/status, `HrEmployeeRepository`.                           |
+| 2   | Position/workforce structure                | ✅ Complete | `HrPosition` model, department/employment type data, position status, persistent Prisma storage.                         |
+| 3   | Recruitment                                 | ✅ Complete | `HrCandidate` model, candidate lifecycle/stage transitions, recruitment KPIs.                                            |
+| 4   | HR KPIs                                     | ✅ Complete | `HrKpiService`: headcount, active employees, turnover-related metrics, recruitment metrics, workforce trends.            |
+| 5   | HR health intelligence                      | ✅ Complete | `HrHealthService`: deterministic workforce health score + actionable reasoning.                                          |
+| 6   | HR AI intelligence                          | ✅ Complete | Uses existing `AiModelProvider` (`GeminiModelProvider`); deterministic fallback when unavailable.                        |
+| 7   | Tenant isolation                            | ✅ Complete | Existing `TenantContextService`; repository/service/controller enforcement; no cross-tenant reads/writes.                |
+| 8   | Durable persistence                         | ✅ Complete | Existing Prisma/repository architecture; no unrelated abstraction.                                                       |
+| 9   | Canonical Event Bus                         | ✅ Complete | HR events registered in existing `EventCatalog`; published through canonical `EventBus` with tenant/causation context.   |
+| 10  | Backend REST API                            | ✅ Complete | `/hr/:organizationId/...` controller surface; tenant scope enforced.                                                     |
+| 11  | Backend integration                         | ✅ Complete | `HrIntelligenceModule` wired into `AppModule`; integration tests exercise the REST surface.                              |
+| 12  | Comprehensive tests                         | ✅ Complete | employee, recruitment, KPI, health/AI, repository persistence, tenant isolation, event integration, backend integration. |
+| 13  | PHASE-8-SPRINT-8.9-IMPLEMENTATION-REPORT.md | ✅ Complete | This document.                                                                                                           |
 
 ## Known Limitations
 

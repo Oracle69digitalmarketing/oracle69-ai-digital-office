@@ -1,7 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { EnterpriseIntelligenceEventType, EnterpriseIntelligenceEvent } from '../events/ei.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import {
+  EnterpriseIntelligenceEventType,
+  EnterpriseIntelligenceEvent,
+} from "../events/ei.events.js";
 
 export interface ScenarioParameters {
   name?: string;
@@ -44,15 +47,16 @@ export class EiScenarioEngine {
   private readonly logger = new Logger(EiScenarioEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(
-    private readonly messageBus: MessageBus
-  ) {}
+  constructor(private readonly messageBus: MessageBus) {}
 
   /**
    * Runs a scenario against live enterprise data, persists the result and
    * publishes an event. The scenario parameters are validated before use.
    */
-  async runScenario(organizationId: string, parameters: ScenarioParameters = {}): Promise<ScenarioResult> {
+  async runScenario(
+    organizationId: string,
+    parameters: ScenarioParameters = {},
+  ): Promise<ScenarioResult> {
     this.logger.log(`Running enterprise scenario for organization ${organizationId}`);
 
     validateParameters(parameters);
@@ -67,12 +71,12 @@ export class EiScenarioEngine {
       },
     });
 
-    if (!organization) throw new Error('Organization not found');
+    if (!organization) throw new Error("Organization not found");
 
     const opportunities = organization.crmOpportunities;
-    const openOpportunities = opportunities.filter((o) => o.stage !== 'won' && o.stage !== 'lost');
-    const wonOpportunities = opportunities.filter((o) => o.stage === 'won');
-    const lostOpportunities = opportunities.filter((o) => o.stage === 'lost');
+    const openOpportunities = opportunities.filter((o) => o.stage !== "won" && o.stage !== "lost");
+    const wonOpportunities = opportunities.filter((o) => o.stage === "won");
+    const lostOpportunities = opportunities.filter((o) => o.stage === "lost");
 
     const openValue = openOpportunities.reduce((sum, o) => sum + o.value, 0);
     const wonRevenue = wonOpportunities.reduce((sum, o) => sum + o.value, 0);
@@ -86,7 +90,7 @@ export class EiScenarioEngine {
     let atRiskExposure = 0;
     for (const account of organization.crmOrganizations) {
       const accountWonRevenue = account.opportunities
-        .filter((o) => o.stage === 'won')
+        .filter((o) => o.stage === "won")
         .reduce((sum, o) => sum + o.value, 0);
       if (accountWonRevenue === 0) continue;
 
@@ -96,7 +100,9 @@ export class EiScenarioEngine {
         factor =
           health >= 75
             ? RETENTION_TIERS.healthy
-            : (health >= 45 ? RETENTION_TIERS.atRisk : RETENTION_TIERS.critical);
+            : health >= 45
+              ? RETENTION_TIERS.atRisk
+              : RETENTION_TIERS.critical;
       }
       retentionRevenue += accountWonRevenue * factor;
 
@@ -110,8 +116,10 @@ export class EiScenarioEngine {
 
     const projectedPipelineRevenue =
       openValue * projectedWinRate * (1 + (parameters.averageDealValueDelta || 0));
-    const projectedRevenue = (wonRevenue + projectedPipelineRevenue) * (1 + (parameters.engagementIncrease || 0));
-    const projectedRetentionRevenue = retentionRevenue + atRiskExposure * (parameters.churnReduction || 0);
+    const projectedRevenue =
+      (wonRevenue + projectedPipelineRevenue) * (1 + (parameters.engagementIncrease || 0));
+    const projectedRetentionRevenue =
+      retentionRevenue + atRiskExposure * (parameters.churnReduction || 0);
 
     const baseTotal = currentExpectedRevenue + retentionRevenue;
     const projectedTotal = projectedRevenue + projectedRetentionRevenue;
@@ -148,7 +156,7 @@ export class EiScenarioEngine {
       new EnterpriseIntelligenceEvent(EnterpriseIntelligenceEventType.SCENARIO_CREATED, {
         organizationId,
         scenario: result,
-      })
+      }),
     );
 
     return result;
@@ -157,30 +165,39 @@ export class EiScenarioEngine {
 
 function detectScenarioType(parameters: ScenarioParameters): string {
   const active: string[] = [];
-  if (parameters.winRateDelta) active.push('win_rate');
-  if (parameters.averageDealValueDelta) active.push('deal_value');
-  if (parameters.churnReduction) active.push('churn');
-  if (parameters.engagementIncrease) active.push('engagement');
-  if (active.length === 0) return 'baseline';
+  if (parameters.winRateDelta) active.push("win_rate");
+  if (parameters.averageDealValueDelta) active.push("deal_value");
+  if (parameters.churnReduction) active.push("churn");
+  if (parameters.engagementIncrease) active.push("engagement");
+  if (active.length === 0) return "baseline";
   if (active.length === 1) return active[0];
-  return 'combined';
+  return "combined";
 }
 
 function validateParameters(parameters: ScenarioParameters): void {
-  if (parameters.winRateDelta !== undefined && (parameters.winRateDelta < -1 || parameters.winRateDelta > 1)) {
-    throw new Error('Invalid scenario parameter: winRateDelta must be between -1 and 1');
+  if (
+    parameters.winRateDelta !== undefined &&
+    (parameters.winRateDelta < -1 || parameters.winRateDelta > 1)
+  ) {
+    throw new Error("Invalid scenario parameter: winRateDelta must be between -1 and 1");
   }
   if (
     parameters.averageDealValueDelta !== undefined &&
     (parameters.averageDealValueDelta < -0.9 || parameters.averageDealValueDelta > 2)
   ) {
-    throw new Error('Invalid scenario parameter: averageDealValueDelta must be between -0.9 and 2');
+    throw new Error("Invalid scenario parameter: averageDealValueDelta must be between -0.9 and 2");
   }
-  if (parameters.churnReduction !== undefined && (parameters.churnReduction < 0 || parameters.churnReduction > 1)) {
-    throw new Error('Invalid scenario parameter: churnReduction must be between 0 and 1');
+  if (
+    parameters.churnReduction !== undefined &&
+    (parameters.churnReduction < 0 || parameters.churnReduction > 1)
+  ) {
+    throw new Error("Invalid scenario parameter: churnReduction must be between 0 and 1");
   }
-  if (parameters.engagementIncrease !== undefined && (parameters.engagementIncrease < 0 || parameters.engagementIncrease > 1)) {
-    throw new Error('Invalid scenario parameter: engagementIncrease must be between 0 and 1');
+  if (
+    parameters.engagementIncrease !== undefined &&
+    (parameters.engagementIncrease < 0 || parameters.engagementIncrease > 1)
+  ) {
+    throw new Error("Invalid scenario parameter: engagementIncrease must be between 0 and 1");
   }
 }
 

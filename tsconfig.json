@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@oracle69/*": ["packages/*"]
     },
     "composite": true,
     "declaration": true,

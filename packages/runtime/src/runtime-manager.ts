@@ -1,10 +1,10 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { IRuntimeManager, IAgentRegistry, IRuntimeContext, RuntimeState } from './runtime.types.js';
-import { RuntimeContext } from './runtime-context.js';
-import { AgentRegistry } from './agent-registry.js';
-import { RuntimeEvent, RuntimeEventType } from './events/runtime.events.js';
-import { EventBus } from './events/event-bus.js';
-import { InitializationError } from './errors/runtime.errors.js';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { IRuntimeManager, IAgentRegistry, IRuntimeContext, RuntimeState } from "./runtime.types.js";
+import { RuntimeContext } from "./runtime-context.js";
+import { AgentRegistry } from "./agent-registry.js";
+import { RuntimeEvent, RuntimeEventType } from "./events/runtime.events.js";
+import { EventBus } from "./events/event-bus.js";
+import { InitializationError } from "./errors/runtime.errors.js";
 
 @Injectable()
 export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDestroy {
@@ -36,15 +36,15 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
   public async initialize(): Promise<void> {
     if (this.state === RuntimeState.READY) return;
 
-    this.logger.log('Initializing Enterprise Runtime Foundation...');
+    this.logger.log("Initializing Enterprise Runtime Foundation...");
     this.state = RuntimeState.STARTING;
     this.emit(RuntimeEventType.RUNTIME_STARTED);
 
     try {
       // Future foundation initialization steps (e.g. loading core agents) would go here
-      
+
       this.state = RuntimeState.READY;
-      this.logger.log('Enterprise Runtime is READY.');
+      this.logger.log("Enterprise Runtime is READY.");
       this.emit(RuntimeEventType.RUNTIME_READY);
     } catch (error) {
       this.state = RuntimeState.UNINITIALIZED;
@@ -60,13 +60,13 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
   public async shutdown(): Promise<void> {
     if (this.state === RuntimeState.STOPPED || this.state === RuntimeState.UNINITIALIZED) return;
 
-    this.logger.log('Shutting down Enterprise Runtime...');
+    this.logger.log("Shutting down Enterprise Runtime...");
     this.state = RuntimeState.STOPPING;
 
     // Graceful cleanup logic would go here
-    
+
     this.state = RuntimeState.STOPPED;
-    this.logger.log('Enterprise Runtime has STOPPED.');
+    this.logger.log("Enterprise Runtime has STOPPED.");
     this.emit(RuntimeEventType.RUNTIME_SHUTDOWN);
   }
 
@@ -77,7 +77,9 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
     if (this.eventBus) {
       const eventType = this.mapStateToEvent(state);
       if (eventType) {
-        this.eventBus.subscribe(eventType, (event: RuntimeEvent<unknown>) => callback(event.payload));
+        this.eventBus.subscribe(eventType, (event: RuntimeEvent<unknown>) =>
+          callback(event.payload),
+        );
       }
     }
   }
@@ -108,14 +110,18 @@ export class RuntimeManager implements IRuntimeManager, OnModuleInit, OnModuleDe
 
   private mapStateToEvent(state: RuntimeState): RuntimeEventType | null {
     switch (state) {
-      case RuntimeState.STARTING: return RuntimeEventType.RUNTIME_STARTED;
-      case RuntimeState.READY: return RuntimeEventType.RUNTIME_READY;
-      case RuntimeState.STOPPED: return RuntimeEventType.RUNTIME_SHUTDOWN;
-      default: return null;
+      case RuntimeState.STARTING:
+        return RuntimeEventType.RUNTIME_STARTED;
+      case RuntimeState.READY:
+        return RuntimeEventType.RUNTIME_READY;
+      case RuntimeState.STOPPED:
+        return RuntimeEventType.RUNTIME_SHUTDOWN;
+      default:
+        return null;
     }
   }
 
   private emit(type: RuntimeEventType, payload: Record<string, unknown> = {}): void {
-    this.eventBus?.publish(type, payload, { source: 'RuntimeManager' });
+    this.eventBus?.publish(type, payload, { source: "RuntimeManager" });
   }
 }

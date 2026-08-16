@@ -1,9 +1,11 @@
 # AI Runtime Validation — Sprint 02.5
 
 ## Overview
+
 This document provides a detailed validation of the AI Runtime components, ensuring every architectural requirement is met.
 
 ## 1. Sequence Diagram: Hospital Proposal Flow
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -36,6 +38,7 @@ sequenceDiagram
 ```
 
 ## 2. Architecture Diagram
+
 ```mermaid
 graph TD
     User((User)) --> Backend[NestJS Backend]
@@ -56,40 +59,48 @@ graph TD
 ## 3. Module Specific Validation
 
 ### Agent Registry
+
 - [x] **Agent Registration**: Agents register with `onInitialize` and `onActivate`.
 - [x] **Agent Lookup**: Support `findAgentsByRole` and `getAgent`.
 - [x] **Capability Discovery**: Verified in unit tests and integration flows.
 - [x] **Health Monitoring**: Status transitions from `idle` -> `busy` -> `idle`.
 
 ### Execution Engine
+
 - [x] **Workflow Orchestration**: Parallel execution capability verified.
 - [x] **Retry Policy**: Exponential backoff verified in unit tests.
 - [x] **Failure Recovery**: Exception handling and logging confirmed.
 - [x] **Tracing**: `WorkflowTrace` captures every step duration and result.
 
 ### Memory System
+
 - [x] **Session Memory**: Persistent across multiple calls in the same session.
 - [x] **Working Memory**: Isolated context for concurrent tasks.
 - [x] **Retrieval**: `buildContext` correctly aggregates history.
 
 ### Intelligence Layer
+
 - [x] **Prompt Loading**: Cached loading from `prompts/agents/`.
 - [x] **Model Routing**: Correct tier selection (`nano`, `mini`, `gpt-5.6`).
 - [x] **Fallback**: Automatic escalation on model failure.
 
 ### Communication
+
 - [x] **Event Bus**: Asynchronous broadcasting of `TaskStarted`, `TaskCompleted`, and `TaskFailed`.
 
 ## 4. Test Coverage Summary
+
 - **backend**: 55.3% (Focus on Receptionist and Integration)
 - **agent-engine**: 85% (Core logic covered)
 - **execution-engine**: 90% (Retry and tracing covered)
 - **memory**: 80% (Context building covered)
 
 ## 5. Performance Metrics (Mocked)
+
 - **Planning Latency**: 250ms
 - **Agent Execution Latency**: 400ms per agent
 - **Total Overhead**: <100ms (Execution Engine logic)
 
 ## 6. Final Status
+
 The AI Runtime is **CERTIFIED** for production development of specialized agents.

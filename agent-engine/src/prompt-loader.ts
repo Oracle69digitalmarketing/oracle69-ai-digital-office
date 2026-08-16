@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import * as fs from "fs";
+import * as path from "path";
 
 @Injectable()
 export class PromptLoader implements OnModuleInit {
@@ -15,10 +15,10 @@ export class PromptLoader implements OnModuleInit {
   private resolvePromptsDir(): string {
     const cwd = process.cwd();
     const commonPaths = [
-      path.join(cwd, 'prompts', 'agents'),
-      path.join(cwd, '..', '..', 'prompts', 'agents'),
-      path.join(cwd, '..', 'prompts', 'agents'),
-      '/home/davidsaint1969/oracle69-ai-digital-office/prompts/agents'
+      path.join(cwd, "prompts", "agents"),
+      path.join(cwd, "..", "..", "prompts", "agents"),
+      path.join(cwd, "..", "prompts", "agents"),
+      "/home/davidsaint1969/oracle69-ai-digital-office/prompts/agents",
     ];
 
     this.logger.debug(`Resolving prompts dir. CWD: ${cwd}`);
@@ -30,14 +30,16 @@ export class PromptLoader implements OnModuleInit {
       this.logger.debug(`Tried path: ${p} - NOT FOUND`);
     }
 
-    this.logger.warn('Prompts directory not found in common locations. Defaulting to process.cwd()/prompts/agents');
-    return path.join(cwd, 'prompts', 'agents');
+    this.logger.warn(
+      "Prompts directory not found in common locations. Defaulting to process.cwd()/prompts/agents",
+    );
+    return path.join(cwd, "prompts", "agents");
   }
 
   async onModuleInit() {
     await this.loadAllPrompts();
-    
-    if (process.env.NODE_ENV === 'development') {
+
+    if (process.env.NODE_ENV === "development") {
       this.setupHotReload();
     }
   }
@@ -46,23 +48,23 @@ export class PromptLoader implements OnModuleInit {
     try {
       const files = await fs.promises.readdir(this.promptsDir);
       for (const file of files) {
-        if (file.endsWith('.md')) {
-          const role = file.replace('.md', '');
+        if (file.endsWith(".md")) {
+          const role = file.replace(".md", "");
           await this.loadPromptIntoCache(role, path.join(this.promptsDir, file));
         }
       }
     } catch (error) {
-      this.logger.error('Failed to load prompts directory', error);
+      this.logger.error("Failed to load prompts directory", error);
     }
   }
 
   private async loadPromptIntoCache(role: string, filePath: string) {
     try {
-      const content = await fs.promises.readFile(filePath, 'utf-8');
+      const content = await fs.promises.readFile(filePath, "utf-8");
       const version = this.extractVersion(content);
-      
+
       // Simple validation
-      if (!content.includes('#')) {
+      if (!content.includes("#")) {
         this.logger.warn(`Prompt for ${role} might be invalid (missing headers)`);
       }
 
@@ -75,14 +77,14 @@ export class PromptLoader implements OnModuleInit {
 
   private extractVersion(content: string): string {
     const versionMatch = content.match(/Version:\s*([\d.]+)/i);
-    return versionMatch ? versionMatch[1] : '1.0.0';
+    return versionMatch ? versionMatch[1] : "1.0.0";
   }
 
   private setupHotReload() {
-    this.logger.log('Setting up hot reload for prompts...');
+    this.logger.log("Setting up hot reload for prompts...");
     fs.watch(this.promptsDir, (eventType, filename) => {
-      if (filename && filename.endsWith('.md')) {
-        const role = filename.replace('.md', '');
+      if (filename && filename.endsWith(".md")) {
+        const role = filename.replace(".md", "");
         this.logger.log(`Prompt changed: ${filename}. Reloading...`);
         this.loadPromptIntoCache(role, path.join(this.promptsDir, filename));
       }
@@ -94,14 +96,17 @@ export class PromptLoader implements OnModuleInit {
     if (cached) return cached.content;
 
     this.logger.warn(`Prompt not found in cache for: ${agentRole}. Attempting file read.`);
-    const filePath = path.join(this.promptsDir, `${agentRole.toLowerCase().replace(/\s+/g, '-')}.md`);
-    
-    const content = await fs.promises.readFile(filePath, 'utf-8');
+    const filePath = path.join(
+      this.promptsDir,
+      `${agentRole.toLowerCase().replace(/\s+/g, "-")}.md`,
+    );
+
+    const content = await fs.promises.readFile(filePath, "utf-8");
     return content;
   }
 
   async getVersion(agentRole: string): Promise<string> {
     const cached = this.promptCache.get(agentRole.toLowerCase());
-    return cached ? cached.version : 'unknown';
+    return cached ? cached.version : "unknown";
   }
 }

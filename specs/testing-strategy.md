@@ -21,11 +21,13 @@ Testing ensures every feature, workflow, AI agent, API, and integration performs
 # 2. Ownership Boundaries
 
 ### [Digital Office Only: Operate]
+
 - **Operational Testing:** Validation of all Digital Office agents, workflows, and memory systems.
 - **Internal Contract Testing:** Verification of inter-package communication within the Digital Office monorepo.
 - **UI/UX Testing:** Testing of the primary Operate dashboard and agent interaction interfaces.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Discover (Architect):** Testing of market discovery algorithms and strategic generator logic.
 - **Build (Launch):** Validation of infrastructure provisioning scripts and environment bootstrap logic.
 - **Optimize (Growth):** Testing of growth prediction engines and high-level marketing optimization logic.
@@ -36,6 +38,7 @@ Testing ensures every feature, workflow, AI agent, API, and integration performs
 # 3. Platform Integration Testing
 
 Oracle69 AI Digital Office must validate the formal integration layer:
+
 - **Contract Verification:** Ensuring the `@oracle69/platform-contracts` package remains compatible with sibling product requirements.
 - **Integration API Testing:** Validating `/api/v1/platform/*` endpoints (Provisioning, Events, Memory Query).
 - **Event Streaming Validation:** Ensuring durable outbound event publishing to Redis Streams matches the expected schema.

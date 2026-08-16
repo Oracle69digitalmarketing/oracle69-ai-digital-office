@@ -1,9 +1,9 @@
-import { jest } from '@jest/globals';
-import { TenantContextService } from '@oracle69/runtime';
-import { NextBestActionEngine } from '../next-best-action/nba.engine.js';
-import { SalesIntelligenceEventType } from '../events/sales-intelligence.events.js';
+import { jest } from "@jest/globals";
+import { TenantContextService } from "@oracle69/runtime";
+import { NextBestActionEngine } from "../next-best-action/nba.engine.js";
+import { SalesIntelligenceEventType } from "../events/sales-intelligence.events.js";
 
-describe('NextBestActionEngine', () => {
+describe("NextBestActionEngine", () => {
   let engine: NextBestActionEngine;
   let modelProvider: any;
   let messageBus: any;
@@ -17,32 +17,32 @@ describe('NextBestActionEngine', () => {
       publish: jest.fn(),
     };
     tenantContextService = {
-      resolveTenantId: jest.fn().mockReturnValue('tenant-a'),
+      resolveTenantId: jest.fn().mockReturnValue("tenant-a"),
     };
     engine = new NextBestActionEngine(modelProvider, messageBus, tenantContextService);
   });
 
-  it('should recommend next action and publish an event', async () => {
-    const leadId = 'lead-123';
+  it("should recommend next action and publish an event", async () => {
+    const leadId = "lead-123";
     (engine as any).prisma.crmLead.findUnique = jest.fn().mockResolvedValue({ id: leadId });
 
     modelProvider.analyze.mockResolvedValue({
       content: JSON.stringify({
-        action: 'Send technical proposal',
-        priority: 'high',
-        reason: 'Client requested specific technical details',
-        expectedOutcome: 'Move to negotiation stage',
+        action: "Send technical proposal",
+        priority: "high",
+        reason: "Client requested specific technical details",
+        expectedOutcome: "Move to negotiation stage",
         confidence: 0.95,
       }),
     });
 
-    const result = await engine.recommendNextAction('lead', leadId);
+    const result = await engine.recommendNextAction("lead", leadId);
 
     expect(result).toBeDefined();
-    expect(result?.priority).toBe('high');
+    expect(result?.priority).toBe("high");
     expect(messageBus.publish).toHaveBeenCalledWith(
       SalesIntelligenceEventType.NEXT_BEST_ACTION_GENERATED,
-      expect.objectContaining({ type: SalesIntelligenceEventType.NEXT_BEST_ACTION_GENERATED })
+      expect.objectContaining({ type: SalesIntelligenceEventType.NEXT_BEST_ACTION_GENERATED }),
     );
   });
 });

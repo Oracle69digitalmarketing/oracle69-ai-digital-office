@@ -1,0 +1,1153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id           String        @id @default(uuid())
+  name         String
+  industry     String?
+  country      String?
+  timezone     String?
+  subscription String        @default("starter")
+  status       String        @default("active")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  users        User[]
+  departments  Department[]
+  projects     Project[]
+  clients      Client[]
+  settings     Setting[]
+  agents       Agent[]
+  agentRegistryEntries AgentRegistryEntry[]
+  workflowStepRecords  WorkflowStepRecord[]
+  longTermMemoryRecords LongTermMemoryRecord[]
+  auditLogs            AuditLog[]
+  conversations        Conversation[]
+  integrationCredentials IntegrationCredential[]
+  crmOrganizations     CrmOrganization[]
+  crmContacts          CrmContact[]
+  crmLeads             CrmLead[]
+  crmOpportunities     CrmOpportunity[]
+  crmPipelines         CrmPipeline[]
+  crmActivities        CrmActivity[]
+  eiKpiSnapshots       EiKpiSnapshot[]
+  eiBusinessHealthSnapshots EiBusinessHealthSnapshot[]
+  eiForecasts          EiForecast[]
+  eiScenarios          EiScenario[]
+  eiInsights           EiInsight[]
+  eiRecommendations    EiRecommendation[]
+  eiEnterpriseReports  EiEnterpriseReport[]
+  miCampaigns          MiCampaign[]
+  miCampaignMetrics    MiCampaignMetric[]
+  miSeoSnapshots       MiSeoSnapshot[]
+  miConversionSnapshots MiConversionSnapshot[]
+  miLeadScores         MiLeadScore[]
+  miGrowthInsights     MiGrowthInsight[]
+  miPricingSuggestions MiPricingSuggestion[]
+  miGrowthReports      MiGrowthReport[]
+  oiOperationsSnapshots OiOperationsSnapshot[]
+  oiWorkflowSnapshots  OiWorkflowSnapshot[]
+  oiAgentUtilizations  OiAgentUtilization[]
+  oiOpsInsights        OiOpsInsight[]
+  oiOpsRecommendations OiOpsRecommendation[]
+  oiOperationsReports  OiOperationsReport[]
+  finBudgets           FinBudget[]
+  finInvoices          FinInvoice[]
+  finTransactions      FinTransaction[]
+  hrEmployees          HrEmployee[]
+  hrPositions          HrPosition[]
+  hrCandidates         HrCandidate[]
+  knowledgeArticles    KnowledgeArticle[]
+  knowledgeVersions    KnowledgeArticleVersion[]
+  knowledgeIndexEntries KnowledgeIndexEntry[]
+  knowledgeReports     KnowledgeReport[]
+  procurementSuppliers ProcurementSupplier[]
+  procurementPurchaseOrders ProcurementPurchaseOrder[]
+  missions             Mission[]
+  missionCheckpoints   MissionCheckpoint[]
+  deployments          Deployment[]
+}
+
+model ProcurementSupplier {
+  id             String       @id @default(uuid())
+  name           String
+  category       String?
+  status         String       @default("active")
+  contactEmail   String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  purchaseOrders ProcurementPurchaseOrder[]
+
+  @@index([organizationId, status])
+}
+
+model ProcurementPurchaseOrder {
+  id               String              @id @default(uuid())
+  supplierId       String
+  supplier         ProcurementSupplier @relation(fields: [supplierId], references: [id])
+  amount           Float
+  status           String              @default("pending") // pending, approved, rejected, completed
+  organizationId   String
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([organizationId, status])
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  password       String
+  name           String?
+  role           String         @default("employee")
+  status         String         @default("active")
+  avatar         String?
+  lastLogin      DateTime?
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  conversations  Conversation[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  settings       Setting[]
+  ownedCrmContacts    CrmContact[]
+  ownedCrmLeads       CrmLead[]
+  ownedCrmOpportunities CrmOpportunity[]
+  assignedCrmActivities CrmActivity[]
+}
+
+model CrmOrganization {
+  id             String       @id @default(uuid())
+  name           String
+  industry       String?
+  employees      Int?
+  revenue        Float?
+  website        String?
+  address        String?
+  city           String?
+  country        String?
+  status         String       @default("active")
+  healthScore    Float?
+  lastHealthUpdate DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  contacts       CrmContact[]
+  opportunities  CrmOpportunity[]
+  leads          CrmLead[]
+  notes          CrmNote[]
+  successPlans   CsSuccessPlan[]
+  healthScores   CsHealthScore[]
+  churnRisks     CsChurnRisk[]
+  interactions   CsInteraction[]
+}
+
+model CsSuccessPlan {
+  id               String      @id @default(uuid())
+  name             String
+  status           String      @default("active")
+  crmOrganizationId String
+  crmOrganization   CrmOrganization @relation(fields: [crmOrganizationId], references: [id])
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  milestones       CsSuccessPlanMilestone[]
+}
+
+model CsSuccessPlanMilestone {
+  id            String   @id @default(uuid())
+  name          String
+  dueDate       DateTime
+  status        String   @default("pending")
+  successPlanId String
+  successPlan   CsSuccessPlan @relation(fields: [successPlanId], references: [id])
+}
+
+model CsHealthScore {
+  id               String   @id @default(uuid())
+  score            Float
+  reasoning        String
+  crmOrganizationId String
+  crmOrganization   CrmOrganization @relation(fields: [crmOrganizationId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
+model CsChurnRisk {
+  id               String   @id @default(uuid())
+  riskType         String
+  severity         String
+  crmOrganizationId String
+  crmOrganization   CrmOrganization @relation(fields: [crmOrganizationId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
+model CsInteraction {
+  id               String   @id @default(uuid())
+  type             String
+  content          String
+  crmOrganizationId String
+  crmOrganization   CrmOrganization @relation(fields: [crmOrganizationId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
+model CrmContact {
+  id             String       @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  jobTitle       String?
+  source         String?
+  tags           String[]
+  status         String       @default("active")
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  ownerId        String?
+  owner          User?        @relation(fields: [ownerId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  activities     CrmActivity[]
+  notes          CrmNote[]
+  opportunities  CrmOpportunity[] @relation("OpportunityContacts")
+}
+
+model CrmLead {
+  id             String       @id @default(uuid())
+  title          String?
+  source         String?
+  status         String       @default("new")
+  score          Float?       @default(0)
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  ownerId        String?
+  owner          User?        @relation(fields: [ownerId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  notes          CrmNote[]
+  activities     CrmActivity[]
+}
+
+model CrmOpportunity {
+  id             String       @id @default(uuid())
+  name           String
+  value          Float
+  stage          String
+  probability    Float?
+  expectedCloseDate DateTime?
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  ownerId        String?
+  owner          User?        @relation(fields: [ownerId], references: [id])
+  pipelineId     String
+  pipeline       CrmPipeline  @relation(fields: [pipelineId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  contacts       CrmContact[] @relation("OpportunityContacts")
+  notes          CrmNote[]
+  activities     CrmActivity[]
+}
+
+model CrmPipeline {
+  id             String       @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  stages         CrmPipelineStage[]
+  opportunities  CrmOpportunity[]
+}
+
+model CrmPipelineStage {
+  id             String       @id @default(uuid())
+  name           String
+  order          Int
+  probability    Float?
+  pipelineId     String
+  pipeline       CrmPipeline  @relation(fields: [pipelineId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model CrmActivity {
+  id             String       @id @default(uuid())
+  type           String       // call, meeting, email, task
+  subject        String
+  description    String?
+  status         String       @default("planned")
+  dueDate        DateTime?
+  crmContactId   String?
+  crmContact     CrmContact?  @relation(fields: [crmContactId], references: [id])
+  crmLeadId      String?
+  crmLead        CrmLead?     @relation(fields: [crmLeadId], references: [id])
+  crmOpportunityId String?
+  crmOpportunity   CrmOpportunity? @relation(fields: [crmOpportunityId], references: [id])
+  assignedToId   String?
+  assignedTo     User?        @relation(fields: [assignedToId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  notes          CrmNote[]
+}
+
+model CrmNote {
+  id               String       @id @default(uuid())
+  content          String
+  crmOrganizationId String?
+  crmOrganization   CrmOrganization? @relation(fields: [crmOrganizationId], references: [id])
+  crmContactId     String?
+  crmContact       CrmContact?  @relation(fields: [crmContactId], references: [id])
+  crmLeadId        String?
+  crmLead          CrmLead?     @relation(fields: [crmLeadId], references: [id])
+  crmOpportunityId String?
+  crmOpportunity   CrmOpportunity? @relation(fields: [crmOpportunityId], references: [id])
+  crmActivityId    String?
+  crmActivity      CrmActivity? @relation(fields: [crmActivityId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model EiKpiSnapshot {
+  id             String       @id @default(uuid())
+  period         String
+  metrics        Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model EiBusinessHealthSnapshot {
+  id             String       @id @default(uuid())
+  score          Float
+  status         String
+  reasoning      String
+  factors        String[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiForecast {
+  id                String       @id @default(uuid())
+  period            String
+  expectedRevenue   Float
+  weightedPipeline  Float
+  committedRevenue  Float
+  conservative      Float
+  bestCase          Float
+  retentionRevenue  Float
+  assumptions       Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model EiScenario {
+  id             String       @id @default(uuid())
+  name           String
+  scenarioType   String
+  parameters     Json
+  projections    Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiInsight {
+  id             String       @id @default(uuid())
+  type           String
+  content        String
+  confidence     Float?
+  source         String       @default("deterministic")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiRecommendation {
+  id               String       @id @default(uuid())
+  title            String
+  priority         String
+  action           String
+  expectedImpact   String?
+  source           String       @default("deterministic")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model EiEnterpriseReport {
+  id               String       @id @default(uuid())
+  period           String
+  summary          Json
+  healthScore      Float?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiCampaign {
+  id             String       @id @default(uuid())
+  name           String
+  channel        String
+  objective      String?
+  budget         Float?
+  spent          Float?
+  status         String       @default("active")
+  startDate      DateTime?
+  endDate        DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, createdAt])
+}
+
+model MiCampaignMetric {
+  id                String       @id @default(uuid())
+  period            String
+  channel           String
+  leads             Int          @default(0)
+  qualifiedLeads    Int          @default(0)
+  conversions       Int          @default(0)
+  conversionRate    Float        @default(0)
+  revenueAttributed Float        @default(0)
+  spend             Float        @default(0)
+  roas              Float        @default(0)
+  cac               Float        @default(0)
+  costPerLead       Float        @default(0)
+  metrics           Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model MiSeoSnapshot {
+  id              String       @id @default(uuid())
+  period          String
+  organicLeads    Int          @default(0)
+  organicShare    Float        @default(0)
+  avgPosition     Float        @default(0)
+  keywordsTracked Int          @default(0)
+  metrics         Json
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model MiConversionSnapshot {
+  id              String       @id @default(uuid())
+  period          String
+  totalLeads      Int          @default(0)
+  qualifiedLeads  Int          @default(0)
+  conversions     Int          @default(0)
+  conversionRate  Float        @default(0)
+  bestSource      String?
+  weakestSource   String?
+  metrics         Json
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model MiLeadScore {
+  id             String       @id @default(uuid())
+  leadId         String
+  leadTitle      String?
+  score          Float
+  grade          String
+  status         String
+  channel        String?
+  reasoning      Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiGrowthInsight {
+  id             String       @id @default(uuid())
+  type           String
+  content        String
+  confidence     Float?
+  source         String       @default("deterministic")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiPricingSuggestion {
+  id               String       @id @default(uuid())
+  product          String
+  currentPrice     Float?
+  suggestedPrice   Float?
+  rationale        String
+  confidence       Float?
+  source           String       @default("deterministic")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model MiGrowthReport {
+  id               String       @id @default(uuid())
+  period           String
+  growthScore      Float
+  summary          Json
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model OiOperationsSnapshot {
+  id                String       @id @default(uuid())
+  period            String
+  tasksTotal        Int          @default(0)
+  tasksCompleted    Int          @default(0)
+  completionRate    Float        @default(0)
+  cycleTimeAvg      Float?
+  throughput        Int          @default(0)
+  backlog           Int          @default(0)
+  avgExecutionTime  Float?
+  metrics           Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model OiWorkflowSnapshot {
+  id                 String       @id @default(uuid())
+  period             String
+  workflowsTotal     Int          @default(0)
+  workflowsCompleted Int          @default(0)
+  successRate        Float        @default(0)
+  avgStages          Float        @default(0)
+  stalledWorkflows   Int          @default(0)
+  metrics            Json
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  createdAt          DateTime     @default(now())
+
+  @@index([organizationId, period])
+}
+
+model OiAgentUtilization {
+  id                String       @id @default(uuid())
+  period            String
+  agentId           String
+  agentName         String?
+  tasksAssigned     Int          @default(0)
+  tasksCompleted    Int          @default(0)
+  completionRate    Float        @default(0)
+  utilizationRate   Float        @default(0)
+  avgExecutionTime  Float?
+  status            String       @default("idle")
+  metrics           Json
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, period, agentId])
+}
+
+model OiOpsInsight {
+  id             String       @id @default(uuid())
+  type           String
+  content        String
+  confidence     Float?
+  source         String       @default("deterministic")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model OiOpsRecommendation {
+  id               String       @id @default(uuid())
+  title            String
+  priority         String       @default("normal")
+  action           String
+  expectedImpact   String
+  source           String       @default("deterministic")
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model OiOperationsReport {
+  id               String       @id @default(uuid())
+  period           String
+  opsScore         Float
+  summary          Json
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model Department {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agents         Agent[]
+}
+
+model Agent {
+  id            String      @id @default(uuid())
+  name          String
+  role          String
+  capabilities  String[]
+  assignedModel String      @default("gemini-2.0-flash")
+  status        String      @default("idle")
+  version       String      @default("1.0.0")
+  health        String      @default("healthy")
+  departmentId  String
+  department    Department  @relation(fields: [departmentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  tasks         Task[]
+  auditLogs     AuditLog[]
+}
+
+model Project {
+  id             String         @id @default(uuid())
+  title          String
+  description    String?
+  status         String         @default("planning")
+  priority       String         @default("medium")
+  budget         Float?
+  startDate      DateTime?
+  endDate        DateTime?
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  clientId       String?
+  client         Client?        @relation(fields: [clientId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  tasks          Task[]
+  workflows      Workflow[]
+  conversations  Conversation[]
+  memory         Memory[]
+  documents      Document[]
+}
+
+model Task {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  priority      String    @default("medium")
+  status        String    @default("pending")
+  dependencies  String[]
+  deadline      DateTime?
+  estimatedCost Float?
+  executionTime Int?
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id])
+  assignedAgentId String?
+  assignedAgent   Agent?    @relation(fields: [assignedAgentId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Workflow {
+  id            String    @id @default(uuid())
+  name          String
+  executionType String    @default("sequential")
+  currentStage  String?
+  status        String    @default("not_started")
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id])
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+}
+
+model Client {
+  id             String       @id @default(uuid())
+  name           String
+  industry       String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  country        String?
+  preferences    Json?
+  status         String       @default("active")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  projects       Project[]
+  finInvoices    FinInvoice[]
+}
+
+model Conversation {
+  id             String       @id @default(uuid())
+  status         String       @default("open")
+  summary        String?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  closedAt       DateTime?
+  messages       Message[]
+
+  @@index([organizationId, updatedAt])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  sender         String
+  receiver       String?
+  content        String
+  modelUsed      String?
+  tokenCount     Int?
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model Memory {
+  id                  String   @id @default(uuid())
+  category            String
+  summary             String
+  embeddingReference  String?
+  confidence          Float?
+  accessLevel         String   @default("internal")
+  projectId           String?
+  project             Project? @relation(fields: [projectId], references: [id])
+  department          String?
+  client              String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  title      String
+  category   String
+  ownerId    String
+  version    String   @default("1.0.0")
+  storageUrl String
+  status     String   @default("active")
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  message   String
+  priority  String    @default("medium")
+  status    String    @default("unread")
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  action         String
+  resource       String
+  status         String
+  ipAddress      String?
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id])
+  agentId        String?
+  agent          Agent?       @relation(fields: [agentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model Setting {
+  id             String        @id @default(uuid())
+  key            String
+  value          Json
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([key, userId, organizationId])
+}
+
+model AgentRegistryEntry {
+  id               String       @id @default(uuid())
+  agentId          String
+  role             String
+  healthStatus     String
+  lastHeartbeatAt  DateTime
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model WorkflowStepRecord {
+  id               String       @id @default(uuid())
+  stepId           String
+  workflowId       String
+  taskId           String
+  agentId          String
+  status           String
+  startTime        DateTime
+  endTime          DateTime?
+  result           Json?
+  error            String?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model LongTermMemoryRecord {
+  id               String       @id @default(uuid())
+  type             String
+  sessionId        String
+  content          String
+  metadata         Json?
+  timestamp        DateTime     @default(now())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  embedding      Unsupported("vector(768)")?
+  createdAt      DateTime    @default(now())
+  }
+
+model IntegrationCredential {
+  id             String       @id @default(uuid())
+  provider       String       // e.g., 'google', 'slack', 'hubspot'
+  type           String       // e.g., 'oauth2', 'apikey'
+  accessToken    String?      @db.Text
+  refreshToken   String?      @db.Text
+  expiresAt      DateTime?
+  apiKey         String?      @db.Text
+  metadata       Json?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([provider, organizationId])
+}
+
+model Mission {
+  id             String             @id @default(uuid())
+  goal           String
+  priority       String             @default("normal")
+  deadline       DateTime?
+  owner          String
+  status         String             @default("draft")
+  missionKey     String
+  workflowId     String?
+  planId         String?
+  executionId    String?
+  correlationId  String?
+  error          String?
+  state          Json?
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  checkpoints    MissionCheckpoint[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([missionKey, organizationId])
+  @@index([organizationId, status, updatedAt])
+}
+
+model MissionCheckpoint {
+  id             String       @id @default(uuid())
+  missionId      String
+  mission        Mission      @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  version        Int
+  state          Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@unique([missionId, version])
+  @@index([missionId, createdAt])
+}
+
+model RuntimeEventLog {
+  id             String   @id @default(uuid())
+  eventId        String   @unique
+  type           String
+  payload        Json
+  source         String
+  version        String   @default("1.0.0")
+  correlationId  String?
+  causationId    String?
+  tenantId       String?
+  missionId      String?
+  executionId    String?
+  workflowId     String?
+  idempotencyKey String?
+  metadata       Json?
+  timestamp      DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([idempotencyKey])
+  @@index([tenantId, createdAt])
+}
+
+model Deployment {
+  id             String       @id @default(uuid())
+  name           String
+  environment    String       @default("production")
+  status         String       @default("active")
+  version        String       @default("1.0.0")
+  config         Json?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([name, environment, organizationId])
+  @@index([organizationId, status])
+}
+
+model FinBudget {
+  id             String       @id @default(uuid())
+  name           String       // e.g., 'Marketing', 'Development'
+  amount         Float
+  spent          Float        @default(0)
+  period         String       // e.g., 'monthly', 'quarterly', 'yearly'
+  startDate      DateTime
+  endDate        DateTime
+  status         String       @default("active")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  transactions   FinTransaction[]
+
+  @@index([organizationId, status])
+}
+
+model FinInvoice {
+  id             String       @id @default(uuid())
+  number         String
+  amount         Float
+  dueDate        DateTime
+  status         String       @default("draft") // draft, sent, paid, overdue, cancelled
+  clientId       String
+  client         Client       @relation(fields: [clientId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  transactions   FinTransaction[]
+
+  @@unique([number, organizationId])
+  @@index([organizationId, status])
+}
+
+model FinTransaction {
+  id             String       @id @default(uuid())
+  type           String       // income, expense
+  category       String
+  amount         Float
+  date           DateTime
+  status         String       @default("completed") // pending, completed, cancelled
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  budgetId       String?
+  budget         FinBudget?   @relation(fields: [budgetId], references: [id])
+  invoiceId      String?
+  invoice        FinInvoice?  @relation(fields: [invoiceId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, type, date])
+}
+
+model HrEmployee {
+  id              String       @id @default(uuid())
+  fullName        String
+  email           String
+  department      String       // e.g., 'Engineering', 'Marketing'
+  title           String
+  status          String       @default("onboarding") // onboarding, active, offboarding, inactive
+  hireDate        DateTime
+  terminationDate DateTime?
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId, status])
+}
+
+model HrPosition {
+  id             String       @id @default(uuid())
+  title          String
+  department     String
+  employmentType String       @default("full_time") // full_time, part_time, contract
+  status         String       @default("open") // open, closed, filled
+  location       String?
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  candidates     HrCandidate[]
+
+  @@index([organizationId, status])
+}
+
+model HrCandidate {
+  id             String       @id @default(uuid())
+  positionId     String
+  position       HrPosition   @relation(fields: [positionId], references: [id])
+  name           String
+  email          String
+  stage          String       @default("applied") // applied, screening, interviewing, offer, hired, rejected
+  appliedAt      DateTime
+  offeredAt      DateTime?
+  hiredAt        DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([positionId, stage])
+  @@index([organizationId, stage])
+}
+
+model KnowledgeArticle {
+  id             String       @id @default(uuid())
+  title          String
+  summary        String?
+  content        String
+  category       String
+  tags           String[]
+  status         String       @default("draft") // draft, published, archived
+  version        Int          @default(1)
+  authorId       String?
+  publishedAt    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  versions       KnowledgeArticleVersion[]
+  indexEntries   KnowledgeIndexEntry[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, category])
+}
+
+model KnowledgeArticleVersion {
+  id             String           @id @default(uuid())
+  articleId      String
+  article        KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  version        Int
+  title          String
+  summary        String?
+  content        String
+  category       String
+  tags           String[]
+  changeNote     String?
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  @@unique([articleId, version])
+  @@index([organizationId, createdAt])
+}
+
+model KnowledgeIndexEntry {
+  id             String           @id @default(uuid())
+  articleId      String
+  article        KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  token          String
+  weight         Float            @default(1)
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  @@index([organizationId, token])
+  @@index([articleId])
+}
+
+model KnowledgeReport {
+  id             String       @id @default(uuid())
+  period         String
+  knowledgeScore Float
+  summary        Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+
+

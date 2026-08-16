@@ -1,23 +1,23 @@
-import { Global, Module } from '@nestjs/common';
-import type { PrismaClient } from '@prisma/client';
+import { Global, Module } from "@nestjs/common";
+import type { PrismaClient } from "@prisma/client";
 import {
   InMemoryMissionRepository,
   PrismaMissionRepository,
   MISSION_REPOSITORY,
-} from './mission.repository.js';
+} from "./mission.repository.js";
 import {
   InMemoryCheckpointRepository,
   PrismaCheckpointRepository,
   CHECKPOINT_REPOSITORY,
-} from './checkpoint.repository.js';
+} from "./checkpoint.repository.js";
 import {
   InMemoryDeploymentRepository,
   PrismaDeploymentRepository,
   DEPLOYMENT_REPOSITORY,
-} from './deployment.repository.js';
-import { DeploymentService } from './deployment.service.js';
-import { TenantContextService } from '../tenancy/tenant-context.js';
-import { InMemoryEventLog, PrismaEventLog, EVENT_LOG } from '../events/event-log.js';
+} from "./deployment.repository.js";
+import { DeploymentService } from "./deployment.service.js";
+import { TenantContextService } from "../tenancy/tenant-context.js";
+import { InMemoryEventLog, PrismaEventLog, EVENT_LOG } from "../events/event-log.js";
 
 /**
  * Provides the durable persistence contracts for the Enterprise Runtime.
@@ -37,24 +37,25 @@ import { InMemoryEventLog, PrismaEventLog, EVENT_LOG } from '../events/event-log
       provide: MISSION_REPOSITORY,
       useFactory: (prisma?: PrismaClient) =>
         prisma ? new PrismaMissionRepository(prisma) : new InMemoryMissionRepository(),
-      inject: [{ token: 'PrismaService', optional: true }],
+      inject: [{ token: "PrismaService", optional: true }],
     },
     {
       provide: CHECKPOINT_REPOSITORY,
       useFactory: (prisma?: PrismaClient) =>
         prisma ? new PrismaCheckpointRepository(prisma) : new InMemoryCheckpointRepository(),
-      inject: [{ token: 'PrismaService', optional: true }],
+      inject: [{ token: "PrismaService", optional: true }],
     },
     {
       provide: DEPLOYMENT_REPOSITORY,
       useFactory: (prisma?: PrismaClient) =>
         prisma ? new PrismaDeploymentRepository(prisma) : new InMemoryDeploymentRepository(),
-      inject: [{ token: 'PrismaService', optional: true }],
+      inject: [{ token: "PrismaService", optional: true }],
     },
     {
       provide: EVENT_LOG,
-      useFactory: (prisma?: PrismaClient) => (prisma ? new PrismaEventLog(prisma) : new InMemoryEventLog()),
-      inject: [{ token: 'PrismaService', optional: true }],
+      useFactory: (prisma?: PrismaClient) =>
+        prisma ? new PrismaEventLog(prisma) : new InMemoryEventLog(),
+      inject: [{ token: "PrismaService", optional: true }],
     },
   ],
   exports: [

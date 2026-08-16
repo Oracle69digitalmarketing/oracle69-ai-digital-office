@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { MessageBus } from '@oracle69/runtime';
-import { ProcurementKpiEngine } from './procurement-kpi.engine.js';
-import { ProcurementHealthEngine } from './procurement-health.engine.js';
-import { ProcurementEventType } from '../events/procurement.events.js';
+import { Injectable } from "@nestjs/common";
+import { MessageBus } from "@oracle69/runtime";
+import { ProcurementKpiEngine } from "./procurement-kpi.engine.js";
+import { ProcurementHealthEngine } from "./procurement-health.engine.js";
+import { ProcurementEventType } from "../events/procurement.events.js";
 
 @Injectable()
 export class ProcurementInsightService {
@@ -20,13 +20,16 @@ export class ProcurementInsightService {
 
     const insight = {
       summary: `Procurement status: ${health.status}. Total spend: ${kpi.totalSpend}.`,
-      recommendation: health.status === 'critical' ? 'Review pending purchase orders immediately.' : 'Maintain operations.',
+      recommendation:
+        health.status === "critical"
+          ? "Review pending purchase orders immediately."
+          : "Maintain operations.",
     };
 
     await this.messageBus.publish(ProcurementEventType.INSIGHT_GENERATED, {
       tenantId: organizationId,
-      source: 'procurement-intelligence',
-      payload: insight
+      source: "procurement-intelligence",
+      payload: insight,
     });
 
     return insight;

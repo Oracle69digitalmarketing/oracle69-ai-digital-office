@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { RuntimeError } from '../errors/runtime.errors.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { RuntimeError } from "../errors/runtime.errors.js";
 
 /**
  * Execution context propagated through asynchronous runtime boundaries.
@@ -104,7 +104,7 @@ export class TenantContextService {
   resolveTenantId(explicit?: string): string {
     const tenantId = explicit ?? this.getTenantId();
     if (!tenantId) {
-      throw new TenantContextError('No active tenant context could be resolved.', {
+      throw new TenantContextError("No active tenant context could be resolved.", {
         explicit: explicit ?? null,
       });
     }

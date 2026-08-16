@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { RuntimeEventType } from '../events/runtime.events.js';
-import { EventBus } from '../events/event-bus.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { RuntimeEventType } from "../events/runtime.events.js";
+import { EventBus } from "../events/event-bus.js";
 
 @Injectable()
 export class AuditLogger {
@@ -10,7 +10,11 @@ export class AuditLogger {
 
   logEntry(entry: unknown): void {
     this.logger.log(`Audit: ${JSON.stringify(entry)}`);
-    this.eventBus.publish(RuntimeEventType.AUDIT_ENTRY_CREATED, { entry }, { source: 'AuditLogger' });
+    this.eventBus.publish(
+      RuntimeEventType.AUDIT_ENTRY_CREATED,
+      { entry },
+      { source: "AuditLogger" },
+    );
   }
 }
 
@@ -22,13 +26,17 @@ export class MetricsCollector {
 
   recordMetric(name: string, value: number): void {
     this.logger.debug(`Metric recorded: ${name}=${value}`);
-    this.eventBus?.publish(RuntimeEventType.RUNTIME_METRIC_RECORDED, { name, value }, { source: 'MetricsCollector' });
+    this.eventBus?.publish(
+      RuntimeEventType.RUNTIME_METRIC_RECORDED,
+      { name, value },
+      { source: "MetricsCollector" },
+    );
   }
 }
 
 @Injectable()
 export class HealthMonitor {
   checkStatus(): string {
-    return 'healthy';
+    return "healthy";
   }
 }

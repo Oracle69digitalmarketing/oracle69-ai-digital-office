@@ -10,15 +10,18 @@ export function ReceptionistWidget() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Welcome to Oracle69! I am your AI Receptionist. How can I help you today?" }
+    {
+      role: "assistant",
+      content: "Welcome to Oracle69! I am your AI Receptionist. How can I help you today?",
+    },
   ]);
   const [input, setInput] = useState("");
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-    
+
     const userMessage = input;
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setInput("");
     setIsLoading(true);
 
@@ -27,14 +30,18 @@ export function ReceptionistWidget() {
         method: "POST",
         body: JSON.stringify({ message: userMessage }),
       });
-      
-      setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+
+      setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
     } catch (error) {
       console.error("AI Receptionist Error:", error);
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: "I'm sorry, I'm having trouble connecting to the backend. Please check your connection or try again later." 
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "I'm sorry, I'm having trouble connecting to the backend. Please check your connection or try again later.",
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -53,25 +60,31 @@ export function ReceptionistWidget() {
   }
 
   return (
-    <div className={cn(
-      "fixed right-6 flex flex-col bg-white shadow-2xl transition-all border border-gray-200 rounded-t-lg overflow-hidden",
-      isMinimized ? "bottom-0 h-14 w-72" : "bottom-6 h-[500px] w-96"
-    )}>
+    <div
+      className={cn(
+        "fixed right-6 flex flex-col bg-white shadow-2xl transition-all border border-gray-200 rounded-t-lg overflow-hidden",
+        isMinimized ? "bottom-0 h-14 w-72" : "bottom-6 h-[500px] w-96",
+      )}
+    >
       <div className="flex h-14 items-center justify-between bg-indigo-600 px-4 text-white">
         <div className="flex items-center space-x-2">
           <div className="h-2 w-2 rounded-full bg-green-400"></div>
           <span className="font-medium text-sm text-white">AI Receptionist</span>
         </div>
         <div className="flex items-center space-x-2">
-          <button 
-            onClick={() => setIsMinimized(!isMinimized)} 
+          <button
+            onClick={() => setIsMinimized(!isMinimized)}
             aria-label={isMinimized ? "Maximize AI Receptionist" : "Minimize AI Receptionist"}
             className="p-1 hover:bg-indigo-500 rounded"
           >
-            {isMinimized ? <Maximize2 className="h-4 w-4 text-white" /> : <Minimize2 className="h-4 w-4 text-white" />}
+            {isMinimized ? (
+              <Maximize2 className="h-4 w-4 text-white" />
+            ) : (
+              <Minimize2 className="h-4 w-4 text-white" />
+            )}
           </button>
-          <button 
-            onClick={() => setIsOpen(false)} 
+          <button
+            onClick={() => setIsOpen(false)}
             aria-label="Close AI Receptionist"
             className="p-1 hover:bg-indigo-500 rounded"
           >
@@ -84,12 +97,15 @@ export function ReceptionistWidget() {
         <>
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 text-black">
             {messages.map((msg, i) => (
-              <div key={i} className={cn(
-                "max-w-[80%] rounded-lg p-3 text-sm",
-                msg.role === "user" 
-                  ? "ml-auto bg-indigo-600 text-white" 
-                  : "bg-white border border-gray-200"
-              )}>
+              <div
+                key={i}
+                className={cn(
+                  "max-w-[80%] rounded-lg p-3 text-sm",
+                  msg.role === "user"
+                    ? "ml-auto bg-indigo-600 text-white"
+                    : "bg-white border border-gray-200",
+                )}
+              >
                 {msg.content}
               </div>
             ))}
@@ -110,7 +126,11 @@ export function ReceptionistWidget() {
                 aria-label="Send message"
                 className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
               >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>

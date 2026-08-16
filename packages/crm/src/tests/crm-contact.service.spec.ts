@@ -1,10 +1,10 @@
-import { jest } from '@jest/globals';
-import { CrmContactService } from '../services/crm-contact.service.js';
-import { CrmContactRepository } from '../repositories/crm-contact.repository.js';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { CrmEventType } from '../events/crm.events.js';
+import { jest } from "@jest/globals";
+import { CrmContactService } from "../services/crm-contact.service.js";
+import { CrmContactRepository } from "../repositories/crm-contact.repository.js";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { CrmEventType } from "../events/crm.events.js";
 
-describe('CrmContactService', () => {
+describe("CrmContactService", () => {
   let service: CrmContactService;
   let repository: jest.Mocked<CrmContactRepository>;
   let messageBus: jest.Mocked<MessageBus>;
@@ -31,24 +31,37 @@ describe('CrmContactService', () => {
     service = new CrmContactService(repository, messageBus, tenantContext);
   });
 
-  it('should create a contact and publish an event', async () => {
-    const dto = { firstName: 'John', lastName: 'Doe', organizationId: 'org-1' };
-    const createdContact = { id: 'contact-1', ...dto, createdAt: new Date(), updatedAt: new Date(), email: null, phone: null, jobTitle: null, source: null, tags: [], status: 'active', crmOrganizationId: null, ownerId: null };
-    
-    tenantContext.resolveTenantId.mockReturnValue('org-1');
+  it("should create a contact and publish an event", async () => {
+    const dto = { firstName: "John", lastName: "Doe", organizationId: "org-1" };
+    const createdContact = {
+      id: "contact-1",
+      ...dto,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      email: null,
+      phone: null,
+      jobTitle: null,
+      source: null,
+      tags: [],
+      status: "active",
+      crmOrganizationId: null,
+      ownerId: null,
+    };
+
+    tenantContext.resolveTenantId.mockReturnValue("org-1");
     repository.create.mockResolvedValue(createdContact as any);
 
     const result = await service.createContact(dto);
 
     expect(result).toEqual(createdContact);
-    expect(repository.create).toHaveBeenCalledWith({ ...dto, organizationId: 'org-1' });
+    expect(repository.create).toHaveBeenCalledWith({ ...dto, organizationId: "org-1" });
     expect(messageBus.publish).toHaveBeenCalledWith(
       CrmEventType.CONTACT_CREATED,
       expect.objectContaining({
         type: CrmEventType.CONTACT_CREATED,
-        payload: { contact: createdContact }
+        payload: { contact: createdContact },
       }),
-      { tenantId: 'org-1' }
+      { tenantId: "org-1" },
     );
   });
 });

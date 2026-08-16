@@ -21,11 +21,13 @@ As the **Operate** component of the Oracle69 Enterprise AI Platform, Digital Off
 # 2. Capability Ownership Boundaries
 
 ### [Digital Office Only] - Core Ownership
+
 - **Operational Clusters:** Deploying and scaling the backend and frontend services for active workspaces.
 - **Agent Runtime Environments:** Containerized execution environments for AI employees.
 - **Local Environment Config:** Managing secrets and settings for operational execution.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Infrastructure Bootstrap:** Initial provisioning of cloud resources (Launch/Build).
 - **Global Network Mesh:** Enterprise-wide networking and inter-product security.
 - **Strategic Deployment Orchestration:** High-level release management across the full platform suite.

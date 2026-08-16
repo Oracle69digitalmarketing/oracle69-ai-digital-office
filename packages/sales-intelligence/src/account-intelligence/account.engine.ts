@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MessageBus, TenantContextService } from '@oracle69/runtime';
-import { PrismaClient } from '@prisma/client';
-import { AiModelProvider } from '../models/ai-model.interface.js';
-import { SalesIntelligenceEventType, SalesIntelligenceEvent } from '../events/sales-intelligence.events.js';
+import { Injectable, Logger } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
+import { PrismaClient } from "@prisma/client";
+import { AiModelProvider } from "../models/ai-model.interface.js";
+import {
+  SalesIntelligenceEventType,
+  SalesIntelligenceEvent,
+} from "../events/sales-intelligence.events.js";
 
 export interface Account360 {
   healthScore: number;
@@ -22,7 +25,7 @@ export class AccountIntelligenceEngine {
   constructor(
     private readonly modelProvider: any,
     private readonly messageBus: MessageBus,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async getAccount360(accountId: string): Promise<Account360 | null> {
@@ -31,7 +34,7 @@ export class AccountIntelligenceEngine {
     const account = await this.prisma.crmOrganization.findUnique({
       where: {
         id: accountId,
-        organizationId: this.tenantContext.resolveTenantId()
+        organizationId: this.tenantContext.resolveTenantId(),
       },
       include: {
         contacts: true,
@@ -52,15 +55,17 @@ export class AccountIntelligenceEngine {
 
     try {
       const response = await this.modelProvider.analyze(account, aiInstruction);
-      const result: Account360 = JSON.parse(response.content.replace(/```json/g, '').replace(/```/g, ''));
+      const result: Account360 = JSON.parse(
+        response.content.replace(/```json/g, "").replace(/```/g, ""),
+      );
 
       this.messageBus.publish(
         SalesIntelligenceEventType.ACCOUNT_HEALTH_CHANGED,
         new SalesIntelligenceEvent(SalesIntelligenceEventType.ACCOUNT_HEALTH_CHANGED, {
           accountId,
           healthScore: result.healthScore,
-          tenantId: this.tenantContext.resolveTenantId()
-        })
+          tenantId: this.tenantContext.resolveTenantId(),
+        }),
       );
 
       return result;

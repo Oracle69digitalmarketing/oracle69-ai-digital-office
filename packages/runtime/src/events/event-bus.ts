@@ -1,9 +1,9 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { Subject, Observable, Subscription } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
-import { RuntimeEvent, RuntimeEventOptions, RuntimeEventType } from './runtime.events.js';
-import { EventCatalog, EventCatalogService } from './event-catalog.js';
-import { TenantContextService } from '../tenancy/tenant-context.js';
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import { Subject, Observable, Subscription } from "rxjs";
+import { filter, map } from "rxjs/operators";
+import { RuntimeEvent, RuntimeEventOptions, RuntimeEventType } from "./runtime.events.js";
+import { EventCatalog, EventCatalogService } from "./event-catalog.js";
+import { TenantContextService } from "../tenancy/tenant-context.js";
 
 /**
  * Persistent recorder integration point for the canonical event flow.
@@ -51,7 +51,7 @@ export class EventBus {
 
   constructor(
     @Optional() private readonly catalog?: EventCatalogService | EventCatalog,
-    @Optional() private readonly tenantContext?: TenantContextService
+    @Optional() private readonly tenantContext?: TenantContextService,
   ) {}
 
   /**
@@ -62,19 +62,23 @@ export class EventBus {
   publish<T>(
     type: RuntimeEventType | string,
     payload: T,
-    options?: RuntimeEventOptions
+    options?: RuntimeEventOptions,
   ): RuntimeEvent<T>;
   publish<T>(
     eventOrType: RuntimeEvent<T> | (RuntimeEventType | string),
     payload?: T,
-    options: RuntimeEventOptions = {}
+    options: RuntimeEventOptions = {},
   ): RuntimeEvent<T> {
     if (eventOrType instanceof RuntimeEvent) {
       return this.publishFormed(eventOrType);
     }
 
     const enriched = this.enrichOptions(options);
-    const event = new RuntimeEvent(eventOrType as RuntimeEventType | string, payload as T, enriched);
+    const event = new RuntimeEvent(
+      eventOrType as RuntimeEventType | string,
+      payload as T,
+      enriched,
+    );
 
     if (event.idempotencyKey) {
       const existing = this.processedIdempotencyKeys.get(event.idempotencyKey);
@@ -97,18 +101,21 @@ export class EventBus {
    */
   subscribe<T = unknown>(
     type: RuntimeEventType | string,
-    handler: (event: RuntimeEvent<T>) => void | Promise<void>
+    handler: (event: RuntimeEvent<T>) => void | Promise<void>,
   ): Subscription {
-    return this.bus$.asObservable().pipe(filter((event) => event.type === type)).subscribe((event) => {
-      try {
-        const result = handler(event as RuntimeEvent<T>);
-        void Promise.resolve(result).catch((error: unknown) =>
-          this.handleError(this.toError(error), event)
-        );
-      } catch (error) {
-        this.handleError(this.toError(error), event);
-      }
-    });
+    return this.bus$
+      .asObservable()
+      .pipe(filter((event) => event.type === type))
+      .subscribe((event) => {
+        try {
+          const result = handler(event as RuntimeEvent<T>);
+          void Promise.resolve(result).catch((error: unknown) =>
+            this.handleError(this.toError(error), event),
+          );
+        } catch (error) {
+          this.handleError(this.toError(error), event);
+        }
+      });
   }
 
   /**
@@ -117,7 +124,7 @@ export class EventBus {
   ofType<T = unknown>(type: RuntimeEventType | string): Observable<RuntimeEvent<T>> {
     return this.bus$.asObservable().pipe(
       filter((event) => event.type === type),
-      map((event) => event as RuntimeEvent<T>)
+      map((event) => event as RuntimeEvent<T>),
     );
   }
 
@@ -258,12 +265,12 @@ export class EventBus {
   }
 
   private handleError(error: Error, event?: RuntimeEvent<unknown>): void {
-    this.logger.error(`Event handler error${event ? ` for ${event.type}` : ''}: ${error.message}`);
+    this.logger.error(`Event handler error${event ? ` for ${event.type}` : ""}: ${error.message}`);
     this.errorHandlers.forEach((handler) => {
       try {
         handler(error, event);
       } catch (handlerError) {
-        this.logger.error('Event error handler failed', handlerError);
+        this.logger.error("Event error handler failed", handlerError);
       }
     });
   }

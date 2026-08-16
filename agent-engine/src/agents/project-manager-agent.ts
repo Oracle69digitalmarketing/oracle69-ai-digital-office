@@ -1,9 +1,9 @@
-import { BaseAgent } from '../base-agent.js';
-import { TaskContext, AgentMetadata } from '@oracle69/shared';
-import { AgentRegistry } from '../agent-registry.js';
-import { ModelRouter } from '../model-router.js';
-import { PromptLoader } from '../prompt-loader.js';
-import { KnowledgeService } from '@oracle69/memory';
+import { BaseAgent } from "../base-agent.js";
+import { TaskContext, AgentMetadata } from "@oracle69/shared";
+import { AgentRegistry } from "../agent-registry.js";
+import { ModelRouter } from "../model-router.js";
+import { PromptLoader } from "../prompt-loader.js";
+import { KnowledgeService } from "@oracle69/memory";
 
 export class ProjectManagerAgent extends BaseAgent {
   constructor(
@@ -19,12 +19,12 @@ export class ProjectManagerAgent extends BaseAgent {
 
   async execute(task: TaskContext): Promise<any> {
     this.logger.log(`Breaking down task for execution: ${task.taskId}`);
-    
+
     // Operational Knowledge Retrieval (past projects, timelines, etc.)
     const knowledge = await this.knowledgeService.getRelevantContext(task.objective, {
-      organizationId: 'system',
+      organizationId: "system",
       sessionId: task.sessionId,
-      limit: 5
+      limit: 5,
     });
 
     const prompt = await this.promptLoader.getPrompt(this.metadata.role);
@@ -36,7 +36,7 @@ export class ProjectManagerAgent extends BaseAgent {
         taskDescription: task.objective,
         department: "Project Management",
         complexity: 7,
-      }
+      },
     );
 
     // Simplistic breakdown parsing - in real life this would be a JSON output
@@ -51,7 +51,7 @@ export class ProjectManagerAgent extends BaseAgent {
             ...task,
             taskId: `${task.taskId}-${dept.toLowerCase()}`,
             objective: `Execute ${dept} portion of: ${task.objective}`,
-            context: { ...task.context, breakdown, parentTaskId: task.taskId }
+            context: { ...task.context, breakdown, parentTaskId: task.taskId },
           };
           const res = await this.executionEngine.executeTask(subTask, agents[0]);
           results.push({ dept, res });
@@ -59,6 +59,6 @@ export class ProjectManagerAgent extends BaseAgent {
       }
     }
 
-    return `Project Execution Complete. Results: ${results.map(r => `[${r.dept}]: ${r.res}`).join(' | ')}`;
+    return `Project Execution Complete. Results: ${results.map((r) => `[${r.dept}]: ${r.res}`).join(" | ")}`;
   }
 }

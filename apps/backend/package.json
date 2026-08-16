@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^11.4.6",
     "@oracle69/agent-engine": "workspace:*",
+    "@oracle69/crm": "workspace:*",
     "@oracle69/enterprise-intelligence": "workspace:*",
     "@oracle69/execution-engine": "workspace:*",
     "@oracle69/financial-intelligence": "workspace:*",

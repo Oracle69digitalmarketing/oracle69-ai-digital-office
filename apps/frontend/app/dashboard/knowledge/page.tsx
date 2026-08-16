@@ -30,20 +30,88 @@ export default function KnowledgePage() {
   useEffect(() => {
     // Mock data for Knowledge Hub
     const mockArticles: Article[] = [
-      { id: "1", title: "Onboarding Playbook", category: "Operations", status: "published", version: 3, updated: "2026-08-02", summary: "First 30 days for every new hire, department by department." },
-      { id: "2", title: "Sales Playbook", category: "Sales", status: "published", version: 2, updated: "2026-07-28", summary: "Discovery calls, negotiation best practices and closing tactics." },
-      { id: "3", title: "Security Incident Response", category: "Security", status: "published", version: 1, updated: "2026-07-19", summary: "Standard operating procedure for containment and escalation." },
-      { id: "4", title: "Client Onboarding Checklist", category: "Customer Success", status: "draft", version: 1, updated: "2026-08-08", summary: "Checklist for a smooth client kickoff and implementation." },
-      { id: "5", title: "Internal AI Policy", category: "Policy", status: "draft", version: 1, updated: "2026-08-10", summary: "Guidelines for safe and compliant use of AI tooling." },
+      {
+        id: "1",
+        title: "Onboarding Playbook",
+        category: "Operations",
+        status: "published",
+        version: 3,
+        updated: "2026-08-02",
+        summary: "First 30 days for every new hire, department by department.",
+      },
+      {
+        id: "2",
+        title: "Sales Playbook",
+        category: "Sales",
+        status: "published",
+        version: 2,
+        updated: "2026-07-28",
+        summary: "Discovery calls, negotiation best practices and closing tactics.",
+      },
+      {
+        id: "3",
+        title: "Security Incident Response",
+        category: "Security",
+        status: "published",
+        version: 1,
+        updated: "2026-07-19",
+        summary: "Standard operating procedure for containment and escalation.",
+      },
+      {
+        id: "4",
+        title: "Client Onboarding Checklist",
+        category: "Customer Success",
+        status: "draft",
+        version: 1,
+        updated: "2026-08-08",
+        summary: "Checklist for a smooth client kickoff and implementation.",
+      },
+      {
+        id: "5",
+        title: "Internal AI Policy",
+        category: "Policy",
+        status: "draft",
+        version: 1,
+        updated: "2026-08-10",
+        summary: "Guidelines for safe and compliant use of AI tooling.",
+      },
     ];
     setArticles(mockArticles);
   }, []);
 
   const stats = [
-    { name: "Total Articles", value: "248", change: "+12 this month", icon: FileText, color: "text-indigo-600", bg: "bg-indigo-100" },
-    { name: "Published", value: "204", change: "82% indexed", icon: BookOpen, color: "text-green-600", bg: "bg-green-100" },
-    { name: "In Review", value: "31", change: "draft backlog", icon: Clock, color: "text-amber-600", bg: "bg-amber-100" },
-    { name: "Coverage", value: "12", change: "categories", icon: Archive, color: "text-blue-600", bg: "bg-blue-100" },
+    {
+      name: "Total Articles",
+      value: "248",
+      change: "+12 this month",
+      icon: FileText,
+      color: "text-indigo-600",
+      bg: "bg-indigo-100",
+    },
+    {
+      name: "Published",
+      value: "204",
+      change: "82% indexed",
+      icon: BookOpen,
+      color: "text-green-600",
+      bg: "bg-green-100",
+    },
+    {
+      name: "In Review",
+      value: "31",
+      change: "draft backlog",
+      icon: Clock,
+      color: "text-amber-600",
+      bg: "bg-amber-100",
+    },
+    {
+      name: "Coverage",
+      value: "12",
+      change: "categories",
+      icon: Archive,
+      color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
   ];
 
   const categories = [
@@ -55,9 +123,18 @@ export default function KnowledgePage() {
   ];
 
   const recommendations = [
-    { title: "Refresh stale articles", reason: "9 articles have not been updated in over 90 days." },
-    { title: "Clear draft backlog", reason: "31 drafts await review before they can be published." },
-    { title: "Re-index knowledge base", reason: "Search coverage is at 82%; a full re-index keeps results complete." },
+    {
+      title: "Refresh stale articles",
+      reason: "9 articles have not been updated in over 90 days.",
+    },
+    {
+      title: "Clear draft backlog",
+      reason: "31 drafts await review before they can be published.",
+    },
+    {
+      title: "Re-index knowledge base",
+      reason: "Search coverage is at 82%; a full re-index keeps results complete.",
+    },
   ];
 
   const filtered = articles.filter((a) => {
@@ -71,7 +148,9 @@ export default function KnowledgePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Knowledge Hub</h1>
-          <p className="text-gray-500">Centralized institutional knowledge, policies, and playbooks.</p>
+          <p className="text-gray-500">
+            Centralized institutional knowledge, policies, and playbooks.
+          </p>
         </div>
         <div className="flex space-x-3">
           <button className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
@@ -89,7 +168,13 @@ export default function KnowledgePage() {
         {stats.map((stat) => (
           <div key={stat.name} className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", stat.bg, stat.color)}>
+              <div
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-lg",
+                  stat.bg,
+                  stat.color,
+                )}
+              >
                 <stat.icon className="h-6 w-6" />
               </div>
               <span className="flex items-center text-xs font-medium text-green-600">

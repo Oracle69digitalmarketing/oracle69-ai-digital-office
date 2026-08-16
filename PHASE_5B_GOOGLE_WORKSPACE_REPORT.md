@@ -10,6 +10,7 @@ The dependency flow is strictly maintained:
 ## Connector Capabilities
 
 ### 1. Google Drive Connector
+
 - **Authenticate**: OAuth2 integration.
 - **Upload File**: Supports multipart upload with metadata.
 - **Download File**: Stream-based file retrieval.
@@ -20,6 +21,7 @@ The dependency flow is strictly maintained:
 - **Health Check**: Connection status monitoring.
 
 ### 2. Google Docs Connector
+
 - **Create Document**: Instantiates new Google Docs.
 - **Update Document**: Batch update support for complex edits.
 - **Append Content**: Simplified text appending.
@@ -28,6 +30,7 @@ The dependency flow is strictly maintained:
 - **Share Document**: Permission management (User/Role).
 
 ### 3. Gmail Connector
+
 - **Send Email**: RFC 2822 compliant encoded email delivery.
 - **Reply**: Thread-aware replying with header preservation.
 - **Draft**: Draft creation for review workflows.
@@ -36,6 +39,7 @@ The dependency flow is strictly maintained:
 - **Attachments**: Individual attachment retrieval.
 
 ### 4. Google Calendar Connector
+
 - **Create Meeting**: Event scheduling with attendee support.
 - **Update Meeting**: Dynamic event modification.
 - **Cancel Meeting**: Event deletion.
@@ -45,6 +49,7 @@ The dependency flow is strictly maintained:
 ## Observability and Integration
 
 Every connector action automatically triggers:
+
 - **Workflow Events**: `workflow.step.started`, `workflow.step.completed`, `workflow.step.failed`.
 - **Audit Events**: `audit.action.executed`.
 - **Persistent Business Memory**: Recorded via `MemoryManager` with full result data.

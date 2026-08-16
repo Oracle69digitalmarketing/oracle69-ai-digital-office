@@ -21,11 +21,13 @@ Its objective is to maximize quality while minimizing operational cost across al
 # 2. Ownership Boundaries
 
 ### [Digital Office Only: Operate]
+
 - **Operational Routing:** Selection of models for Digital Office agents (Receptionist, CoS, PM, Departments) based on task complexity.
 - **Dynamic Tiering:** Routing between Nano, Mini, and GPT-5.6 tiers for internal organizational tasks.
 - **Local Optimization:** Cost and quality monitoring for Digital Office execution.
 
 ### [Platform Reserved: Sibling Products]
+
 - **Discover (Architect):** Specialized models for strategic business discovery and high-level architectural research.
 - **Build (Launch):** Models optimized for infrastructure code generation and initial workspace provisioning.
 - **Optimize (Growth):** Marketing growth predictive models and advanced sales trend analysis.

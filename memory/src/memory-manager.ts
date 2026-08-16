@@ -1,5 +1,5 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { MemoryRecord } from '@oracle69/shared';
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import { MemoryRecord } from "@oracle69/shared";
 
 export interface IMemoryPersistence {
   save(record: MemoryRecord): Promise<string>;
@@ -19,13 +19,13 @@ export interface VectorMemoryAdapter {
 @Injectable()
 export class MemoryManager {
   private readonly logger = new Logger(MemoryManager.name);
-  
+
   // Transient session memory
   private sessionMemory: Map<string, MemoryRecord[]> = new Map();
-  
+
   // Active task context (working memory)
   private workingMemory: Map<string, MemoryRecord[]> = new Map();
-  
+
   private persistence?: IMemoryPersistence;
   private vectorAdapter?: VectorMemoryAdapter;
 
@@ -42,7 +42,7 @@ export class MemoryManager {
   async saveSession(sessionId: string, content: any, metadata: Record<string, any> = {}) {
     const record: MemoryRecord = {
       id: Math.random().toString(36).substring(7),
-      type: 'session',
+      type: "session",
       sessionId,
       content,
       metadata,
@@ -59,7 +59,7 @@ export class MemoryManager {
   async saveWorkingContext(taskId: string, sessionId: string, content: any) {
     const record: MemoryRecord = {
       id: Math.random().toString(36).substring(7),
-      type: 'working',
+      type: "working",
       sessionId,
       content,
       metadata: { taskId },
@@ -86,7 +86,7 @@ export class MemoryManager {
   }) {
     const record: MemoryRecord = {
       id: Math.random().toString(36).substring(7),
-      type: 'long-term',
+      type: "long-term",
       sessionId: data.sessionId,
       content: data.content,
       metadata: {
@@ -96,7 +96,7 @@ export class MemoryManager {
         role: data.role,
         reasoning: data.reasoning,
         decisions: data.decisions,
-        organizationId: data.organizationId || 'system',
+        organizationId: data.organizationId || "system",
         persistent: true,
       },
       timestamp: new Date(),
@@ -108,10 +108,11 @@ export class MemoryManager {
 
       if (this.vectorAdapter) {
         try {
-          const contentToEmbed = typeof data.content === 'string' 
-            ? data.content 
-            : `${data.reasoning || ''} ${JSON.stringify(data.content)}`;
-          
+          const contentToEmbed =
+            typeof data.content === "string"
+              ? data.content
+              : `${data.reasoning || ""} ${JSON.stringify(data.content)}`;
+
           const vector = await this.vectorAdapter.embed(contentToEmbed);
           await this.vectorAdapter.upsert(savedId, vector, record.metadata);
           this.logger.log(`Generated and stored embedding for task ${data.taskId}`);
@@ -120,7 +121,9 @@ export class MemoryManager {
         }
       }
     } else {
-      this.logger.warn(`Persistence layer not available, business memory for task ${data.taskId} not saved to DB`);
+      this.logger.warn(
+        `Persistence layer not available, business memory for task ${data.taskId} not saved to DB`,
+      );
       // Fallback to session memory for now
       await this.saveSession(data.sessionId, record.content, record.metadata);
     }
@@ -136,18 +139,18 @@ export class MemoryManager {
 
   async persistToLongTerm(sessionId: string) {
     if (!this.config?.longTermPersistenceEnabled) {
-      this.logger.warn('Long-term memory persistence is disabled by configuration');
+      this.logger.warn("Long-term memory persistence is disabled by configuration");
       return;
     }
 
     if (!this.persistence) {
-      this.logger.warn('No persistence layer defined for long-term memory');
+      this.logger.warn("No persistence layer defined for long-term memory");
       return;
     }
     this.logger.log(`Persisting session ${sessionId} to long-term memory...`);
     const records = await this.getSessionContext(sessionId);
     for (const record of records) {
-        await this.persistence.save(record);
+      await this.persistence.save(record);
     }
   }
 
@@ -157,24 +160,24 @@ export class MemoryManager {
 
   async searchSemantic(query: string, limit: number = 5): Promise<MemoryRecord[]> {
     if (!this.vectorAdapter) {
-      this.logger.warn('Vector adapter not configured, semantic search skipped.');
+      this.logger.warn("Vector adapter not configured, semantic search skipped.");
       return [];
     }
 
     try {
       const vector = await this.vectorAdapter.embed(query);
       const results = await this.vectorAdapter.similaritySearch(vector, limit);
-      
-      return results.map(r => ({
+
+      return results.map((r) => ({
         id: r.id,
-        type: 'long-term',
+        type: "long-term",
         sessionId: r.sessionId,
         content: r.content,
         metadata: r.metadata || {},
-        timestamp: r.timestamp
+        timestamp: r.timestamp,
       }));
     } catch (error) {
-      this.logger.error('Semantic search failed', error);
+      this.logger.error("Semantic search failed", error);
       return [];
     }
   }

@@ -1,15 +1,10 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { IAgentRegistry, IRuntimeContext } from '../runtime.types.js';
-import { 
-  IPlanningEngine, 
-  ExecutionPlan, 
-  TaskDefinition, 
-  TaskType 
-} from './planner.types.js';
-import { RuntimeEventType, RuntimeEventOptions } from '../events/runtime.events.js';
-import { EventBus } from '../events/event-bus.js';
-import { RuntimeError } from '../errors/runtime.errors.js';
-import { AgentRegistry } from '../agent-registry.js';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import type { IAgentRegistry, IRuntimeContext } from "../runtime.types.js";
+import { IPlanningEngine, ExecutionPlan, TaskDefinition, TaskType } from "./planner.types.js";
+import { RuntimeEventType, RuntimeEventOptions } from "../events/runtime.events.js";
+import { EventBus } from "../events/event-bus.js";
+import { RuntimeError } from "../errors/runtime.errors.js";
+import { AgentRegistry } from "../agent-registry.js";
 
 @Injectable()
 export class PlanningEngine implements IPlanningEngine {
@@ -18,7 +13,7 @@ export class PlanningEngine implements IPlanningEngine {
 
   constructor(
     @Inject(AgentRegistry) private readonly registry: IAgentRegistry,
-    private readonly eventBus: EventBus
+    private readonly eventBus: EventBus,
   ) {}
 
   /**
@@ -32,10 +27,10 @@ export class PlanningEngine implements IPlanningEngine {
     try {
       // 1. Decompose goal into task templates
       const tasks = await this.decomposeGoal(goal);
-      
+
       // 2. Resolve dependencies and build the graph
       this.resolveDependencies(tasks);
-      
+
       // 3. Select agents for each task
       for (const task of tasks) {
         this.selectAgent(task);
@@ -43,22 +38,26 @@ export class PlanningEngine implements IPlanningEngine {
 
       const plan: ExecutionPlan = {
         goal,
-        tasks: new Map(tasks.map(t => [t.id, t])),
+        tasks: new Map(tasks.map((t) => [t.id, t])),
         metadata: {
           createdAt: new Date().toISOString(),
-          version: '1.0.0',
+          version: "1.0.0",
           traceId: context.traceId,
           orgId: context.orgId,
-        }
+        },
       };
 
       // 4. Validate the final plan
       const validation = await this.validatePlan(plan);
       if (!validation.valid) {
-        throw new RuntimeError(`Plan validation failed: ${validation.errors?.join(', ')}`);
+        throw new RuntimeError(`Plan validation failed: ${validation.errors?.join(", ")}`);
       }
 
-      this.emit(RuntimeEventType.PLANNING_COMPLETED, { goal, taskCount: tasks.length }, { context });
+      this.emit(
+        RuntimeEventType.PLANNING_COMPLETED,
+        { goal, taskCount: tasks.length },
+        { context },
+      );
       return plan;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -78,7 +77,7 @@ export class PlanningEngine implements IPlanningEngine {
 
     // Check for circular dependencies
     if (this.hasCircularDependencies(tasks)) {
-      errors.push('Circular dependency detected in task graph.');
+      errors.push("Circular dependency detected in task graph.");
     }
 
     // Check if every task has an assigned agent
@@ -106,43 +105,43 @@ export class PlanningEngine implements IPlanningEngine {
     // This is where the LLM integration will live in future sprints.
     // For now, we simulate decomposition based on keywords.
     const tasks: TaskDefinition[] = [];
-    
-    if (goal.toLowerCase().includes('report')) {
+
+    if (goal.toLowerCase().includes("report")) {
       tasks.push({
-        id: 'research-task',
+        id: "research-task",
         type: TaskType.SEQUENTIAL,
-        objective: 'Gather data for the report',
-        role: 'knowledge-manager',
+        objective: "Gather data for the report",
+        role: "knowledge-manager",
         dependencies: [],
-        requiredCapabilities: ['research'],
+        requiredCapabilities: ["research"],
       });
       tasks.push({
-        id: 'draft-task',
+        id: "draft-task",
         type: TaskType.SEQUENTIAL,
-        objective: 'Draft the report document',
-        role: 'project-manager',
-        dependencies: ['research-task'],
-        requiredCapabilities: ['writing'],
+        objective: "Draft the report document",
+        role: "project-manager",
+        dependencies: ["research-task"],
+        requiredCapabilities: ["writing"],
       });
       tasks.push({
-        id: 'approval-task',
+        id: "approval-task",
         type: TaskType.APPROVAL,
-        objective: 'Review and approve report',
-        role: 'chief-of-staff',
-        dependencies: ['draft-task'],
+        objective: "Review and approve report",
+        role: "chief-of-staff",
+        dependencies: ["draft-task"],
       });
     } else {
       // Default fallback task
       tasks.push({
-        id: 'general-task',
+        id: "general-task",
         type: TaskType.SEQUENTIAL,
         objective: `Address goal: ${goal}`,
-        role: 'receptionist',
+        role: "receptionist",
         dependencies: [],
       });
     }
 
-    tasks.forEach(t => this.emit(RuntimeEventType.TASK_GENERATED, { taskId: t.id }));
+    tasks.forEach((t) => this.emit(RuntimeEventType.TASK_GENERATED, { taskId: t.id }));
     return tasks;
   }
 
@@ -151,20 +150,20 @@ export class PlanningEngine implements IPlanningEngine {
    */
   private selectAgent(task: TaskDefinition): void {
     const suitableAgents = this.registry.listAgentsByRole(task.role);
-    
+
     // Filter by capabilities if specified
-    const matched = suitableAgents.filter(agent => {
+    const matched = suitableAgents.filter((agent) => {
       if (!task.requiredCapabilities) return true;
       const agentCaps = agent.capabilities || [];
-      return task.requiredCapabilities.every(req => agentCaps.includes(req));
+      return task.requiredCapabilities.every((req) => agentCaps.includes(req));
     });
 
     // Filter by tools if specified
-    const finalMatched = matched.filter(agent => {
+    const finalMatched = matched.filter((agent) => {
       if (!task.requiredTools) return true;
       const agentMetadata = agent.metadata || {};
       const agentTools = agentMetadata.tools || [];
-      return task.requiredTools.every(req => agentTools.includes(req));
+      return task.requiredTools.every((req) => agentTools.includes(req));
     });
 
     if (finalMatched.length > 0) {
@@ -180,11 +179,13 @@ export class PlanningEngine implements IPlanningEngine {
    * Ensures every task dependency exists in the list.
    */
   private resolveDependencies(tasks: TaskDefinition[]): void {
-    const ids = new Set(tasks.map(t => t.id));
+    const ids = new Set(tasks.map((t) => t.id));
     for (const task of tasks) {
       for (const dep of task.dependencies) {
         if (!ids.has(dep)) {
-          throw new RuntimeError(`Unresolved dependency: Task '${task.id}' depends on missing task '${dep}'`);
+          throw new RuntimeError(
+            `Unresolved dependency: Task '${task.id}' depends on missing task '${dep}'`,
+          );
         }
         this.emit(RuntimeEventType.DEPENDENCY_CREATED, { from: task.id, to: dep });
       }
@@ -196,7 +197,7 @@ export class PlanningEngine implements IPlanningEngine {
    */
   private hasCircularDependencies(tasks: TaskDefinition[]): boolean {
     const adj = new Map<string, string[]>();
-    tasks.forEach(t => adj.set(t.id, t.dependencies));
+    tasks.forEach((t) => adj.set(t.id, t.dependencies));
 
     const visited = new Set<string>();
     const recStack = new Set<string>();
@@ -226,8 +227,12 @@ export class PlanningEngine implements IPlanningEngine {
   private emit(
     type: RuntimeEventType,
     payload: Record<string, unknown>,
-    options: RuntimeEventOptions = {}
+    options: RuntimeEventOptions = {},
   ): void {
-    this.eventBus.publish(type, payload, { source: 'PlanningEngine', context: this.activeContext, ...options });
+    this.eventBus.publish(type, payload, {
+      source: "PlanningEngine",
+      context: this.activeContext,
+      ...options,
+    });
   }
 }
