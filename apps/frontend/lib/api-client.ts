@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/store/auth-store";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+export const API_BASE_URL =
+  (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "") + "/api";
 
 export async function fetchAuthenticated(endpoint: string, options: RequestInit = {}) {
   const token = useAuthStore.getState().token;

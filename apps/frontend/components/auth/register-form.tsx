@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@oracle69/ui";
+import { API_BASE_URL } from "@/lib/api-client";
 
 export function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -14,16 +15,13 @@ export function RegisterForm() {
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL ?? "https://oracle69-ai-digital-office.onrender.com/api";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
+      const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name, organizationName }),
