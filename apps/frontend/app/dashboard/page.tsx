@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { StatCard, Card, LoadingSkeleton, EmptyState } from "@oracle69/ui";
+import { StatCard, Card, EmptyState } from "@oracle69/ui";
 import { eiClient } from "./ei-client";
 import { EnterpriseKpiMetrics, BusinessHealthResult, EnterpriseForecast } from "./ei-types";
 
@@ -68,37 +68,6 @@ export default function DashboardPage() {
       maximumFractionDigits: 0
     }).format(value);
   };
-
-  const cards = [
-    { 
-      name: "Active Accounts", 
-      value: kpis?.activeAccounts ?? 0, 
-      icon: Users, 
-      color: "text-blue-600", 
-      bg: "bg-blue-100" 
-    },
-    { 
-      name: "Open Opportunities", 
-      value: kpis?.openOpportunities ?? 0, 
-      icon: Briefcase, 
-      color: "text-indigo-600", 
-      bg: "bg-indigo-100" 
-    },
-    { 
-      name: "Won Revenue", 
-      value: kpis ? formatCurrency(kpis.wonRevenue) : "$0", 
-      icon: DollarSign, 
-      color: "text-green-600", 
-      bg: "bg-green-100" 
-    },
-    { 
-      name: "Forecast (Expected)", 
-      value: forecast ? formatCurrency(forecast.expectedRevenue) : "$0", 
-      icon: TrendingUp, 
-      color: "text-purple-600", 
-      bg: "bg-purple-100" 
-    },
-  ];
 
   if (loading) {
     return (

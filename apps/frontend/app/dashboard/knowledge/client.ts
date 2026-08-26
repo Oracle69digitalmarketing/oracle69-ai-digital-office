@@ -1,4 +1,4 @@
-import { KnowledgeArticle, KnowledgeArticleStatus, KnowledgeSearchResult, KnowledgeKpis, KnowledgeHealth, KnowledgeReport, KnowledgeRecommendation, KnowledgeAiInsight } from '@oracle69/knowledge-intelligence';
+import type { KnowledgeArticle, KnowledgeArticleStatus, KnowledgeSearchResult, KnowledgeKpis, KnowledgeHealth, KnowledgeReport } from '@oracle69/knowledge-intelligence';
 import { apiClient } from "@/lib/api-client";
 
 export const knowledgeClient = {

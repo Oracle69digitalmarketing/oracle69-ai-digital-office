@@ -16,9 +16,5 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
   }, [user, token, router]);
 
-  if (!user || !token) {
-    return null;
-  }
-
   return <DashboardShell>{children}</DashboardShell>;
 }

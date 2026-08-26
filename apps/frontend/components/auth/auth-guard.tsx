@@ -17,9 +17,5 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [token, pathname, router]);
 
-  if (!token && !pathname.startsWith("/auth")) {
-    return null;
-  }
-
   return <>{children}</>;
 }
