@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { MessageBus, TenantContextService } from "@oracle69/runtime";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, CrmNote, CrmActivity } from "@prisma/client";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { CrmEventType, CrmEvent } from "../events/crm.events.js";
 
@@ -75,8 +75,8 @@ export class CrmAiService {
       Source: ${lead.source}
       Organization: ${lead.crmOrganization?.name}
       Industry: ${lead.crmOrganization?.industry}
-      Notes: ${lead.notes.map((n) => n.content).join("; ")}
-      Activities: ${lead.activities.map((a) => a.subject).join("; ")}
+      Notes: ${lead.notes.map((n: CrmNote) => n.content).join("; ")}
+      Activities: ${lead.activities.map((a: CrmActivity) => a.subject).join("; ")}
       
       Respond only with a JSON object: { "score": number, "rationale": "string" }
     `;
@@ -126,7 +126,7 @@ export class CrmAiService {
       Value: ${opportunity.value}
       Current Stage: ${opportunity.stage}
       Organization: ${opportunity.crmOrganization?.name}
-      Activities: ${opportunity.activities.map((a) => a.subject).join("; ")}
+      Activities: ${opportunity.activities.map((a: CrmActivity) => a.subject).join("; ")}
       
       Respond only with a JSON object: { "probability": number, "rationale": "string" }
     `;
@@ -170,7 +170,7 @@ export class CrmAiService {
       Summarize this sales activity and suggest next steps:
       Subject: ${activity.subject}
       Description: ${activity.description}
-      Notes: ${activity.notes.map((n) => n.content).join("; ")}
+      Notes: ${activity.notes.map((n: CrmNote) => n.content).join("; ")}
       
       Respond only with a JSON object: { "summary": "string", "nextSteps": ["string"] }
     `;

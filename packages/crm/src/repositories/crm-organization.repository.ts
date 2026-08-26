@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { CreateCrmOrganizationDto, UpdateCrmOrganizationDto } from "../dto/crm.dto.js";
 
 @Injectable()
@@ -40,7 +40,7 @@ export class CrmOrganizationRepository {
     });
   }
 
-  async findAll(organizationId: string) {
+  async findAll(organizationId: string): Promise<Prisma.CrmOrganizationGetPayload<{ include: { contacts: { include: { activities: true } } } }>[]> {
     return this.prisma.crmOrganization.findMany({
       where: { organizationId },
       include: {
