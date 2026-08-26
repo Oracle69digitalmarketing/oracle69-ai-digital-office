@@ -30,6 +30,7 @@ import { CrmModule } from "@oracle69/crm";
 import { CalendarModule } from "./calendar/calendar.module.js";
 import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { SettingsModule } from "./settings/settings.module.js";
+import { ReceptionistModule } from "./receptionist/receptionist.module.js";
 import { KnowledgeIndexingSubscriber } from "./automation/knowledge-indexing.subscriber.js";
 
 @Module({
@@ -63,6 +64,7 @@ import { KnowledgeIndexingSubscriber } from "./automation/knowledge-indexing.sub
     CalendarModule,
     DashboardModule,
     SettingsModule,
+    ReceptionistModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService, KnowledgeIndexingSubscriber],
