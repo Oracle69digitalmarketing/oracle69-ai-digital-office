@@ -65,7 +65,7 @@ export class CrmOrganizationService {
     const orgs = await this.repository.findAll(tenantId);
     return orgs.map((org) => {
       // Find contact with latest createdAt
-      const contacts = org.contacts.sort(
+      const contacts = [...org.contacts].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
       const primaryContact = contacts[0];

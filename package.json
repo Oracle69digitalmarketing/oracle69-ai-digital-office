@@ -2,7 +2,8 @@
   "name": "oracle69-ai-digital-office",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "prisma:generate": "prisma generate --schema=./database/schema.prisma",
+    "build": "pnpm prisma:generate && turbo build",
     "start:prod": "pnpm --filter backend start:prod",
     "dev": "turbo dev",
     "lint": "turbo lint",
@@ -18,7 +19,7 @@
   },
   "packageManager": "pnpm@9.0.0",
   "dependencies": {
-    "@prisma/client": "^5.0.0",
-    "prisma": "^5.0.0"
+    "@prisma/client": "5.22.0",
+    "prisma": "5.22.0"
   }
 }
