@@ -2,6 +2,7 @@ import { Module, Global } from "@nestjs/common";
 import { RuntimeModule, MemoryManager, MessageBus } from "@oracle69/runtime";
 import { CrmModule } from "@oracle69/crm";
 import { SalesIntelligenceModule } from "@oracle69/sales-intelligence";
+import { KnowledgeIntelligenceModule } from "@oracle69/knowledge-intelligence";
 import { EnterpriseIntelligenceController } from "./controllers/ei.controller.js";
 import { EiKpiEngine } from "./services/ei-kpi.engine.js";
 import { EiBusinessHealthEngine } from "./services/ei-business-health.engine.js";
@@ -12,7 +13,7 @@ import { EiReportService } from "./services/ei-report.service.js";
 
 @Global()
 @Module({
-  imports: [RuntimeModule, CrmModule, SalesIntelligenceModule],
+  imports: [RuntimeModule, CrmModule, SalesIntelligenceModule, KnowledgeIntelligenceModule],
   controllers: [EnterpriseIntelligenceController],
   providers: [
     EiKpiEngine,
