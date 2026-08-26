@@ -14,7 +14,7 @@ export class KnowledgeIndexingSubscriber implements OnModuleInit {
 
   onModuleInit() {
     this.eventBus.subscribe(EnterpriseIntelligenceEventType.REPORT_GENERATED, async (event) => {
-      const organizationId = event.metadata.tenantId;
+      const organizationId = event.tenantId;
       if (!organizationId) {
         this.logger.warn('Received REPORT_GENERATED event without tenantId');
         return;
