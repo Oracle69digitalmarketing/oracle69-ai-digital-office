@@ -4,6 +4,7 @@ import { AgentRegistry } from "../agent-registry.js";
 import { ModelRouter } from "../model-router.js";
 import { PromptLoader } from "../prompt-loader.js";
 import { KnowledgeService } from "@oracle69/memory";
+import { TenantContextService } from "@oracle69/runtime";
 
 export class ProjectManagerAgent extends BaseAgent {
   constructor(
@@ -13,6 +14,7 @@ export class ProjectManagerAgent extends BaseAgent {
     private modelRouter: ModelRouter,
     private promptLoader: PromptLoader,
     private knowledgeService: KnowledgeService,
+    private tenantContext?: TenantContextService,
   ) {
     super(metadata);
   }
@@ -20,9 +22,14 @@ export class ProjectManagerAgent extends BaseAgent {
   async execute(task: TaskContext): Promise<any> {
     this.logger.log(`Breaking down task for execution: ${task.taskId}`);
 
+    const organizationId = task.organizationId || this.tenantContext?.resolveTenantId();
+    if (!organizationId) {
+      throw new Error("Tenant context is required for knowledge retrieval");
+    }
+
     // Operational Knowledge Retrieval (past projects, timelines, etc.)
     const knowledge = await this.knowledgeService.getRelevantContext(task.objective, {
-      organizationId: "system",
+      organizationId,
       sessionId: task.sessionId,
       limit: 5,
     });
@@ -45,7 +52,9 @@ export class ProjectManagerAgent extends BaseAgent {
 
     for (const dept of departments) {
       if (breakdown.toLowerCase().includes(dept.toLowerCase())) {
-        const agents = this.registry.findAgentsByRole(dept);
+        // Department delegation is scoped to the authoritative tenant so an
+        // Org-A task can never resolve an Org-B department agent.
+        const agents = this.registry.findAgentsByRoleAndTenant(dept, organizationId);
         if (agents.length > 0) {
           const subTask: TaskContext = {
             ...task,

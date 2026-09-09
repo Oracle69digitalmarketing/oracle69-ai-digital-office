@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { CsHealthEngine } from "../services/cs-health.engine.js";
 import { CsRiskEngine } from "../services/cs-risk.engine.js";
 import {
@@ -17,6 +18,7 @@ export interface TriggerInterventionBody {
 }
 
 @Controller("customer-success")
+@UseGuards(OrgClaimGuard)
 export class CustomerSuccessController {
   constructor(
     private readonly healthEngine: CsHealthEngine,

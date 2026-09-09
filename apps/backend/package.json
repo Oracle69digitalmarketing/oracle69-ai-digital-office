@@ -30,7 +30,9 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^11.4.6",
     "@oracle69/agent-engine": "workspace:*",
+    "@oracle69/connectors": "workspace:*",
     "@oracle69/crm": "workspace:*",
+    "@oracle69/customer-success": "workspace:*",
     "@oracle69/enterprise-intelligence": "workspace:*",
     "@oracle69/execution-engine": "workspace:*",
     "@oracle69/financial-intelligence": "workspace:*",
@@ -60,7 +62,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@jest/globals": "^30.4.1",
+    "@jest/globals": "^29.5.0",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",

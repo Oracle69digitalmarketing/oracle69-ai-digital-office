@@ -1,14 +1,20 @@
-import { Injectable, ConflictException, UnauthorizedException } from "@nestjs/common";
-
+import { Injectable, ConflictException, UnauthorizedException, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UsersService } from "../users/users.service.js";
 import * as bcrypt from "bcrypt";
+import { PrismaService } from "../prisma/prisma.service.js";
+import { RegisterDto } from "./dto/auth.dto.js";
+
+const DEFAULT_ROLE = "employee";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private prisma: PrismaService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -27,10 +33,19 @@ export class AuthService {
       sub: user.id,
       role: user.role,
       organizationId: user.organizationId,
+      tokenType: "access",
+      type: "access",
+    };
+    const refreshPayload = {
+      ...payload,
+      tokenType: "refresh",
+      type: "refresh",
     };
     return {
-      access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: "7d" }),
+      access_token: this.jwtService.sign(payload, { expiresIn: "1h" }),
+      refresh_token: this.jwtService.sign(refreshPayload, { expiresIn: "7d" }),
+      expires_in: 3600,
+      token_type: "Bearer",
       user: {
         id: user.id,
         email: user.email,
@@ -43,7 +58,12 @@ export class AuthService {
 
   async refreshToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.verify<{ email: string; tokenType?: string; type?: string }>(
+        token,
+      );
+      if (payload.tokenType !== "refresh" && payload.type !== "refresh") {
+        throw new UnauthorizedException("Invalid refresh token");
+      }
       const user = await this.usersService.findOne(payload.email);
       if (!user) {
         throw new UnauthorizedException("User not found");
@@ -54,53 +74,35 @@ export class AuthService {
     }
   }
 
-  async register(data: any) {
-    console.log("STEP 1: validating input");
-    const { password, ...safeData } = data;
-    console.log("AuthService.register: Starting registration for data:", JSON.stringify(safeData));
+  async register(dto: RegisterDto) {
+    const { password, email, name } = dto;
 
-    try {
-      console.log("STEP 2: checking existing user");
-      const existingUser = await this.usersService.findOne(data.email);
-      console.log(
-        "STEP 3: existing user check result:",
-        existingUser ? "User exists" : "User not found",
-      );
+    const existingUser = await this.usersService.findOne(email);
+    if (existingUser) {
+      throw new ConflictException("User already exists");
+    }
 
-      if (existingUser) {
-        throw new ConflictException("User already exists");
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      console.log("STEP 4: hashing password");
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      console.log("STEP 5: password hashed");
+    const user = await this.prisma.$transaction(async (tx) => {
+      const organization = await tx.organization.create({
+        data: { name: dto.organizationName?.trim() || `${name?.trim() || email}'s Workspace` },
+      });
 
-      console.log("STEP 6: creating organization (via connectOrCreate)");
-      console.log("STEP 7: creating user");
-      const user = await this.usersService.create({
-        email: data.email,
-        password: hashedPassword,
-        name: data.name,
-        role: data.role || "employee",
-        organization: {
-          connectOrCreate: {
-            where: { id: data.organizationId || "default-org" },
-            create: { name: data.organizationName || "Default Organization" },
-          },
+      return tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          role: DEFAULT_ROLE,
+          organization: { connect: { id: organization.id } },
         },
       });
-      console.log("STEP 8: user created successfully:", user.id);
+    });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _password, ...result } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...result } = user;
 
-      console.log("STEP 10: registration complete");
-      return result;
-    } catch (error: any) {
-      console.error("REGISTER ERROR");
-      console.error(error);
-      console.error(error.stack);
-      throw error;
-    }
+    return result;
   }
 }

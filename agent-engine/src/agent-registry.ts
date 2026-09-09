@@ -22,6 +22,7 @@ export class AgentRegistry implements OnModuleDestroy {
   async register(agent: BaseAgent, organizationId?: string) {
     await agent.onInitialize();
     await agent.onActivate();
+    agent.organizationId = organizationId;
     this.agents.set(agent.metadata.id, agent);
 
     if (this.store) {
@@ -64,6 +65,19 @@ export class AgentRegistry implements OnModuleDestroy {
   findAgentsByRole(role: string): BaseAgent[] {
     return Array.from(this.agents.values()).filter(
       (agent) => agent.metadata.role.toLowerCase() === role.toLowerCase(),
+    );
+  }
+
+  /**
+   * Returns agents matching the given role that belong to the supplied
+   * organization/tenant. Agents registered without a tenant (global/system
+   * agents) are never returned for tenant-scoped lookups, enforcing isolation.
+   */
+  findAgentsByRoleAndTenant(role: string, organizationId: string): BaseAgent[] {
+    return Array.from(this.agents.values()).filter(
+      (agent) =>
+        agent.organizationId === organizationId &&
+        agent.metadata.role.toLowerCase() === role.toLowerCase(),
     );
   }
 

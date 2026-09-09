@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { FinancialKpiService } from "../services/financial-kpi.service.js";
 import { FinancialHealthService } from "../services/financial-health.service.js";
 import { FinancialAiService } from "../services/financial-ai.service.js";
@@ -16,6 +17,7 @@ import { TenantContextService } from "@oracle69/runtime";
  * EventBus inherit the tenant without any cross-tenant reads or writes.
  */
 @Controller("finance")
+@UseGuards(OrgClaimGuard)
 export class FinanceController {
   constructor(
     private readonly kpiService: FinancialKpiService,

@@ -3,6 +3,7 @@ import { Logger } from "@nestjs/common";
 
 export abstract class BaseAgent {
   protected readonly logger: Logger;
+  public organizationId?: string;
 
   constructor(public metadata: AgentMetadata) {
     this.logger = new Logger(`${this.metadata.name}Agent`);

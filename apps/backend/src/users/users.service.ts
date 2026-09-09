@@ -1,9 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { User, Prisma } from "@prisma/client";
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async findOne(email: string): Promise<User | null> {
@@ -13,15 +15,13 @@ export class UsersService {
   }
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
-    console.log("UsersService.create: Attempting to create user with data:", JSON.stringify(data));
     try {
       const user = await this.prisma.user.create({
         data,
       });
-      console.log("UsersService.create: Prisma create success.");
       return user;
     } catch (error) {
-      console.error("UsersService.create: Prisma create failed:", error);
+      this.logger.error("UsersService.create: failed to create user");
       throw error;
     }
   }

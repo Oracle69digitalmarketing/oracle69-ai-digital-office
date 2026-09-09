@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Param, Query, Body } from "@nestjs/common";
+import { Controller, Get, Post, Param, Query, Body, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { MiCampaignEngine } from "../services/mi-campaign.engine.js";
 import type { CampaignCreateInput } from "../services/mi-campaign.engine.js";
 import { MiSeoEngine } from "../services/mi-seo.engine.js";
@@ -8,6 +9,7 @@ import { MiGrowthInsightEngine } from "../services/mi-growth-insight.engine.js";
 import { MiReportService } from "../services/mi-report.service.js";
 
 @Controller("marketing-intelligence")
+@UseGuards(OrgClaimGuard)
 export class MarketingIntelligenceController {
   constructor(
     private readonly campaignEngine: MiCampaignEngine,

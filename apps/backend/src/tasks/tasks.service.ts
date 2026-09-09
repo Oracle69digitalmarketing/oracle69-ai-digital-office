@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { EventBus } from "@oracle69/shared";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class TasksService {
@@ -9,10 +10,18 @@ export class TasksService {
   constructor(
     private prisma: PrismaService,
     private eventBus: EventBus,
+    private tenantContext: TenantContextService,
   ) {}
+
+  private get organizationId() {
+    return this.tenantContext.getTenantId();
+  }
 
   async findAll() {
     return this.prisma.task.findMany({
+      where: {
+        project: { organizationId: this.organizationId },
+      },
       include: {
         assignedAgent: true,
         project: true,
@@ -30,7 +39,7 @@ export class TasksService {
       },
     });
 
-    if (!task) {
+    if (!task || task.project.organizationId !== this.organizationId) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
 
@@ -38,6 +47,15 @@ export class TasksService {
   }
 
   async updateStatus(id: string, status: string, userId?: string) {
+    const existing = await this.prisma.task.findUnique({
+      where: { id },
+      include: { project: true, assignedAgent: true },
+    });
+
+    if (!existing || existing.project.organizationId !== this.organizationId) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+
     const task = await this.prisma.task.update({
       where: { id },
       data: { status },
@@ -54,7 +72,7 @@ export class TasksService {
         taskId: id,
         status,
         userId,
-        organizationId: task.assignedAgent?.organizationId || "system",
+        organizationId: this.organizationId,
       },
     });
 
@@ -65,7 +83,7 @@ export class TasksService {
         resource: "Task",
         status: "SUCCESS",
         userId: userId,
-        organizationId: task.assignedAgent?.organizationId || "system",
+        organizationId: this.organizationId!,
         createdAt: new Date(),
       },
     });
@@ -74,8 +92,18 @@ export class TasksService {
   }
 
   async create(data: any) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: data.projectId },
+    });
+
+    if (!project || project.organizationId !== this.organizationId) {
+      throw new NotFoundException("Project not found");
+    }
+
+    const { organizationId: _clientOrgId, ...safeData } = data;
+
     const task = await this.prisma.task.create({
-      data,
+      data: safeData,
     });
 
     this.eventBus.publish({
@@ -84,7 +112,7 @@ export class TasksService {
       payload: {
         taskId: task.id,
         title: task.title,
-        organizationId: (data as any).organizationId || "system",
+        organizationId: this.organizationId,
       },
     });
 

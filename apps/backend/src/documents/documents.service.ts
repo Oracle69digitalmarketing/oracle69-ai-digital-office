@@ -41,10 +41,20 @@ export class DocumentsService {
   }
 
   async create(data: any) {
+    const { organizationId: _clientOrgId, ...safeData } = data;
+
+    if (safeData.projectId) {
+      const project = await this.prisma.project.findUnique({
+        where: { id: safeData.projectId },
+      });
+
+      if (!project || project.organizationId !== this.organizationId) {
+        throw new NotFoundException("Project not found");
+      }
+    }
+
     return this.prisma.document.create({
-      data: {
-        ...data,
-      },
+      data: safeData,
     });
   }
 }

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Param, Query } from "@nestjs/common";
+import { Controller, Get, Post, Param, Query, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { OiOperationsEngine } from "../services/oi-operations.engine.js";
 import { OiWorkflowEngine } from "../services/oi-workflow.engine.js";
 import { OiAgentEngine } from "../services/oi-agent.engine.js";
@@ -6,6 +7,7 @@ import { OiInsightEngine } from "../services/oi-insight.engine.js";
 import { OiReportService } from "../services/oi-report.service.js";
 
 @Controller("operations-intelligence")
+@UseGuards(OrgClaimGuard)
 export class OperationsIntelligenceController {
   constructor(
     private readonly operationsEngine: OiOperationsEngine,

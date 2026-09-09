@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { ArticleService } from "../services/article.service.js";
 import { IndexService } from "../services/index.service.js";
 import { SearchService } from "../services/search.service.js";
@@ -18,6 +19,7 @@ import { TenantContextService } from "@oracle69/runtime";
  * EventBus inherit the tenant without any cross-tenant reads or writes.
  */
 @Controller("knowledge")
+@UseGuards(OrgClaimGuard)
 export class KnowledgeController {
   constructor(
     private readonly articleService: ArticleService,

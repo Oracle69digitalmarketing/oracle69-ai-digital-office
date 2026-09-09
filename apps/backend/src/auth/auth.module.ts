@@ -6,6 +6,8 @@ import { UsersModule } from "../users/users.module.js";
 import { AuthService } from "./auth.service.js";
 import { AuthController } from "./auth.controller.js";
 import { JwtStrategy } from "./jwt.strategy.js";
+import { JwtAuthGuard } from "./jwt-auth.guard.js";
+import { RolesGuard } from "./roles.guard.js";
 
 @Module({
   imports: [
@@ -13,15 +15,18 @@ import { JwtStrategy } from "./jwt.strategy.js";
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>("JWT_SECRET"),
-        signOptions: { expiresIn: "1h" },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.getOrThrow<string>("JWT_SECRET");
+        return {
+          secret,
+          signOptions: { expiresIn: "1h", algorithm: "HS256" },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule {}

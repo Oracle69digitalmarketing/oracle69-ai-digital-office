@@ -1,5 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { MessageBus } from "@oracle69/runtime";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
 import { PrismaClient } from "@prisma/client";
 import { CustomerSuccessEventType, CustomerSuccessEvent } from "../events/cs.events.js";
 
@@ -15,10 +15,15 @@ export class CsRiskEngine {
   private readonly logger = new Logger(CsRiskEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(private readonly messageBus: MessageBus) {}
+  constructor(
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService,
+  ) {}
 
   async detectRisks(crmOrganizationId: string): Promise<ChurnRisk[]> {
     this.logger.log(`Detecting risks for organization: ${crmOrganizationId}`);
+
+    const tenantId = this.tenantContext.getTenantId();
 
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
@@ -29,7 +34,9 @@ export class CsRiskEngine {
       },
     });
 
-    if (!organization) throw new Error("Organization not found");
+    if (!organization || organization.organizationId !== tenantId) {
+      throw new NotFoundException("Organization not found");
+    }
 
     const interactions = organization.interactions;
     const interactionCount = interactions.length;

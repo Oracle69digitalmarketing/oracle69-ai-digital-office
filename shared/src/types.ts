@@ -6,6 +6,7 @@ export interface TaskContext {
   taskId: string;
   projectId: string;
   sessionId: string;
+  organizationId?: string;
   priority: Priority;
   deadline?: Date;
   context: Record<string, any>;

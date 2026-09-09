@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { EmployeeService } from "../services/employee.service.js";
 import { RecruitmentService } from "../services/recruitment.service.js";
 import { HrKpiService } from "../services/hr-kpi.service.js";
@@ -15,6 +16,7 @@ import { TenantContextService } from "@oracle69/runtime";
  * EventBus inherit the tenant without any cross-tenant reads or writes.
  */
 @Controller("hr")
+@UseGuards(OrgClaimGuard)
 export class HrController {
   constructor(
     private readonly kpiService: HrKpiService,

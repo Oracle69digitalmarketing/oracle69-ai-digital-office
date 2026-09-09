@@ -13,7 +13,7 @@ export interface MemoryConfig {
 export interface VectorMemoryAdapter {
   embed(text: string): Promise<number[]>;
   upsert(id: string, vector: number[], metadata: any): Promise<void>;
-  similaritySearch(vector: number[], limit: number): Promise<any[]>;
+  similaritySearch(vector: number[], limit: number, organizationId?: string): Promise<any[]>;
 }
 
 @Injectable()
@@ -158,7 +158,7 @@ export class MemoryManager {
     this.workingMemory.delete(taskId);
   }
 
-  async searchSemantic(query: string, limit: number = 5): Promise<MemoryRecord[]> {
+  async searchSemantic(query: string, limit: number = 5, organizationId?: string): Promise<MemoryRecord[]> {
     if (!this.vectorAdapter) {
       this.logger.warn("Vector adapter not configured, semantic search skipped.");
       return [];
@@ -166,7 +166,7 @@ export class MemoryManager {
 
     try {
       const vector = await this.vectorAdapter.embed(query);
-      const results = await this.vectorAdapter.similaritySearch(vector, limit);
+      const results = await this.vectorAdapter.similaritySearch(vector, limit, organizationId);
 
       return results.map((r) => ({
         id: r.id,

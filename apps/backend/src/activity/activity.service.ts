@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { EventBus } from "@oracle69/shared";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class ActivityService implements OnModuleInit {
@@ -9,7 +10,12 @@ export class ActivityService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     private eventBus: EventBus,
+    private tenantContext: TenantContextService,
   ) {}
+
+  private get organizationId() {
+    return this.tenantContext.getTenantId();
+  }
 
   onModuleInit() {
     this.eventBus.allEvents().subscribe(async (event) => {
@@ -36,6 +42,9 @@ export class ActivityService implements OnModuleInit {
 
   async getFeed(limit = 50) {
     return this.prisma.auditLog.findMany({
+      where: {
+        organizationId: this.organizationId,
+      },
       take: limit,
       orderBy: { createdAt: "desc" },
       include: {

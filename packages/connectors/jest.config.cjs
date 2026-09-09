@@ -12,8 +12,9 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^@oracle69/shared(|/.*)$': '<rootDir>/../../shared/src/$1',
-    '^@oracle69/memory(|/.*)$': '<rootDir>/../../memory/src/$1',
-    '^@oracle69/platform-contracts(|/.*)$': '<rootDir>/../../packages/platform-contracts/src/$1',
+    '^@oracle69/shared(|/.*)$': '<rootDir>/../../../shared/src/$1',
+    '^@oracle69/memory(|/.*)$': '<rootDir>/../../../memory/src/$1',
+    '^@oracle69/runtime(|/.*)$': '<rootDir>/../../runtime/src/$1',
+    '^@oracle69/platform-contracts(|/.*)$': '<rootDir>/../../platform-contracts/src/$1',
   },
 };

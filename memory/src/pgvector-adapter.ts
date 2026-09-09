@@ -26,12 +26,18 @@ export class PgVectorAdapter implements VectorMemoryAdapter {
     this.logger.debug(`Updated embedding for record: ${id}`);
   }
 
-  async similaritySearch(vector: number[], limit: number): Promise<any[]> {
+  async similaritySearch(vector: number[], limit: number, organizationId?: string): Promise<any[]> {
+    if (!organizationId) {
+      this.logger.warn("semanticSearch called without organizationId, returning empty results (fail-closed)");
+      return [];
+    }
+
     const vectorStr = `[${vector.join(",")}]`;
 
     const results = await this.prisma.$queryRaw`
       SELECT id, content, metadata, timestamp, (embedding <=> ${vectorStr}::vector) as distance
       FROM "LongTermMemoryRecord"
+      WHERE "organizationId" = ${organizationId}
       ORDER BY distance ASC
       LIMIT ${limit}
     `;

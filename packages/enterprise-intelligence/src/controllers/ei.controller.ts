@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Param, Query, Body } from "@nestjs/common";
+import { Controller, Get, Post, Param, Query, Body, UseGuards } from "@nestjs/common";
+import { OrgClaimGuard } from "@oracle69/shared";
 import { EiKpiEngine } from "../services/ei-kpi.engine.js";
 import { EiBusinessHealthEngine } from "../services/ei-business-health.engine.js";
 import { EiForecastEngine } from "../services/ei-forecast.engine.js";
@@ -8,6 +9,7 @@ import { EiInsightEngine } from "../services/ei-insight.engine.js";
 import { EiReportService } from "../services/ei-report.service.js";
 
 @Controller("enterprise-intelligence")
+@UseGuards(OrgClaimGuard)
 export class EnterpriseIntelligenceController {
   constructor(
     private readonly kpiEngine: EiKpiEngine,

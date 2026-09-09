@@ -1,5 +1,6 @@
 import { jest } from "@jest/globals";
-import { MissionStatus } from "@oracle69/runtime";
+import { NotFoundException } from "@nestjs/common";
+import { MissionStatus, TenantContextService } from "@oracle69/runtime";
 import { CsSuccessPlanService } from "../services/cs-success-plan.service.js";
 import { CustomerSuccessEventType } from "../events/cs.events.js";
 
@@ -8,6 +9,7 @@ describe("CsSuccessPlanService", () => {
   let missionManager: any;
   let messageBus: any;
   let prisma: any;
+  let tenantContext: any;
 
   beforeEach(() => {
     missionManager = {
@@ -16,9 +18,19 @@ describe("CsSuccessPlanService", () => {
     messageBus = {
       publish: jest.fn(),
     };
-    service = new CsSuccessPlanService(missionManager, messageBus);
+    tenantContext = {
+      getTenantId: jest.fn().mockReturnValue("tenant-org"),
+      resolveTenantId: jest.fn().mockReturnValue("tenant-org"),
+    };
+    service = new CsSuccessPlanService(
+      missionManager,
+      messageBus,
+      tenantContext as TenantContextService,
+    );
     prisma = (service as any).prisma;
-    prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue({ id: "org-123" });
+    prisma.crmOrganization.findUnique = jest
+      .fn()
+      .mockResolvedValue({ id: "org-123", organizationId: "tenant-org" });
     prisma.csSuccessPlan.create = jest.fn().mockImplementation(({ data, include }) =>
       Promise.resolve({
         id: "plan-1",
@@ -27,6 +39,14 @@ describe("CsSuccessPlanService", () => {
       }),
     );
     prisma.csSuccessPlan.findMany = jest.fn().mockResolvedValue([]);
+    prisma.csSuccessPlanMilestone.findUnique = jest.fn().mockResolvedValue({
+      id: "milestone-1",
+      status: "pending",
+      successPlan: {
+        crmOrganizationId: "org-123",
+        crmOrganization: { organizationId: "tenant-org" },
+      },
+    });
     prisma.csSuccessPlanMilestone.update = jest.fn().mockResolvedValue({
       id: "milestone-1",
       status: "completed",
@@ -69,8 +89,17 @@ describe("CsSuccessPlanService", () => {
     prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue(null);
 
     await expect(service.createSuccessPlan("missing-org", "Plan")).rejects.toThrow(
-      "Organization not found",
+      NotFoundException,
     );
+    expect(prisma.csSuccessPlan.create).not.toHaveBeenCalled();
+  });
+
+  it("should reject creating a plan for a CRM organization owned by another tenant", async () => {
+    prisma.crmOrganization.findUnique = jest
+      .fn()
+      .mockResolvedValue({ id: "org-b", organizationId: "tenant-org-b" });
+
+    await expect(service.createSuccessPlan("org-b", "Plan")).rejects.toThrow(NotFoundException);
     expect(prisma.csSuccessPlan.create).not.toHaveBeenCalled();
   });
 
@@ -90,6 +119,10 @@ describe("CsSuccessPlanService", () => {
   it("should complete a milestone and publish an event", async () => {
     const milestone = await service.completeMilestone("milestone-1");
 
+    expect(prisma.csSuccessPlanMilestone.findUnique).toHaveBeenCalledWith({
+      where: { id: "milestone-1" },
+      include: { successPlan: { include: { crmOrganization: true } } },
+    });
     expect(prisma.csSuccessPlanMilestone.update).toHaveBeenCalledWith({
       where: { id: "milestone-1" },
       data: { status: "completed" },
@@ -108,6 +141,32 @@ describe("CsSuccessPlanService", () => {
     );
   });
 
+  it("should reject completing a milestone owned by another tenant (404, IDOR)", async () => {
+    prisma.csSuccessPlanMilestone.findUnique = jest.fn().mockResolvedValue({
+      id: "milestone-foreign",
+      status: "pending",
+      successPlan: {
+        crmOrganizationId: "org-b",
+        crmOrganization: { organizationId: "tenant-org-b" },
+      },
+    });
+
+    await expect(service.completeMilestone("milestone-foreign")).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(prisma.csSuccessPlanMilestone.update).not.toHaveBeenCalled();
+    expect(messageBus.publish).not.toHaveBeenCalled();
+  });
+
+  it("should reject completing a milestone that does not exist", async () => {
+    prisma.csSuccessPlanMilestone.findUnique = jest.fn().mockResolvedValue(null);
+
+    await expect(service.completeMilestone("missing-milestone")).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(prisma.csSuccessPlanMilestone.update).not.toHaveBeenCalled();
+  });
+
   it("should trigger an intervention through MissionManager and persist it", async () => {
     const result = await service.triggerIntervention(
       "org-123",
@@ -121,6 +180,7 @@ describe("CsSuccessPlanService", () => {
         priority: "high",
         owner: "customer-success",
         status: MissionStatus.DRAFT,
+        tenantId: "tenant-org",
       }),
     );
     expect(prisma.csInteraction.create).toHaveBeenCalledWith({
@@ -149,8 +209,20 @@ describe("CsSuccessPlanService", () => {
     prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue(null);
 
     await expect(service.triggerIntervention("missing-org", "Call")).rejects.toThrow(
-      "Organization not found",
+      NotFoundException,
     );
     expect(missionManager.createMission).not.toHaveBeenCalled();
+  });
+
+  it("should reject triggering an intervention for another tenant's CRM organization", async () => {
+    prisma.crmOrganization.findUnique = jest
+      .fn()
+      .mockResolvedValue({ id: "org-b", organizationId: "tenant-org-b" });
+
+    await expect(service.triggerIntervention("org-b", "Call")).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(missionManager.createMission).not.toHaveBeenCalled();
+    expect(prisma.csInteraction.create).not.toHaveBeenCalled();
   });
 });

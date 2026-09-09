@@ -4,9 +4,15 @@ import { ReceptionistController } from "./receptionist.controller.js";
 import { AgentEngineModule } from "@oracle69/agent-engine";
 import { MemoryModule } from "@oracle69/memory";
 import { ExecutionEngineModule } from "@oracle69/execution-engine";
+import { RuntimeModule } from "@oracle69/runtime";
 
 @Module({
-  imports: [AgentEngineModule, MemoryModule, ExecutionEngineModule],
+  imports: [
+    AgentEngineModule,
+    MemoryModule,
+    ExecutionEngineModule,
+    RuntimeModule,
+  ],
   controllers: [ReceptionistController],
   providers: [ReceptionistService],
 })

@@ -1,6 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { MissionManager, MissionStatus } from "@oracle69/runtime";
-import { MessageBus } from "@oracle69/runtime";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { MissionManager, MissionStatus, MessageBus, TenantContextService } from "@oracle69/runtime";
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import { CustomerSuccessEventType, CustomerSuccessEvent } from "../events/cs.events.js";
@@ -18,7 +17,16 @@ export class CsSuccessPlanService {
   constructor(
     private readonly missionManager: MissionManager,
     private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService,
   ) {}
+
+  private assertCrmOrganizationBelongsToTenant(
+    organization: { id: string; organizationId: string } | null,
+  ): void {
+    if (!organization || organization.organizationId !== this.tenantContext.getTenantId()) {
+      throw new NotFoundException(`Crm organization ${organization?.id ?? "unknown"} not found`);
+    }
+  }
 
   async createSuccessPlan(
     crmOrganizationId: string,
@@ -27,9 +35,8 @@ export class CsSuccessPlanService {
   ) {
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
-      select: { id: true },
     });
-    if (!organization) throw new Error("Organization not found");
+    this.assertCrmOrganizationBelongsToTenant(organization);
 
     const plan = await this.prisma.csSuccessPlan.create({
       data: {
@@ -60,6 +67,11 @@ export class CsSuccessPlanService {
   }
 
   async listSuccessPlans(crmOrganizationId: string) {
+    const organization = await this.prisma.crmOrganization.findUnique({
+      where: { id: crmOrganizationId },
+    });
+    this.assertCrmOrganizationBelongsToTenant(organization);
+
     return this.prisma.csSuccessPlan.findMany({
       where: { crmOrganizationId },
       include: { milestones: { orderBy: { dueDate: "asc" } } },
@@ -68,7 +80,21 @@ export class CsSuccessPlanService {
   }
 
   async completeMilestone(milestoneId: string) {
-    const milestone = await this.prisma.csSuccessPlanMilestone.update({
+    const milestone = await this.prisma.csSuccessPlanMilestone.findUnique({
+      where: { id: milestoneId },
+      include: { successPlan: { include: { crmOrganization: true } } },
+    });
+
+    if (!milestone) {
+      throw new NotFoundException(`Milestone with ID ${milestoneId} not found`);
+    }
+
+    const crmOrganizationOrganizationId = milestone.successPlan.crmOrganization.organizationId;
+    if (this.tenantContext.getTenantId() !== crmOrganizationOrganizationId) {
+      throw new NotFoundException(`Milestone with ID ${milestoneId} not found`);
+    }
+
+    const updated = await this.prisma.csSuccessPlanMilestone.update({
       where: { id: milestoneId },
       data: { status: "completed" },
       include: { successPlan: true },
@@ -78,12 +104,12 @@ export class CsSuccessPlanService {
       CustomerSuccessEventType.SUCCESS_PLAN_MILESTONE_COMPLETED,
       new CustomerSuccessEvent(CustomerSuccessEventType.SUCCESS_PLAN_MILESTONE_COMPLETED, {
         milestoneId,
-        successPlanId: milestone.successPlanId,
-        crmOrganizationId: milestone.successPlan.crmOrganizationId,
+        successPlanId: updated.successPlanId,
+        crmOrganizationId: updated.successPlan.crmOrganizationId,
       }),
     );
 
-    return milestone;
+    return updated;
   }
 
   async triggerIntervention(
@@ -97,9 +123,10 @@ export class CsSuccessPlanService {
 
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
-      select: { id: true },
     });
-    if (!organization) throw new Error("Organization not found");
+    this.assertCrmOrganizationBelongsToTenant(organization);
+
+    const tenantId = this.tenantContext.resolveTenantId();
 
     const missionId = uuidv4();
     await this.missionManager.createMission({
@@ -109,7 +136,7 @@ export class CsSuccessPlanService {
       deadline: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days
       owner: "customer-success",
       status: MissionStatus.DRAFT,
-      tenantId: crmOrganizationId,
+      tenantId: tenantId,
     });
 
     // Persist the intervention as an interaction so downstream intelligence can use it

@@ -3,6 +3,7 @@ import { ExecutionEngine } from "@oracle69/execution-engine";
 import { MemoryManager, ConversationManager } from "@oracle69/memory";
 import { AgentRegistry } from "@oracle69/agent-engine";
 import { TaskContext, EventBus } from "@oracle69/shared";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class ReceptionistService {
@@ -14,24 +15,47 @@ export class ReceptionistService {
     private conversationManager: ConversationManager,
     private registry: AgentRegistry,
     private eventBus: EventBus,
+    private tenantContext: TenantContextService,
   ) {}
 
   async handleRequest(userId: string, sessionId: string, message: string) {
-    this.logger.log(`Handling request from ${userId} in session ${sessionId}`);
+    // Resolve the trusted tenant. Fails closed when no tenant context is active;
+    // the "system" fallback tenant is never used for user/business operations.
+    const organizationId = this.tenantContext.resolveTenantId();
+
+    this.logger.log(
+      `Handling request from ${userId} in session ${sessionId} for org ${organizationId}`,
+    );
 
     if (!message || message.trim().length === 0) {
       throw new BadRequestException("Message cannot be empty");
     }
 
-    // 1. Build context from memory
-    await this.memory.saveSession(sessionId, { role: "user", content: message });
-    const contextStr = await this.conversationManager.buildContext(sessionId);
+    // Tenant-scope the session/state key so receptionist memory cannot leak
+    // across tenants. The raw sessionId supplied by the client is namespaced
+    // under the trusted tenant; a client cannot reach another tenant's state.
+    const scopedSessionId = `${organizationId}::${sessionId}`;
 
-    // 2. Discover Chief of Staff
-    const cosAgents = this.registry.findAgentsByRole("chief-of-staff");
+    // 1. Build context from memory
+    await this.memory.saveSession(scopedSessionId, {
+      role: "user",
+      content: message,
+    });
+    const contextStr = await this.conversationManager.buildContext(scopedSessionId);
+
+    // 2. Discover Chief of Staff scoped to the trusted tenant. A tenant can
+    //    only retrieve agents that belong to it.
+    const cosAgents = this.registry.findAgentsByRoleAndTenant(
+      "chief-of-staff",
+      organizationId,
+    );
     if (cosAgents.length === 0) {
-      this.logger.error("Chief of Staff agent not found in registry");
-      throw new Error("System misconfiguration: Chief of Staff not found");
+      this.logger.error(
+        `Chief of Staff agent not found in registry for org ${organizationId}`,
+      );
+      throw new Error(
+        `System misconfiguration: Chief of Staff not found for tenant ${organizationId}`,
+      );
     }
     const cosAgent = cosAgents[0];
 
@@ -39,29 +63,33 @@ export class ReceptionistService {
     const task: TaskContext = {
       taskId: Math.random().toString(36).substring(7),
       projectId: "default", // Should be resolved from context
-      sessionId,
+      sessionId: scopedSessionId,
+      organizationId,
       priority: "medium",
       objective: message,
       context: { conversationContext: contextStr },
     };
 
-    // 4. Publish event
+    // 4. Publish event with the trusted tenant
     this.eventBus.publish({
       type: "task.started",
       source: "ReceptionistService",
-      payload: { taskId: task.taskId, sessionId, organizationId: "system" },
+      payload: { taskId: task.taskId, sessionId, organizationId },
     });
 
     // 5. Execute via Execution Engine
     try {
       const result = await this.executionEngine.executeTask(task, cosAgent);
 
-      await this.memory.saveSession(sessionId, { role: "assistant", content: result });
+      await this.memory.saveSession(scopedSessionId, {
+        role: "assistant",
+        content: result,
+      });
 
       this.eventBus.publish({
         type: "task.completed",
         source: "ReceptionistService",
-        payload: { taskId: task.taskId, result, organizationId: "system" },
+        payload: { taskId: task.taskId, result, organizationId },
       });
 
       return {
@@ -74,7 +102,7 @@ export class ReceptionistService {
       this.eventBus.publish({
         type: "task.failed",
         source: "ReceptionistService",
-        payload: { taskId: task.taskId, error: errorMessage, organizationId: "system" },
+        payload: { taskId: task.taskId, error: errorMessage, organizationId },
       });
       throw error;
     }

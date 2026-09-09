@@ -4,6 +4,7 @@ import { AgentRegistry } from "../agent-registry.js";
 import { ModelRouter } from "../model-router.js";
 import { PromptLoader } from "../prompt-loader.js";
 import { KnowledgeService } from "@oracle69/memory";
+import { TenantContextService } from "@oracle69/runtime";
 
 export class ChiefOfStaffAgent extends BaseAgent {
   constructor(
@@ -13,6 +14,7 @@ export class ChiefOfStaffAgent extends BaseAgent {
     private modelRouter: ModelRouter,
     private promptLoader: PromptLoader,
     private knowledgeService: KnowledgeService,
+    private tenantContext?: TenantContextService,
   ) {
     super(metadata);
   }
@@ -20,9 +22,14 @@ export class ChiefOfStaffAgent extends BaseAgent {
   async execute(task: TaskContext): Promise<any> {
     this.logger.log(`Planning strategic response for task: ${task.taskId}`);
 
+    const organizationId = task.organizationId || this.tenantContext?.resolveTenantId();
+    if (!organizationId) {
+      throw new Error("Tenant context is required for knowledge retrieval");
+    }
+
     // Strategic Knowledge Retrieval
     const knowledge = await this.knowledgeService.getRelevantContext(task.objective, {
-      organizationId: "system",
+      organizationId,
       sessionId: task.sessionId,
       limit: 10, // Higher limit for CoS planning
     });
@@ -39,8 +46,9 @@ export class ChiefOfStaffAgent extends BaseAgent {
       },
     );
 
-    // Find Project Manager to handle the breakdown
-    const pmAgents = this.registry.findAgentsByRole("Project Manager");
+    // Find Project Manager to handle the breakdown, scoped to the authoritative
+    // tenant so an Org-A task can never resolve an Org-B agent.
+    const pmAgents = this.registry.findAgentsByRoleAndTenant("Project Manager", organizationId);
     if (pmAgents.length > 0) {
       const pmTask: TaskContext = {
         ...task,

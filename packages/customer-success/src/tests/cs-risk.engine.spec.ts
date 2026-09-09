@@ -1,17 +1,23 @@
 import { jest } from "@jest/globals";
+import { NotFoundException } from "@nestjs/common";
 import { CsRiskEngine } from "../services/cs-risk.engine.js";
 import { CustomerSuccessEventType } from "../events/cs.events.js";
+import { TenantContextService } from "@oracle69/runtime";
 
 describe("CsRiskEngine", () => {
   let engine: CsRiskEngine;
   let messageBus: any;
   let prisma: any;
+  let tenantContext: any;
 
   beforeEach(() => {
     messageBus = {
       publish: jest.fn(),
     };
-    engine = new CsRiskEngine(messageBus);
+    tenantContext = {
+      getTenantId: jest.fn().mockReturnValue("tenant-org"),
+    };
+    engine = new CsRiskEngine(messageBus, tenantContext as TenantContextService);
     prisma = (engine as any).prisma;
     prisma.csChurnRisk.createMany = jest.fn().mockResolvedValue({ count: 0 });
   });
@@ -19,6 +25,7 @@ describe("CsRiskEngine", () => {
   function mockOrganization(overrides: any = {}) {
     prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue({
       id: "org-123",
+      organizationId: "tenant-org",
       contacts: [],
       opportunities: [],
       interactions: [],
@@ -90,6 +97,28 @@ describe("CsRiskEngine", () => {
     prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue(null);
 
     await expect(engine.detectRisks("missing-org")).rejects.toThrow("Organization not found");
+    expect(prisma.csChurnRisk.createMany).not.toHaveBeenCalled();
+  });
+
+  it("should reject a CRM organization owned by another tenant (404)", async () => {
+    prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue({
+      id: "org-foreign",
+      organizationId: "tenant-org-b",
+      contacts: [],
+      opportunities: [],
+      interactions: [],
+    });
+
+    await expect(engine.detectRisks("org-foreign")).rejects.toThrow(NotFoundException);
+    expect(prisma.csChurnRisk.createMany).not.toHaveBeenCalled();
+    expect(messageBus.publish).not.toHaveBeenCalled();
+  });
+
+  it("should fail closed when no tenant context is active", async () => {
+    tenantContext.getTenantId.mockReturnValue(undefined);
+    mockOrganization();
+
+    await expect(engine.detectRisks("org-123")).rejects.toThrow(NotFoundException);
     expect(prisma.csChurnRisk.createMany).not.toHaveBeenCalled();
   });
 });

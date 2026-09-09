@@ -1,17 +1,23 @@
 import { jest } from "@jest/globals";
+import { NotFoundException } from "@nestjs/common";
 import { CsHealthEngine } from "../services/cs-health.engine.js";
 import { CustomerSuccessEventType } from "../events/cs.events.js";
+import { TenantContextService } from "@oracle69/runtime";
 
 describe("CsHealthEngine", () => {
   let engine: CsHealthEngine;
   let messageBus: any;
   let prisma: any;
+  let tenantContext: any;
 
   beforeEach(() => {
     messageBus = {
       publish: jest.fn(),
     };
-    engine = new CsHealthEngine(messageBus);
+    tenantContext = {
+      getTenantId: jest.fn().mockReturnValue("tenant-org"),
+    };
+    engine = new CsHealthEngine(messageBus, tenantContext as TenantContextService);
     prisma = (engine as any).prisma;
     prisma.csHealthScore.findFirst = jest.fn().mockResolvedValue(null);
     prisma.csHealthScore.create = jest.fn().mockResolvedValue({});
@@ -21,6 +27,7 @@ describe("CsHealthEngine", () => {
   function mockOrganization(overrides: any = {}) {
     prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue({
       id: "org-123",
+      organizationId: "tenant-org",
       contacts: [],
       opportunities: [],
       interactions: [],
@@ -115,6 +122,32 @@ describe("CsHealthEngine", () => {
     prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue(null);
 
     await expect(engine.calculateHealth("missing-org")).rejects.toThrow("Organization not found");
+    expect(prisma.csHealthScore.create).not.toHaveBeenCalled();
+  });
+
+  it("should reject a CRM organization owned by another tenant (404)", async () => {
+    mockOrganization({
+      id: "org-foreign",
+      organizationId: "tenant-org-b",
+    });
+    prisma.crmOrganization.findUnique = jest.fn().mockResolvedValue({
+      id: "org-foreign",
+      organizationId: "tenant-org-b",
+      contacts: [],
+      opportunities: [],
+      interactions: [],
+    });
+
+    await expect(engine.calculateHealth("org-foreign")).rejects.toThrow(NotFoundException);
+    expect(prisma.csHealthScore.create).not.toHaveBeenCalled();
+    expect(prisma.crmOrganization.update).not.toHaveBeenCalled();
+  });
+
+  it("should fail closed when no tenant context is active", async () => {
+    tenantContext.getTenantId.mockReturnValue(undefined);
+    mockOrganization();
+
+    await expect(engine.calculateHealth("org-123")).rejects.toThrow(NotFoundException);
     expect(prisma.csHealthScore.create).not.toHaveBeenCalled();
   });
 });

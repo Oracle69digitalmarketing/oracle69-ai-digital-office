@@ -5,6 +5,7 @@ import { CredentialManager } from "./credential-manager.js";
 import { OAuthManager } from "./oauth-manager.js";
 import { SharedModule } from "@oracle69/shared";
 import { MemoryModule } from "@oracle69/memory";
+import { RuntimeModule } from "@oracle69/runtime";
 import { GoogleDriveConnector } from "./google-drive.connector.js";
 import { GoogleDocsConnector } from "./google-docs.connector.js";
 import { GmailConnector } from "./gmail.connector.js";
@@ -20,7 +21,7 @@ import { JiraConnector } from "./jira.connector.js";
 import { WhatsAppBusinessConnector } from "./whatsapp.connector.js";
 
 @Module({
-  imports: [SharedModule, MemoryModule],
+  imports: [SharedModule, MemoryModule, RuntimeModule],
   providers: [
     ConnectorRegistry,
     ConnectorManager,

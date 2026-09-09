@@ -18,8 +18,8 @@ export class KnowledgeService {
   ): Promise<string> {
     this.logger.debug(`Retrieving knowledge for: ${query.substring(0, 50)}...`);
 
-    // 1. Semantic retrieval
-    const semanticMemories = await this.memory.searchSemantic(query, options.limit || 5);
+    // 1. Semantic retrieval (tenant-scoped)
+    const semanticMemories = await this.memory.searchSemantic(query, options.limit || 5, options.organizationId);
 
     // 2. Format results
     if (semanticMemories.length === 0) {

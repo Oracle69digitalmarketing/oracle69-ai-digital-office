@@ -8,6 +8,7 @@ import { ModelRouter } from "./model-router.js";
 import { PromptLoader } from "./prompt-loader.js";
 import { AgentMetadata } from "@oracle69/shared";
 import { KnowledgeService } from "@oracle69/memory";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class DepartmentRegistrationService implements OnModuleInit {
@@ -112,6 +113,7 @@ export class DepartmentRegistrationService implements OnModuleInit {
     private readonly promptLoader: PromptLoader,
     private readonly knowledgeService: KnowledgeService,
     @Optional() private readonly executionEngine?: any,
+    @Optional() private readonly tenantContext?: TenantContextService,
   ) {}
 
   async onModuleInit() {
@@ -165,6 +167,13 @@ export class DepartmentRegistrationService implements OnModuleInit {
       );
     }
 
-    await this.agentRegistry.register(agent);
+    // Assign the authoritative tenant when agents are tenant-specific. The
+    // organization ID is never taken from an untrusted client; it originates
+    // from the active TenantContextService. At application bootstrap there is
+    // no active tenant context, so these platform/department template agents
+    // remain global/system agents (intentional platform agents).
+    const organizationId = this.tenantContext?.getTenantId();
+
+    await this.agentRegistry.register(agent, organizationId);
   }
 }

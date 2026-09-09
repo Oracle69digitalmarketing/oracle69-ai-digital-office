@@ -1,5 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { MessageBus } from "@oracle69/runtime";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { MessageBus, TenantContextService } from "@oracle69/runtime";
 import { PrismaClient } from "@prisma/client";
 import { CustomerSuccessEventType, CustomerSuccessEvent } from "../events/cs.events.js";
 
@@ -15,10 +15,15 @@ export class CsHealthEngine {
   private readonly logger = new Logger(CsHealthEngine.name);
   private prisma = new PrismaClient();
 
-  constructor(private readonly messageBus: MessageBus) {}
+  constructor(
+    private readonly messageBus: MessageBus,
+    private readonly tenantContext: TenantContextService,
+  ) {}
 
   async calculateHealth(crmOrganizationId: string): Promise<HealthScoreResult> {
     this.logger.log(`Calculating health for organization: ${crmOrganizationId}`);
+
+    const tenantId = this.tenantContext.getTenantId();
 
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },
@@ -29,7 +34,9 @@ export class CsHealthEngine {
       },
     });
 
-    if (!organization) throw new Error("Organization not found");
+    if (!organization || organization.organizationId !== tenantId) {
+      throw new NotFoundException("Organization not found");
+    }
 
     const wonOpportunities = organization.opportunities.filter((o) => o.stage === "won");
     const lostOpportunities = organization.opportunities.filter((o) => o.stage === "lost");

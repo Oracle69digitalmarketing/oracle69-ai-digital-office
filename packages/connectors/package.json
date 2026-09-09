@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
@@ -19,6 +19,7 @@
     "@notionhq/client": "^5.24.0",
     "@oracle69/memory": "workspace:*",
     "@oracle69/platform-contracts": "workspace:*",
+    "@oracle69/runtime": "workspace:*",
     "@oracle69/shared": "workspace:*",
     "@slack/web-api": "^8.0.0",
     "axios": "^1.19.0",

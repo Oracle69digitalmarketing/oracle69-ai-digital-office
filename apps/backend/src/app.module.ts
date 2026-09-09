@@ -1,5 +1,9 @@
 import { Module, MiddlewareConsumer, RequestMethod } from "@nestjs/common";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
+import { validateConfig } from "./config/config.validation.js";
+import { JwtAuthGuard } from "./auth/jwt-auth.guard.js";
+import { TenantContextInterceptor } from "./common/interceptors/tenant-context.interceptor.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { UsersModule } from "./users/users.module.js";
@@ -31,12 +35,14 @@ import { CalendarModule } from "./calendar/calendar.module.js";
 import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { SettingsModule } from "./settings/settings.module.js";
 import { ReceptionistModule } from "./receptionist/receptionist.module.js";
+import { CustomerSuccessModule } from "@oracle69/customer-success";
 import { KnowledgeIndexingSubscriber } from "./automation/knowledge-indexing.subscriber.js";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateConfig,
     }),
     PrismaModule,
     AuthModule,
@@ -65,9 +71,21 @@ import { KnowledgeIndexingSubscriber } from "./automation/knowledge-indexing.sub
     DashboardModule,
     SettingsModule,
     ReceptionistModule,
+    CustomerSuccessModule,
   ],
   controllers: [AppController, HealthController],
-  providers: [AppService, KnowledgeIndexingSubscriber],
+  providers: [
+    AppService,
+    KnowledgeIndexingSubscriber,
+    {
+      provide: APP_GUARD,
+      useExisting: JwtAuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TenantContextInterceptor,
+    },
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

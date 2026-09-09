@@ -39,6 +39,9 @@ importers:
       '@oracle69/memory':
         specifier: workspace:*
         version: link:../memory
+      '@oracle69/runtime':
+        specifier: workspace:*
+        version: link:../packages/runtime
       '@oracle69/shared':
         specifier: workspace:*
         version: link:../shared
@@ -85,9 +88,15 @@ importers:
       '@oracle69/agent-engine':
         specifier: workspace:*
         version: link:../../agent-engine
+      '@oracle69/connectors':
+        specifier: workspace:*
+        version: link:../../packages/connectors
       '@oracle69/crm':
         specifier: workspace:*
         version: link:../../packages/crm
+      '@oracle69/customer-success':
+        specifier: workspace:*
+        version: link:../../packages/customer-success
       '@oracle69/enterprise-intelligence':
         specifier: workspace:*
         version: link:../../packages/enterprise-intelligence
@@ -171,8 +180,8 @@ importers:
         version: 3.25.76
     devDependencies:
       '@jest/globals':
-        specifier: ^30.4.1
-        version: 30.4.1
+        specifier: ^29.5.0
+        version: 29.7.0
       '@nestjs/cli':
         specifier: ^10.0.0
         version: 10.4.9
@@ -406,6 +415,9 @@ importers:
       '@oracle69/platform-contracts':
         specifier: workspace:*
         version: link:../platform-contracts
+      '@oracle69/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@oracle69/shared':
         specifier: workspace:*
         version: link:../../shared

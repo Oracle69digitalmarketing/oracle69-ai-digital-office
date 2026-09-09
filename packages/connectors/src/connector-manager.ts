@@ -5,6 +5,7 @@ import { OAuthManager } from "./oauth-manager.js";
 import { ConnectorActionRequest, ConnectorResult, ConnectorHealth } from "./types.js";
 import { EventBus } from "@oracle69/shared";
 import { MemoryManager } from "@oracle69/memory";
+import { TenantContextService } from "@oracle69/runtime";
 
 @Injectable()
 export class ConnectorManager {
@@ -16,6 +17,7 @@ export class ConnectorManager {
     private oauthManager: OAuthManager,
     private eventBus: EventBus,
     private memoryManager: MemoryManager,
+    private tenantContext: TenantContextService,
   ) {}
 
   async executeAction(type: string, request: ConnectorActionRequest): Promise<ConnectorResult> {
@@ -24,36 +26,41 @@ export class ConnectorManager {
       throw new NotFoundException(`Connector of type ${type} not found`);
     }
 
-    this.logger.log(`Executing ${request.action} on ${type} for org ${request.organizationId}`);
+    // Resolve the trusted tenant from the execution context. Fails closed when
+    // no tenant context is active. The client-supplied request.organizationId
+    // is never used to authorize credential/refresh/memory/event operations.
+    const organizationId = this.tenantContext.resolveTenantId();
 
-    // 1. Get credentials
-    let creds = await this.credentialManager.getCredentials(request.organizationId, type);
+    this.logger.log(`Executing ${request.action} on ${type} for org ${organizationId}`);
 
-    // 2. Handle OAuth2 refresh if needed
+    // 1. Get credentials scoped to the trusted tenant
+    let creds = await this.credentialManager.getCredentials(organizationId, type);
+
+    // 2. Handle OAuth2 refresh if needed, scoped to the trusted tenant
     if (creds && creds.type === "oauth2") {
-      const expired = await this.oauthManager.isTokenExpired(request.organizationId, type);
+      const expired = await this.oauthManager.isTokenExpired(organizationId, type);
       if (expired) {
-        await this.oauthManager.refreshToken(request.organizationId, type);
-        creds = await this.credentialManager.getCredentials(request.organizationId, type);
+        await this.oauthManager.refreshToken(organizationId, type);
+        creds = await this.credentialManager.getCredentials(organizationId, type);
       }
     }
 
     // 3. Connect
     await connector.connect(creds);
 
-    // 4. Emit Workflow Event
+    // 4. Emit Workflow Event with the trusted tenant
     this.eventBus.publish({
       type: "workflow.step.started",
       source: `connector:${type}`,
       payload: {
         action: request.action,
-        organizationId: request.organizationId,
+        organizationId,
         userId: request.userId,
         connectorId: connector.metadata.id,
       },
     });
 
-    // 5. Audit Event
+    // 5. Audit Event with the trusted tenant
     this.eventBus.publish({
       type: "audit.action.executed",
       source: `connector:${type}`,
@@ -61,26 +68,27 @@ export class ConnectorManager {
         action: request.action,
         resource: type,
         status: "pending",
-        organizationId: request.organizationId,
+        organizationId,
         userId: request.userId,
       },
     });
 
+    const scopedSessionId = `${organizationId}::${type}`;
     const startTime = Date.now();
     try {
       // 6. Execute
       const result = await connector.execute(request);
       const duration = Date.now() - startTime;
 
-      // 7. Persistent Business Memory Record
+      // 7. Persistent Business Memory Record scoped to the trusted tenant
       await this.memoryManager.saveBusinessMemory({
-        sessionId: request.organizationId, // Using orgId as session for foundation
+        sessionId: scopedSessionId, // Tenant-qualified so memory cannot be cross-read
         taskId: request.action,
         agentId: connector.metadata.id,
         role: "connector",
         content: result.data,
         reasoning: `Executed connector action ${request.action}`,
-        organizationId: request.organizationId,
+        organizationId,
         metadata: {
           connectorType: type,
           success: result.success,
@@ -88,13 +96,13 @@ export class ConnectorManager {
         },
       });
 
-      // 8. Emit completion event
+      // 8. Emit completion event with the trusted tenant
       this.eventBus.publish({
         type: result.success ? "workflow.step.completed" : "workflow.step.failed",
         source: `connector:${type}`,
         payload: {
           action: request.action,
-          organizationId: request.organizationId,
+          organizationId,
           duration,
           success: result.success,
           error: result.error?.message,
@@ -111,7 +119,7 @@ export class ConnectorManager {
         source: `connector:${type}`,
         payload: {
           action: request.action,
-          organizationId: request.organizationId,
+          organizationId,
           duration,
           success: false,
           error: errorMessage,
