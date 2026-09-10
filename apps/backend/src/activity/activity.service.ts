@@ -21,16 +21,23 @@ export class ActivityService implements OnModuleInit {
     this.eventBus.allEvents().subscribe(async (event) => {
       this.logger.debug(`Capturing activity: ${event.type} from ${event.source}`);
 
+      const payload = event.payload as Record<string, any> | undefined;
+      const organizationId = payload?.organizationId;
+      if (!organizationId) {
+        this.logger.warn(`Event ${event.type} has no organizationId in payload, skipping audit log`);
+        return;
+      }
+
       try {
         await this.prisma.auditLog.create({
           data: {
             action: event.type,
             resource: event.source,
             status: "EVENT",
-            userId: (event.payload as any)?.userId || null,
-            organizationId: (event.payload as any)?.organizationId || "system",
+            userId: payload?.userId || null,
+            organizationId,
             // We can store the whole payload as a string or handle specific fields
-            ipAddress: JSON.stringify(event.payload).substring(0, 255),
+            ipAddress: JSON.stringify(payload).substring(0, 255),
             createdAt: event.timestamp || new Date(),
           },
         });

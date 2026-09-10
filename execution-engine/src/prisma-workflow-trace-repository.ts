@@ -8,6 +8,9 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
   constructor(@Inject("PrismaService") private readonly prisma: PrismaClient) {}
 
   async saveStep(step: WorkflowStep, organizationId?: string): Promise<void> {
+    if (!organizationId) {
+      throw new Error("organizationId is required for workflow step persistence");
+    }
     await this.prisma.workflowStepRecord.upsert({
       where: { id: step.stepId },
       update: {
@@ -27,7 +30,7 @@ export class PrismaWorkflowTraceRepository implements WorkflowTraceRepository {
         endTime: step.endTime,
         result: step.result,
         error: step.error,
-        organizationId: organizationId || "system",
+        organizationId,
       },
     });
   }

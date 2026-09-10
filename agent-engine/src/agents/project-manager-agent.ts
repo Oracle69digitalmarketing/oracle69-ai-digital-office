@@ -62,7 +62,8 @@ export class ProjectManagerAgent extends BaseAgent {
             objective: `Execute ${dept} portion of: ${task.objective}`,
             context: { ...task.context, breakdown, parentTaskId: task.taskId },
           };
-          const res = await this.executionEngine.executeTask(subTask, agents[0]);
+          const tenantContext = { organizationId, productIdentifier: "business-architect" };
+          const res = await this.executionEngine.executeTask(subTask, agents[0], 3, tenantContext);
           results.push({ dept, res });
         }
       }

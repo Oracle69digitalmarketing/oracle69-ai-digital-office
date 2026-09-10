@@ -77,9 +77,10 @@ export class ReceptionistService {
       payload: { taskId: task.taskId, sessionId, organizationId },
     });
 
-    // 5. Execute via Execution Engine
+    // 5. Execute via Execution Engine with tenant context for memory persistence
+    const tenantContext = { organizationId, productIdentifier: "business-architect" };
     try {
-      const result = await this.executionEngine.executeTask(task, cosAgent);
+      const result = await this.executionEngine.executeTask(task, cosAgent, 3, tenantContext);
 
       await this.memory.saveSession(scopedSessionId, {
         role: "assistant",

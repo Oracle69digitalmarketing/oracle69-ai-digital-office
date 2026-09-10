@@ -82,8 +82,12 @@ export class MemoryManager {
     reasoning?: string;
     decisions?: string[];
     metadata?: Record<string, any>;
-    organizationId?: string;
+    organizationId: string;
   }) {
+    if (!data.organizationId) {
+      throw new Error("organizationId is required for business memory persistence");
+    }
+
     const record: MemoryRecord = {
       id: Math.random().toString(36).substring(7),
       type: "long-term",
@@ -96,7 +100,7 @@ export class MemoryManager {
         role: data.role,
         reasoning: data.reasoning,
         decisions: data.decisions,
-        organizationId: data.organizationId || "system",
+        organizationId: data.organizationId,
         persistent: true,
       },
       timestamp: new Date(),

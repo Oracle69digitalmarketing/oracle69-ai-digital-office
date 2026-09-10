@@ -56,7 +56,8 @@ export class ChiefOfStaffAgent extends BaseAgent {
         objective: `Execute strategy: ${strategy}`,
         context: { ...task.context, strategy, originalTaskId: task.taskId },
       };
-      return await this.executionEngine.executeTask(pmTask, pmAgents[0]);
+      const tenantContext = { organizationId, productIdentifier: "business-architect" };
+      return await this.executionEngine.executeTask(pmTask, pmAgents[0], 3, tenantContext);
     }
 
     return `Strategy formulated, but no Project Manager found to execute: ${strategy}`;

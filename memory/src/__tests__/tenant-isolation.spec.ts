@@ -70,6 +70,8 @@ describe("Tenant isolation for semantic retrieval", () => {
         similaritySearch: jest.fn() as any,
         upsert: jest.fn() as any,
       };
+      mockAdapter.embed.mockResolvedValue([0.1, 0.2]);
+      mockAdapter.similaritySearch.mockResolvedValue([]);
       manager = new MemoryManager();
       manager.setVectorAdapter(mockAdapter);
     });

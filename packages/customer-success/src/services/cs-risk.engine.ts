@@ -23,7 +23,7 @@ export class CsRiskEngine {
   async detectRisks(crmOrganizationId: string): Promise<ChurnRisk[]> {
     this.logger.log(`Detecting risks for organization: ${crmOrganizationId}`);
 
-    const tenantId = this.tenantContext.getTenantId();
+    const tenantId = this.tenantContext.resolveTenantId();
 
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },

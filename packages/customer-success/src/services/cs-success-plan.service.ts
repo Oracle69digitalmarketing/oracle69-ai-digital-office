@@ -23,7 +23,8 @@ export class CsSuccessPlanService {
   private assertCrmOrganizationBelongsToTenant(
     organization: { id: string; organizationId: string } | null,
   ): void {
-    if (!organization || organization.organizationId !== this.tenantContext.getTenantId()) {
+    const tenantId = this.tenantContext.resolveTenantId();
+    if (!organization || organization.organizationId !== tenantId) {
       throw new NotFoundException(`Crm organization ${organization?.id ?? "unknown"} not found`);
     }
   }
@@ -90,7 +91,8 @@ export class CsSuccessPlanService {
     }
 
     const crmOrganizationOrganizationId = milestone.successPlan.crmOrganization.organizationId;
-    if (this.tenantContext.getTenantId() !== crmOrganizationOrganizationId) {
+    const tenantId = this.tenantContext.resolveTenantId();
+    if (tenantId !== crmOrganizationOrganizationId) {
       throw new NotFoundException(`Milestone with ID ${milestoneId} not found`);
     }
 

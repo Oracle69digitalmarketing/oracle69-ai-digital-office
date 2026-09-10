@@ -23,7 +23,7 @@ export class CsHealthEngine {
   async calculateHealth(crmOrganizationId: string): Promise<HealthScoreResult> {
     this.logger.log(`Calculating health for organization: ${crmOrganizationId}`);
 
-    const tenantId = this.tenantContext.getTenantId();
+    const tenantId = this.tenantContext.resolveTenantId();
 
     const organization = await this.prisma.crmOrganization.findUnique({
       where: { id: crmOrganizationId },

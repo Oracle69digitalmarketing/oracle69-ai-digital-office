@@ -8,6 +8,11 @@ export class PrismaMemoryPersistence implements IMemoryPersistence {
   constructor(@Inject("PrismaService") private readonly prisma: PrismaClient) {}
 
   async save(record: MemoryRecord): Promise<string> {
+    const organizationId = record.metadata?.organizationId as string | undefined;
+    if (!organizationId) {
+      throw new Error("organizationId is required in record metadata for persistence");
+    }
+
     const created = await this.prisma.longTermMemoryRecord.create({
       data: {
         type: record.type,
@@ -16,7 +21,7 @@ export class PrismaMemoryPersistence implements IMemoryPersistence {
           typeof record.content === "string" ? record.content : JSON.stringify(record.content),
         metadata: record.metadata,
         timestamp: record.timestamp,
-        organizationId: (record.metadata?.organizationId as string) || "system",
+        organizationId,
       },
     });
     return created.id;
