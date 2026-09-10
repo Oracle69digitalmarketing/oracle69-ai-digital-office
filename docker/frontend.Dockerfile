@@ -4,16 +4,17 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 FROM base AS build
-COPY . /usr/src/app
 WORKDIR /usr/src/app
+COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm run build --filter=frontend
 
 FROM base AS runner
 WORKDIR /usr/src/app
-COPY --from=build /usr/src/app/apps/frontend/.next ./.next
+COPY --from=build /usr/src/app/apps/frontend/.next/standalone ./
+COPY --from=build /usr/src/app/apps/frontend/.next/static ./.next/static
 COPY --from=build /usr/src/app/apps/frontend/public ./public
-COPY --from=build /usr/src/app/apps/frontend/package.json ./package.json
-
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 EXPOSE 3000
-CMD ["pnpm", "start", "--filter=frontend"]
+CMD ["node", "server.js"]

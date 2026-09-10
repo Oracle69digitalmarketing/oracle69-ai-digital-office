@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Download, Plus } from "lucide-react";
 import { Button, EmptyState, LoadingSkeleton } from "@oracle69/ui";
 import { apiClient } from "@/lib/api-client";
+import { useAuthStore } from "@/store/auth-store";
 import { cn } from "@/lib/utils";
 
 interface Transaction {
@@ -18,12 +19,20 @@ export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const organizationId = useAuthStore((state) => state.user?.organizationId);
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
+        if (!organizationId) {
+          setError("No organization");
+          setLoading(false);
+          return;
+        }
         setLoading(true);
-        const data = await apiClient<Transaction[]>("/finance/transactions");
+        const data = await apiClient<Transaction[]>(
+          `/finance/${organizationId}/transactions`,
+        );
         setTransactions(data);
         setError(null);
       } catch (error) {
@@ -35,7 +44,7 @@ export default function FinancePage() {
     };
 
     fetchTransactions();
-  }, []);
+  }, [organizationId]);
 
   return (
     <div className="space-y-8 p-8">
@@ -64,7 +73,7 @@ export default function FinancePage() {
         ) : error ? (
           <div className="p-12 text-center">
             <EmptyState
-              title="Failed to load transactions"
+              title={error === "No organization" ? "No organization" : "Failed to load transactions"}
               description={error}
               action={<Button onClick={() => window.location.reload()}>Retry</Button>}
             />

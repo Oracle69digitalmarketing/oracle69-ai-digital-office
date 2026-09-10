@@ -1,39 +1,105 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { procurementClient } from "./client";
 import { Card, CardContent, CardHeader, CardTitle } from "@oracle69/ui";
-import { ProcurementKpiMetrics } from "@oracle69/procurement-intelligence";
+import { ProcurementKpiMetrics, ProcurementHealthResult, ProcurementInsights } from "./client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-interface ApiResponse<T> {
-  data: T;
+interface ProcurementData {
+  kpi: ProcurementKpiMetrics;
+  health: ProcurementHealthResult;
+  insights: ProcurementInsights;
 }
 
 export default function ProcurementDashboard() {
-  const [data, setData] = useState<{
-    kpi: ProcurementKpiMetrics;
-    health: { status: string };
-    insights: { summary: string };
-  } | null>(null);
+  const [data, setData] = useState<ProcurementData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      procurementClient.getKpi() as Promise<ApiResponse<ProcurementKpiMetrics>>,
-      procurementClient.getHealth() as Promise<ApiResponse<{ status: string }>>,
-      procurementClient.getInsights() as Promise<ApiResponse<{ summary: string }>>,
-    ]).then(([kpi, health, insights]) => {
-      setData({ kpi: kpi.data, health: health.data, insights: insights.data });
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [kpi, health, insights] = await Promise.all([
+        procurementClient.getKpi(),
+        procurementClient.getHealth(),
+        procurementClient.getInsights(),
+      ]);
+      setData({ kpi, health, insights });
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch procurement data:", err);
+      setError("Failed to load procurement dashboard data.");
+    } finally {
       setLoading(false);
-    });
+    }
   }, []);
 
-  if (loading || !data) return <div>Loading...</div>;
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const spendData = Object.entries(data.kpi.spendBySupplier).map(([name, value]) => ({
-    name,
-    value,
-  }));
+  if (loading) return <div>Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-bold">Procurement Dashboard</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Spend</CardTitle>
+            </CardHeader>
+            <CardContent>-</CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Health</CardTitle>
+            </CardHeader>
+            <CardContent>-</CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Insights</CardTitle>
+            </CardHeader>
+            <CardContent>-</CardContent>
+          </Card>
+        </div>
+        <div className="p-12 text-center">
+          <div className="text-red-600 mb-4">{error}</div>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => fetchData()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-bold">Procurement Dashboard</h1>
+        <div className="p-12 text-center">
+          <div className="text-gray-500">No procurement data available.</div>
+          <button
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => fetchData()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const spendData = data.kpi.spendBySupplier
+    ? Object.entries(data.kpi.spendBySupplier).map(([name, value]) => ({
+        name,
+        value: value ?? 0,
+      }))
+    : [];
 
   return (
     <div className="p-6 space-y-6">

@@ -33,6 +33,8 @@ const statusColors: Record<string, string> = {
   inactive: "bg-gray-100 text-gray-700",
 };
 
+const defaultStatusStyle = "bg-gray-100 text-gray-500";
+
 export default function CRMPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,7 +204,7 @@ export default function CRMPage() {
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                          statusColors[client.status],
+                          statusColors[client.status] ?? defaultStatusStyle,
                         )}
                       >
                         {client.status}
