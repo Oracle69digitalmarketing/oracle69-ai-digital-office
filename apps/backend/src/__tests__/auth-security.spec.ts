@@ -272,6 +272,7 @@ describe("Authentication security boundary (Phase 1)", () => {
         email: "a@b.com",
         role: "employee",
         organizationId: "o1",
+        jti: "test-jti-0001",
         tokenType: "refresh",
         type: "refresh",
       };

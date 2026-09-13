@@ -12,6 +12,7 @@ export interface RefreshTokenPayload {
   email: string;
   role: string;
   organizationId: string;
+  jti: string;
   tokenType: "refresh";
   type: "refresh";
 }

@@ -73,6 +73,7 @@ model Organization {
   deployments          Deployment[]
   calendarEvents       CalendarEvent[]
   platformApiKeys      PlatformApiKey[]
+  refreshTokens RefreshToken[]
 }
 
 model ProcurementSupplier {
@@ -142,6 +143,7 @@ model User {
   ownedCrmOpportunities CrmOpportunity[]
   assignedCrmActivities CrmActivity[]
   calendarEvents       CalendarEvent[]
+  refreshTokens      RefreshToken[]
 }
 
 model CrmOrganization {
@@ -1183,6 +1185,26 @@ model CalendarEvent {
   updatedAt      DateTime     @updatedAt
 
   @@index([organizationId, start])
+}
+
+model RefreshToken {
+  id             String   @id @default(uuid())
+  jti            String   @unique
+  tokenHash      String
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  status         String   @default("active")
+  expiresAt      DateTime
+  issuedAt       DateTime @default(now())
+  usedAt         DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([organizationId, status])
 }
 
 
