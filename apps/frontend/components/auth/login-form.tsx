@@ -13,6 +13,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const setToken = useAuthStore((state) => state.setToken);
+  const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
   const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,6 +24,9 @@ export function LoginForm() {
     try {
       const data = await apiClient<{
         access_token: string;
+        refresh_token: string;
+        expires_in: number;
+        token_type: string;
         user: { id: string; email: string; name?: string; role: string; organizationId: string };
       }>("/auth/login", {
         method: "POST",
@@ -30,6 +34,7 @@ export function LoginForm() {
       });
 
       setToken(data.access_token);
+      setRefreshToken(data.refresh_token);
       setUser(data.user);
       router.push("/dashboard");
     } catch (err: unknown) {

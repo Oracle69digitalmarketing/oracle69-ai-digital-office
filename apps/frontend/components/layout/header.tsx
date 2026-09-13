@@ -2,17 +2,18 @@
 
 import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
+import { logoutSession } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { NotificationCenter } from "./notification-center";
 import { GlobalSearch } from "./global-search";
 
 export function Header() {
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    // Best-effort server revocation; local session is always cleared.
+    await logoutSession();
     router.push("/auth/login");
   };
 
