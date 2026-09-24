@@ -1,9 +1,16 @@
-import { Injectable, Logger, NotFoundException, OnModuleInit } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  OnModuleInit,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { EventBus } from "@oracle69/shared";
 import { ExecutionEngine } from "@oracle69/execution-engine";
 import { AgentRegistry } from "@oracle69/agent-engine";
 import { TenantContextService } from "@oracle69/runtime";
+import { ALLOWED_WORKFLOW_STATUSES } from "./dto/workflows.dto.js";
 
 @Injectable()
 export class WorkflowsService implements OnModuleInit {
@@ -118,6 +125,10 @@ export class WorkflowsService implements OnModuleInit {
   }
 
   async updateWorkflowStatus(id: string, status: string) {
+    if (!ALLOWED_WORKFLOW_STATUSES.includes(status as (typeof ALLOWED_WORKFLOW_STATUSES)[number])) {
+      throw new BadRequestException(`Invalid workflow status: ${status}`);
+    }
+
     const tenantId = this.resolveTenantId();
 
     const existing = await this.prisma.workflow.findUnique({

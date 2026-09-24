@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { TenantContextService } from "@oracle69/runtime";
+import { CreateDepartmentDto } from "./dto/departments.dto.js";
 
 @Injectable()
 export class DepartmentsService {
@@ -11,8 +12,8 @@ export class DepartmentsService {
     private tenantContext: TenantContextService,
   ) {}
 
-  private get organizationId() {
-    return this.tenantContext.getTenantId();
+  private get organizationId(): string {
+    return this.tenantContext.resolveTenantId();
   }
 
   async findAll() {
@@ -34,10 +35,12 @@ export class DepartmentsService {
     return department;
   }
 
-  async create(data: any) {
+  async create(data: CreateDepartmentDto) {
     return this.prisma.department.create({
       data: {
-        ...data,
+        name: data.name,
+        description: data.description ?? undefined,
+        status: data.status ?? "active",
         organizationId: this.organizationId,
       },
     });

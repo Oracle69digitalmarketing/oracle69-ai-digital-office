@@ -11,7 +11,9 @@ async function bootstrap() {
 
   app.set("trust proxy", 1);
   app.setGlobalPrefix("api");
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+  );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
     origin: ["https://oracle69-ai-digital-office-frontend.onrender.com", "http://localhost:3000"],

@@ -9,8 +9,8 @@ export class AnalyticsService {
     private readonly tenantContext: TenantContextService,
   ) {}
 
-  private get organizationId() {
-    return this.tenantContext.getTenantId();
+  private get organizationId(): string {
+    return this.tenantContext.resolveTenantId();
   }
 
   async getKpis() {

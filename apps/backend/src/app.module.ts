@@ -3,6 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { validateConfig } from "./config/config.validation.js";
 import { JwtAuthGuard } from "./auth/jwt-auth.guard.js";
+import { RolesGuard } from "./auth/roles.guard.js";
 import { TenantContextInterceptor } from "./common/interceptors/tenant-context.interceptor.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { AuthModule } from "./auth/auth.module.js";
@@ -80,6 +81,13 @@ import { KnowledgeIndexingSubscriber } from "./automation/knowledge-indexing.sub
     {
       provide: APP_GUARD,
       useExisting: JwtAuthGuard,
+    },
+    {
+      // Register RolesGuard globally so that @Roles(...) metadata declared on
+      // any controller/handler takes effect uniformly. Without @Roles metadata
+      // (the current state), it is a strict no-op and never reduces access.
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
     {
       provide: APP_INTERCEPTOR,

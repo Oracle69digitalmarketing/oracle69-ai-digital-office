@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Body, UseGuards, Request } from "@nestjs/common";
 import { CalendarService } from "./calendar.service.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CreateCalendarEventDto } from "./dto/calendar.dto.js";
 
 @Controller("calendar")
 @UseGuards(JwtAuthGuard)
@@ -13,7 +14,7 @@ export class CalendarController {
   }
 
   @Post()
-  create(@Body() data: any) {
-    return this.calendarService.create(data);
+  create(@Body() data: CreateCalendarEventDto, @Request() req: any) {
+    return this.calendarService.create(data, req.user.userId);
   }
 }

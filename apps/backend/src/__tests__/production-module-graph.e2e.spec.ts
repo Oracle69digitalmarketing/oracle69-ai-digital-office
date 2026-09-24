@@ -338,14 +338,16 @@ describe("Phase 3 P1 WS4 — Real production module-graph tenant isolation", () 
   });
 
   it("E. client-supplied organizationId cannot override JWT tenant", async () => {
-    // POST accepts a body (unlike GET, which Express rejects with 400).
-    // The JWT tenant (org-a) governs; Org-B's project stays unreachable.
+    // POST body is now validated by the DTO boundary; a client-supplied
+    // organizationId is a forbidden non-whitelisted property -> 400 before the
+    // service ever runs. The JWT tenant (org-a) continues to govern tenant
+    // scope for all allowed fields.
     const res = await request(`/workflows`, {
       token: signAccess(ORG_A),
       method: "POST",
       body: { name: "Sneaky", projectId: PROJ_B, organizationId: ORG_B },
     });
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(400);
   });
   it("E2. client-supplied organizationId on GET cannot override JWT tenant", async () => {
     // GET has no body; the JWT tenant still governs. Org-B workflow unreachable.

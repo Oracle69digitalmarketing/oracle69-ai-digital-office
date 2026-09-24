@@ -1,7 +1,8 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { EventBus } from "@oracle69/shared";
 import { TenantContextService } from "@oracle69/runtime";
+import { CreateTaskDto, ALLOWED_TASK_STATUSES } from "./dto/tasks.dto.js";
 
 @Injectable()
 export class TasksService {
@@ -13,8 +14,8 @@ export class TasksService {
     private tenantContext: TenantContextService,
   ) {}
 
-  private get organizationId() {
-    return this.tenantContext.getTenantId();
+  private get organizationId(): string {
+    return this.tenantContext.resolveTenantId();
   }
 
   async findAll() {
@@ -39,7 +40,7 @@ export class TasksService {
       },
     });
 
-    if (!task || task.project.organizationId !== this.organizationId) {
+    if (!task || !task.project || task.project.organizationId !== this.organizationId) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
 
@@ -47,12 +48,16 @@ export class TasksService {
   }
 
   async updateStatus(id: string, status: string, userId?: string) {
+    if (!ALLOWED_TASK_STATUSES.includes(status as (typeof ALLOWED_TASK_STATUSES)[number])) {
+      throw new BadRequestException(`Invalid task status: ${status}`);
+    }
+
     const existing = await this.prisma.task.findUnique({
       where: { id },
       include: { project: true, assignedAgent: true },
     });
 
-    if (!existing || existing.project.organizationId !== this.organizationId) {
+    if (!existing || !existing.project || existing.project.organizationId !== this.organizationId) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
 
@@ -83,7 +88,7 @@ export class TasksService {
         resource: "Task",
         status: "SUCCESS",
         userId: userId,
-        organizationId: this.organizationId!,
+        organizationId: this.organizationId,
         createdAt: new Date(),
       },
     });
@@ -91,19 +96,39 @@ export class TasksService {
     return task;
   }
 
-  async create(data: any) {
+  async create(data: CreateTaskDto) {
+    const orgId = this.organizationId;
+
     const project = await this.prisma.project.findUnique({
       where: { id: data.projectId },
     });
 
-    if (!project || project.organizationId !== this.organizationId) {
+    if (!project || project.organizationId !== orgId) {
       throw new NotFoundException("Project not found");
     }
 
-    const { organizationId: _clientOrgId, ...safeData } = data;
+    const assignedAgentId = data.assignedAgentId;
+    if (assignedAgentId) {
+      const agent = await this.prisma.agent.findUnique({
+        where: { id: assignedAgentId },
+      });
+      if (!agent || agent.organizationId !== orgId) {
+        throw new BadRequestException("Assigned agent not found in this organization");
+      }
+    }
 
     const task = await this.prisma.task.create({
-      data: safeData,
+      data: {
+        title: data.title,
+        description: data.description ?? undefined,
+        priority: data.priority ?? "medium",
+        deadline: data.deadline ? new Date(data.deadline) : undefined,
+        estimatedCost: data.estimatedCost,
+        executionTime: data.executionTime,
+        dependencies: data.dependencies ?? [],
+        projectId: data.projectId,
+        assignedAgentId,
+      },
     });
 
     this.eventBus.publish({
@@ -112,7 +137,7 @@ export class TasksService {
       payload: {
         taskId: task.id,
         title: task.title,
-        organizationId: this.organizationId,
+        organizationId: orgId,
       },
     });
 

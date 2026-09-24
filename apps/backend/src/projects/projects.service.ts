@@ -1,7 +1,8 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { TenantContextService } from "@oracle69/runtime";
 import { EventBus } from "@oracle69/shared";
+import { CreateProjectDto } from "./dto/projects.dto.js";
 
 @Injectable()
 export class ProjectsService {
@@ -13,8 +14,8 @@ export class ProjectsService {
     private eventBus: EventBus,
   ) {}
 
-  private get organizationId() {
-    return this.tenantContext.getTenantId();
+  private get organizationId(): string {
+    return this.tenantContext.resolveTenantId();
   }
 
   async findAll() {
@@ -42,18 +43,37 @@ export class ProjectsService {
     return project;
   }
 
-  async create(data: any) {
+  async create(data: CreateProjectDto) {
+    const orgId = this.organizationId;
+
+    const clientId = data.clientId;
+    if (clientId) {
+      const client = await this.prisma.client.findUnique({
+        where: { id: clientId },
+      });
+      if (!client || client.organizationId !== orgId) {
+        throw new BadRequestException("Client not found in this organization");
+      }
+    }
+
     const project = await this.prisma.project.create({
       data: {
-        ...data,
-        organizationId: this.organizationId,
+        title: data.title,
+        description: data.description ?? undefined,
+        status: data.status ?? "planning",
+        priority: data.priority ?? "medium",
+        budget: data.budget,
+        startDate: data.startDate ? new Date(data.startDate) : undefined,
+        endDate: data.endDate ? new Date(data.endDate) : undefined,
+        clientId: clientId ?? null,
+        organizationId: orgId,
       },
     });
 
     this.eventBus.publish({
       type: "project.created",
       source: "ProjectsService",
-      payload: { projectId: project.id, organizationId: this.organizationId },
+      payload: { projectId: project.id, organizationId: orgId },
     });
 
     return project;

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from "@nestjs/common";
 import { TasksService } from "./tasks.service.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CreateTaskDto, UpdateTaskStatusDto } from "./dto/tasks.dto.js";
 
 @Controller("tasks")
 @UseGuards(JwtAuthGuard)
@@ -18,12 +19,12 @@ export class TasksController {
   }
 
   @Patch(":id/status")
-  updateStatus(@Param("id") id: string, @Body("status") status: string, @Request() req: any) {
-    return this.tasksService.updateStatus(id, status, req.user.userId);
+  updateStatus(@Param("id") id: string, @Body() body: UpdateTaskStatusDto, @Request() req: any) {
+    return this.tasksService.updateStatus(id, body.status, req.user.userId);
   }
 
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: CreateTaskDto) {
     return this.tasksService.create(data);
   }
 }

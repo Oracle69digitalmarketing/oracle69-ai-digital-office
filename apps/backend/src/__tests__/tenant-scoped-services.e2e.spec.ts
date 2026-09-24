@@ -261,8 +261,8 @@ class DocumentsTestController {
   }
 
   @Post()
-  create(@Body() data: any) {
-    return this.documentsService.create(data);
+  create(@Req() req: any, @Body() data: any) {
+    return this.documentsService.create(data, req.user.userId);
   }
 }
 

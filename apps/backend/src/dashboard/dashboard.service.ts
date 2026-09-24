@@ -9,8 +9,8 @@ export class DashboardService {
     private tenantContext: TenantContextService,
   ) {}
 
-  private get organizationId() {
-    return this.tenantContext.getTenantId();
+  private get organizationId(): string {
+    return this.tenantContext.resolveTenantId();
   }
 
   async getSummary() {

@@ -1,7 +1,8 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger, BadRequestException, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { EventBus } from "@oracle69/shared";
 import { TenantContextService } from "@oracle69/runtime";
+import { DEFAULT_ACTIVITY_FEED_LIMIT, MAX_ACTIVITY_FEED_LIMIT } from "./dto/activity.dto.js";
 
 @Injectable()
 export class ActivityService implements OnModuleInit {
@@ -13,8 +14,8 @@ export class ActivityService implements OnModuleInit {
     private tenantContext: TenantContextService,
   ) {}
 
-  private get organizationId() {
-    return this.tenantContext.getTenantId();
+  private get organizationId(): string {
+    return this.tenantContext.resolveTenantId();
   }
 
   onModuleInit() {
@@ -47,12 +48,18 @@ export class ActivityService implements OnModuleInit {
     });
   }
 
-  async getFeed(limit = 50) {
+  async getFeed(limit?: number) {
+    const parsed = limit === undefined ? DEFAULT_ACTIVITY_FEED_LIMIT : Number(limit);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      throw new BadRequestException("Invalid activity feed limit");
+    }
+    const take = Math.min(parsed, MAX_ACTIVITY_FEED_LIMIT);
+
     return this.prisma.auditLog.findMany({
       where: {
         organizationId: this.organizationId,
       },
-      take: limit,
+      take,
       orderBy: { createdAt: "desc" },
       include: {
         user: {

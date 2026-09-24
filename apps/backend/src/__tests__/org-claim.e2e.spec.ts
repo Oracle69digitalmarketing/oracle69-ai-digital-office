@@ -187,11 +187,14 @@ describe("organizationId claim authorization (Phase 2 Step 2)", () => {
     }
   });
 
-  it("a token without an organizationId claim is forbidden (403)", async () => {
+  it("a token without an organizationId claim is rejected at the auth boundary (401)", async () => {
+    // JwtStrategy now rejects access tokens that lack a valid organizationId
+    // before OrgClaimGuard ever runs (fail-closed at authentication rather
+    // than authorization). The token never reaches the guarded routes.
     const token = signAccess({ organizationId: undefined });
     for (const route of ROUTES) {
       const res = await request(route, { token });
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(401);
     }
   });
 
