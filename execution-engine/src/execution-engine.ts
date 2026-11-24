@@ -26,6 +26,11 @@ export class ExecutionEngine {
     retries = 3,
     tenantContext?: TenantContext,
   ): Promise<any> {
+    const organizationId = tenantContext?.organizationId;
+    if (!organizationId || organizationId.trim().length === 0) {
+      throw new Error("tenantContext.organizationId is required for task execution");
+    }
+
     const trace = this.getOrCreateTrace(task.sessionId);
     const step: WorkflowStep = {
       stepId: Math.random().toString(36).substring(7),
@@ -35,7 +40,7 @@ export class ExecutionEngine {
       startTime: new Date(),
     };
     trace.steps.push(step);
-    await this.persistStep(step, tenantContext?.organizationId);
+    await this.persistStep(step, organizationId);
 
     this.eventBus.publish({
       type: "task.delegated",
@@ -61,7 +66,7 @@ export class ExecutionEngine {
         content: result,
         reasoning: result?.reasoning || "Automated execution",
         decisions: result?.decisions || [],
-        organizationId: tenantContext?.organizationId,
+        organizationId,
         metadata: {
           objective: task.objective,
           workflowId: task.sessionId,
@@ -70,7 +75,7 @@ export class ExecutionEngine {
       });
 
       await agent.onTaskCompleted(task, result);
-      await this.persistStep(step, tenantContext?.organizationId);
+      await this.persistStep(step, organizationId);
 
       this.eventBus.publish({
         type: "task.completed",
@@ -87,7 +92,7 @@ export class ExecutionEngine {
 
       await agent.onTaskFailed(task, err);
       this.handleTaskFailure(task, err);
-      await this.persistStep(step, tenantContext?.organizationId);
+      await this.persistStep(step, organizationId);
 
       throw err;
     }

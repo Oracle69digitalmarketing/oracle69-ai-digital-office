@@ -115,7 +115,10 @@ class ChiefOfStaffAgent extends BaseAgent {
           objective: `Perform ${role} for ${task.objective}`,
           context: { ...task.context, parentTaskId: task.taskId },
         };
-        const res = await this.executionEngine.executeTask(subTask, agents[0]);
+        const res = await this.executionEngine.executeTask(subTask, agents[0], 3, {
+          organizationId: "org-integration",
+          productIdentifier: "business-architect",
+        });
         results.push({ role, result: res });
       }
     }

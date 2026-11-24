@@ -102,4 +102,52 @@ describe("Tenant isolation for semantic retrieval", () => {
       expect(results).toEqual([]);
     });
   });
+
+  describe("MemoryManager.saveBusinessMemory", () => {
+    let manager: MemoryManager;
+    let persistence: any;
+
+    const data = {
+      sessionId: "sess-1",
+      taskId: "task-1",
+      agentId: "agent-1",
+      role: "test-agent",
+      content: "business content",
+    };
+
+    beforeEach(() => {
+      manager = new MemoryManager();
+      persistence = {
+        save: (jest.fn() as any).mockResolvedValue("rec-1"),
+        search: (jest.fn() as any).mockResolvedValue([]),
+      };
+      manager.setPersistence(persistence);
+    });
+
+    it("rejects a missing organizationId without persisting or substituting a fallback", async () => {
+      const incompleteData = { ...data };
+
+      await expect(
+        Reflect.apply(manager.saveBusinessMemory, manager, [incompleteData]),
+      ).rejects.toThrow("organizationId is required for business memory persistence");
+
+      expect(persistence.save).not.toHaveBeenCalled();
+    });
+
+    it("rejects an empty organizationId without persisting", async () => {
+      await expect(manager.saveBusinessMemory({ ...data, organizationId: "" })).rejects.toThrow(
+        "organizationId is required for business memory persistence",
+      );
+
+      expect(persistence.save).not.toHaveBeenCalled();
+    });
+
+    it("stores the exact supplied organizationId in metadata", async () => {
+      await manager.saveBusinessMemory({ ...data, organizationId: "org-123" });
+
+      expect(persistence.save).toHaveBeenCalledTimes(1);
+      expect(persistence.save.mock.calls[0][0].metadata.organizationId).toBe("org-123");
+      expect(persistence.save.mock.calls[0][0].metadata.organizationId).not.toBe("system");
+    });
+  });
 });
