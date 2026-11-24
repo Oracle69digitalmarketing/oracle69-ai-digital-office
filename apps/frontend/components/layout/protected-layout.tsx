@@ -9,9 +9,13 @@ import { DashboardShell } from "./dashboard-shell";
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, token } = useAuthStore();
   const router = useRouter();
-  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !useAuthStore.persist) {
+      setHydrated(true);
+      return;
+    }
     if (useAuthStore.persist.hasHydrated()) {
       setHydrated(true);
       return;
